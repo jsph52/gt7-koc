@@ -51,6 +51,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force deneme | Out-Null
           Copy-Item dist/GT7-Koc.exe deneme/
+          # Eski sürümden kalmış gibi bir kayıt: ilk açılışta Belgeler\GT7 Koc'a taşınmalı
+          Set-Content -Encoding utf8 deneme/son_pist.txt "779efe"
+          $kayit = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "GT7 Koc"
           $p = Start-Process -FilePath deneme/GT7-Koc.exe -PassThru
           Start-Sleep -Seconds 15
           $sayfa = Invoke-WebRequest -UseBasicParsing http://localhost:8765/
@@ -78,7 +81,10 @@ jobs:
           if (-not $dc.hazir) { throw "Discord paketleri EXE'de yok: $($dc.eksik)" }
           if (-not $dc.opus) { throw "Discord ses kodlayıcısı (opus) yüklenemedi" }
           Write-Host "Discord hazır (opus yüklü)."
-          $gunluk = Get-Content -Raw -Encoding utf8 deneme/koc_gunluk.txt
+          if (-not (Test-Path (Join-Path $kayit "son_pist.txt"))) { throw "Eski kayıt Belgeler\GT7 Koc klasörüne taşınmadı" }
+          if (Test-Path deneme/son_pist.txt) { throw "Eski kayıt EXE'nin yanında kaldı" }
+          if ($durum.kayit_klasoru -ne $kayit) { Write-Host "::warning::Kayıt klasörü: $($durum.kayit_klasoru)" }
+          $gunluk = Get-Content -Raw -Encoding utf8 (Join-Path $kayit "koc_gunluk.txt")
           Write-Host "--- koc_gunluk.txt ---"; Write-Host $gunluk
           if ($gunluk -notmatch "Pencere açılıyor") { throw "Pencere açılmaya çalışılmadı" }
           if ($gunluk -match "Pencere açılamadı") { throw "Pencere açılamadı (günlüğe bak)" }
@@ -100,8 +106,8 @@ jobs:
           gh release create son-surum dist/GT7-Koc.exe \
             --target "$GITHUB_SHA" \
             --title "GT7 Türkçe Koç - son sürüm" \
-            --notes "Kurulum gerekmez. GT7-Koc.exe dosyasını indir, kendi klasörüne koy, çift tıkla.
-          Kayıtlar (turlar, referanslar) EXE ile aynı klasöre yazılır.
+            --notes "Kurulum gerekmez. GT7-Koc.exe dosyasını indir, çift tıkla.
+          Kayıtlar (turlar, ayarlar, raporlar) Belgeler\GT7 Koc klasörüne yazılır. EXE'yi istediğin yere koyabilirsin.
           Windows uyarısı çıkarsa: Ek bilgi > Yine de çalıştır. Güvenlik duvarı sorarsa: İzin ver.
 
           Kaynak commit: $GITHUB_SHA ($GITHUB_REF_NAME)"

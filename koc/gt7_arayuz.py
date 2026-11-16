@@ -597,6 +597,17 @@ def make_handler(app):
                     else:
                         app.koc.rekor_ayarla(bool(body.get("acik")))
                 self.json({"tamam": bool(app.koc)})
+            elif u.path == "/api/klasor_ac":
+                # Kayıt klasörünü bilgisayarda Windows Gezgini ile açar
+                tamam = False
+                try:
+                    os.makedirs(USER_DIR, exist_ok=True)
+                    if hasattr(os, "startfile"):
+                        os.startfile(USER_DIR)
+                        tamam = True
+                except OSError:
+                    pass
+                self.json({"tamam": tamam, "klasor": USER_DIR})
             elif u.path == "/api/ses_dene":
                 # "Sesi dene": ses seçilen cihazdan çıkıyorsa koç orada okur
                 self.json({"tamam": app.yerel.soyle(str(body.get("metin") or "")[:200], True)})
