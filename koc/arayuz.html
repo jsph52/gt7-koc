@@ -1723,7 +1723,7 @@ $("kturAc").onclick = () => kturAc();
 let telefonAdres = null;
 $("raporAc").onclick = $("raporYenile").onclick = () => {
   $("raporCerceve").src = "/rapor?t=" + Date.now();
-  yaz("raporNot", "Her turdan sonra koçun yanındaki raporlar klasörüne de kaydedilir." +
+  yaz("raporNot", "Her turdan sonra kayıt klasöründeki (Belgeler\\GT7 Koc) raporlar klasörüne de kaydedilir." +
     (telefonAdres ? " Telefondan: " + telefonAdres + "/rapor" : ""));
   pencereAc("raporPerde");
 };

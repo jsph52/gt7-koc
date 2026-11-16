@@ -63,7 +63,7 @@ arasında hatırlar ve gelişimini takip eder.
 ## Kurulum
 
 1. [Releases](https://github.com/jsph52/gt7-koc/releases) sayfasından `GT7-Koc.exe` dosyasını indir.
-2. EXE'yi kendine ait bir klasöre koy ve çift tıkla. Turların ve ayarların bu klasöre kaydedilir.
+2. EXE'yi istediğin yere koy ve çift tıkla. Turların, ayarların ve raporların **Belgeler › GT7 Koc** klasörüne kaydedilir; yeni sürümü indirince eskisinin yerine koyman yeterli.
    - Windows uyarı verirse: **Ek bilgi › Yine de çalıştır**.
    - Güvenlik duvarı sorarsa: **İzin ver**.
 3. PS5 ile bilgisayarın aynı ev ağında olduğundan emin ol.
@@ -78,7 +78,7 @@ arasında hatırlar ve gelişimini takip eder.
 | PS5 bulunamıyor | Ayarlar › Bağlantı › **PS5'i ağda bul**, ya da PS5'in IP adresini elle yaz (PS5'te Ayarlar › Ağ › Bağlantı Durumu). |
 | Veri kesik kesik geliyor | PS5'i kabloyla ya da 5 GHz Wi-Fi ile bağla. |
 | Koç veri almıyor | Telemetri kullanan başka bir program aynı bilgisayarda açıksa kapat. |
-| Başka bir sorun | EXE'nin yanındaki `koc_gunluk.txt` dosyasına bak. |
+| Başka bir sorun | **Belgeler › GT7 Koc** klasöründeki `koc_gunluk.txt` dosyasına bak. |
 
 ---
 
