@@ -1013,7 +1013,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       </div>
       <div class="a-grup"><h4>Kayıtlar</h4>
         <div class="a-satir alt"><div class="a-ad"><b>Kayıt klasörü</b><small>Turlar, raporlar ve ayarlar burada saklanır.</small></div>
-          <code id="kayitKlasor">—</code></div>
+          <div class="satir"><code id="kayitKlasor">—</code><button id="klasorAc">Klasörü aç</button></div></div>
       </div>
     </div>
   </div>
@@ -1311,6 +1311,10 @@ async function postBos(yol){
 $("bipDene").onclick = () => postBos("/api/bip");
 $("kalibBtn").onclick = () => postBos("/api/kalibrasyon");
 $("bulBtn").onclick = $("bulBtn2").onclick = () => postBos("/api/bul");
+$("klasorAc").onclick = async () => {
+  const r = await (await fetch("/api/klasor_ac", {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}"})).json();
+  if (!r.tamam) bilgi("Klasör açılamadı", "Klasör bilgisayarda açılır. Yeri: " + (r.klasor || "—"));
+};
 
 // Güç dağılımı: araba başına; çekiş türü sürüşten öğrenilir (arkadan itiş / önden çekişte gizli)
 function dagilimGoster(c, ayar){
