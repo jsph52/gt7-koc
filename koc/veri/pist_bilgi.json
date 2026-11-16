@@ -1,0 +1,1091 @@
+{
+ "02e205": {
+  "ad": "Blue Moon Bay Speedway - Infield B",
+  "en_uzun_duzluk_m": 890,
+  "oval": false,
+  "pit_kaybi_sn": 18.0,
+  "viraj": 5,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "041ba3": {
+  "ad": "Circuit de Sainte-Croix - C",
+  "en_uzun_duzluk_m": 1807,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 24,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "0457d4": {
+  "ad": "Deep Forest Raceway",
+  "en_uzun_duzluk_m": 765,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 50.0
+ },
+ "092b5e": {
+  "ad": "BB Raceway Reverse",
+  "en_uzun_duzluk_m": 386,
+  "oval": true,
+  "pit_kaybi_sn": 30.0,
+  "viraj": 5,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "101516": {
+  "ad": "Autodromo de Interlagos",
+  "en_uzun_duzluk_m": 650,
+  "oval": false,
+  "pit_kaybi_sn": 30.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 43.0
+ },
+ "1095b7": {
+  "ad": "Dragon Trail - Seaside Reverse",
+  "en_uzun_duzluk_m": 653,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.0
+ },
+ "12ceac": {
+  "ad": "Nurburgring Nordschleife",
+  "en_uzun_duzluk_m": 2135,
+  "oval": false,
+  "pit_kaybi_sn": 22.0,
+  "viraj": 73,
+  "yagmur": true,
+  "yukseklik_farki_m": 300.0
+ },
+ "131d9e": {
+  "ad": "Alsace - Test Course Reverse",
+  "en_uzun_duzluk_m": 432,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 35.3
+ },
+ "14872f": {
+  "ad": "Colorado Springs - Lake",
+  "en_uzun_duzluk_m": 177,
+  "oval": false,
+  "pit_kaybi_sn": 13.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 15.0
+ },
+ "154e68": {
+  "ad": "Lake Louise Long Track Reverse",
+  "en_uzun_duzluk_m": 765,
+  "oval": false,
+  "pit_kaybi_sn": 12.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 78.0
+ },
+ "19fb71": {
+  "ad": "Grand Valley - Highway 1 Reverse",
+  "en_uzun_duzluk_m": 995,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 97.0
+ },
+ "1a1157": {
+  "ad": "Dragon Trail - Gardens",
+  "en_uzun_duzluk_m": 781,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 17,
+  "yagmur": true,
+  "yukseklik_farki_m": 27.0
+ },
+ "1d0c5e": {
+  "ad": "Autopolis International Racing Course",
+  "en_uzun_duzluk_m": 902,
+  "oval": false,
+  "pit_kaybi_sn": 13.0,
+  "viraj": 18,
+  "yagmur": true,
+  "yukseklik_farki_m": 52.0
+ },
+ "1d6a80": {
+  "ad": "Willow Springs International Raceway: Streets of Willow Springs",
+  "en_uzun_duzluk_m": 400,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 20.0
+ },
+ "1fb373": {
+  "ad": "BB Raceway",
+  "en_uzun_duzluk_m": 386,
+  "oval": true,
+  "pit_kaybi_sn": 28.5,
+  "viraj": 5,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "2066d9": {
+  "ad": "Nurburgring GP",
+  "en_uzun_duzluk_m": 620,
+  "oval": false,
+  "pit_kaybi_sn": 23.0,
+  "viraj": 17,
+  "yagmur": true,
+  "yukseklik_farki_m": 57.0
+ },
+ "24f937": {
+  "ad": "Eiger Nordwand Reverse",
+  "en_uzun_duzluk_m": 250,
+  "oval": false,
+  "pit_kaybi_sn": null,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 90.0
+ },
+ "26514b": {
+  "ad": "Trial Mountain Circuit - Reverse",
+  "en_uzun_duzluk_m": 1340,
+  "oval": false,
+  "pit_kaybi_sn": 27.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 58.0
+ },
+ "26e1df": {
+  "ad": "Lake Louise Short Track",
+  "en_uzun_duzluk_m": 1024,
+  "oval": false,
+  "pit_kaybi_sn": 9.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 63.0
+ },
+ "297b7f": {
+  "ad": "Autodrome Lago Maggiore - West Reverse",
+  "en_uzun_duzluk_m": 800,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 13,
+  "yagmur": false,
+  "yukseklik_farki_m": 49.0
+ },
+ "2c2c67": {
+  "ad": "Autopolis International Racing Course - Short Course",
+  "en_uzun_duzluk_m": 902,
+  "oval": false,
+  "pit_kaybi_sn": 13.0,
+  "viraj": 11,
+  "yagmur": true,
+  "yukseklik_farki_m": 30.0
+ },
+ "31acde": {
+  "ad": "Nurburgring Endurance",
+  "en_uzun_duzluk_m": 2135,
+  "oval": false,
+  "pit_kaybi_sn": 22.0,
+  "viraj": 85,
+  "yagmur": true,
+  "yukseklik_farki_m": 300.0
+ },
+ "341218": {
+  "ad": "Kyoto Driving Park - Yamagiwa+Miyabi Reverse",
+  "en_uzun_duzluk_m": 743,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 19,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.6
+ },
+ "36a3db": {
+  "ad": "Dragon Trail - Seaside",
+  "en_uzun_duzluk_m": 653,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.0
+ },
+ "381321": {
+  "ad": "Willow Springs International Raceway: Big Willow",
+  "en_uzun_duzluk_m": 756,
+  "oval": false,
+  "pit_kaybi_sn": 11.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 50.0
+ },
+ "38d7ae": {
+  "ad": "Willow Springs International Raceway: Horse Thief Mile",
+  "en_uzun_duzluk_m": 216,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 42.0
+ },
+ "394c28": {
+  "ad": "Sardegna - Road Track - B",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 13,
+  "yagmur": false,
+  "yukseklik_farki_m": 56.0
+ },
+ "3a0fe1": {
+  "ad": "Sardegna - Road Track - C",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 54.0
+ },
+ "3bee8b": {
+  "ad": "Circuit de Barcelona-Catalunya Rallycross",
+  "en_uzun_duzluk_m": 148,
+  "oval": false,
+  "pit_kaybi_sn": 28.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 11.0
+ },
+ "3c4be1": {
+  "ad": "Circuit de Spa-Francorchamps",
+  "en_uzun_duzluk_m": 751,
+  "oval": false,
+  "pit_kaybi_sn": 25.0,
+  "viraj": 21,
+  "yagmur": true,
+  "yukseklik_farki_m": 104.0
+ },
+ "3f4c16": {
+  "ad": "Brands Hatch Grand Prix Circuit",
+  "en_uzun_duzluk_m": 475,
+  "oval": false,
+  "pit_kaybi_sn": 9.0,
+  "viraj": 9,
+  "yagmur": false,
+  "yukseklik_farki_m": 35.0
+ },
+ "40e254": {
+  "ad": "Lake Louise Long Track",
+  "en_uzun_duzluk_m": 765,
+  "oval": false,
+  "pit_kaybi_sn": 12.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 78.0
+ },
+ "42ea84": {
+  "ad": "Alsace - Test Course",
+  "en_uzun_duzluk_m": 432,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 35.3
+ },
+ "4414cb": {
+  "ad": "Suzuka Circuit East Course",
+  "en_uzun_duzluk_m": 800,
+  "oval": false,
+  "pit_kaybi_sn": 21.5,
+  "viraj": 9,
+  "yagmur": true,
+  "yukseklik_farki_m": 33.6
+ },
+ "44b0a2": {
+  "ad": "Lake Louise Tri-Oval Reverse",
+  "en_uzun_duzluk_m": 1184,
+  "oval": false,
+  "pit_kaybi_sn": 9.0,
+  "viraj": 3,
+  "yagmur": false,
+  "yukseklik_farki_m": 78.0
+ },
+ "45e222": {
+  "ad": "Fishermans Ranch Reverse",
+  "en_uzun_duzluk_m": 434,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 40,
+  "yagmur": false,
+  "yukseklik_farki_m": 145.0
+ },
+ "46b3d9": {
+  "ad": "Autodrome Lago Maggiore - Centre",
+  "en_uzun_duzluk_m": 550,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 8,
+  "yagmur": false,
+  "yukseklik_farki_m": 12.0
+ },
+ "46d3f1": {
+  "ad": "Colorado Springs - Lake Reverse",
+  "en_uzun_duzluk_m": 177,
+  "oval": false,
+  "pit_kaybi_sn": 13.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 15.0
+ },
+ "4ff578": {
+  "ad": "Brands Hatch Indy Circuit",
+  "en_uzun_duzluk_m": 400,
+  "oval": false,
+  "pit_kaybi_sn": 11.0,
+  "viraj": 5,
+  "yagmur": false,
+  "yukseklik_farki_m": 24.0
+ },
+ "53f1ef": {
+  "ad": "Kyoto Driving Park - Miyabi",
+  "en_uzun_duzluk_m": 442,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 17.5
+ },
+ "592211": {
+  "ad": "Nurburgring Endurance",
+  "en_uzun_duzluk_m": 2135,
+  "oval": false,
+  "pit_kaybi_sn": 22.0,
+  "viraj": 85,
+  "yagmur": true,
+  "yukseklik_farki_m": 300.0
+ },
+ "59f32b": {
+  "ad": "Watkins Glen Short Course",
+  "en_uzun_duzluk_m": 621,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 10.668
+ },
+ "5aeb53": {
+  "ad": "Tokyo Expressway - Central Clockwise",
+  "en_uzun_duzluk_m": 600,
+  "oval": false,
+  "pit_kaybi_sn": 18.5,
+  "viraj": 13,
+  "yagmur": true,
+  "yukseklik_farki_m": 8.0
+ },
+ "5ba087": {
+  "ad": "Autodrome Lago Maggiore - Full Course",
+  "en_uzun_duzluk_m": 800,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 17,
+  "yagmur": false,
+  "yukseklik_farki_m": 74.0
+ },
+ "5c21c8": {
+  "ad": "Circuit de Sainte-Croix - C Reverse",
+  "en_uzun_duzluk_m": 1807,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 24,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "5f2207": {
+  "ad": "Autodrome Lago Maggiore - West End Reverse",
+  "en_uzun_duzluk_m": 373,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 48.0
+ },
+ "60d74b": {
+  "ad": "Watkins Glen Long Course",
+  "en_uzun_duzluk_m": 560,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 41.148
+ },
+ "62b62e": {
+  "ad": "Sardegna - Road Track - B Reverse",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 13,
+  "yagmur": false,
+  "yukseklik_farki_m": 56.0
+ },
+ "630793": {
+  "ad": "Sardegna - Road Track - A Reverse",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.0
+ },
+ "65e108": {
+  "ad": "High Speed Ring",
+  "en_uzun_duzluk_m": 1060,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 6,
+  "yagmur": true,
+  "yukseklik_farki_m": 8.5
+ },
+ "6bf104": {
+  "ad": "Blue Moon Bay Speedway",
+  "en_uzun_duzluk_m": 1060,
+  "oval": true,
+  "pit_kaybi_sn": 18.0,
+  "viraj": 3,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "6cdd45": {
+  "ad": "WeatherTech Raceway Laguna Seca",
+  "en_uzun_duzluk_m": 453,
+  "oval": false,
+  "pit_kaybi_sn": 32.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 55.0
+ },
+ "6d5688": {
+  "ad": "Kyoto Driving Park - Yamagiwa+Miyabi",
+  "en_uzun_duzluk_m": 743,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 19,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.6
+ },
+ "6dfca5": {
+  "ad": "Kyoto Driving Park - Yamagiwa",
+  "en_uzun_duzluk_m": 743,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.6
+ },
+ "6e378b": {
+  "ad": "Suzuka Circuit",
+  "en_uzun_duzluk_m": 1200,
+  "oval": false,
+  "pit_kaybi_sn": 20.5,
+  "viraj": 20,
+  "yagmur": true,
+  "yukseklik_farki_m": 40.0
+ },
+ "6e659a": {
+  "ad": "Northern Isle Speedway",
+  "en_uzun_duzluk_m": 134,
+  "oval": true,
+  "pit_kaybi_sn": 20.0,
+  "viraj": 4,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "71b4d8": {
+  "ad": "Autodrome Lago Maggiore - Full Course Reverse",
+  "en_uzun_duzluk_m": 800,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 17,
+  "yagmur": false,
+  "yukseklik_farki_m": 74.0
+ },
+ "779efe": {
+  "ad": "Tokyo Expressway - East Clockwise",
+  "en_uzun_duzluk_m": 2000,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 13,
+  "yagmur": true,
+  "yukseklik_farki_m": 32.0
+ },
+ "7828c0": {
+  "ad": "Autodrome Lago Maggiore - East",
+  "en_uzun_duzluk_m": 550,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 43.0
+ },
+ "795ed4": {
+  "ad": "Fishermans Ranch",
+  "en_uzun_duzluk_m": 434,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 40,
+  "yagmur": false,
+  "yukseklik_farki_m": 145.0
+ },
+ "802508": {
+  "ad": "Trial Mountain Circuit",
+  "en_uzun_duzluk_m": 1340,
+  "oval": false,
+  "pit_kaybi_sn": 25.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 58.0
+ },
+ "80ef82": {
+  "ad": "Tokyo Expressway - South Counterclockwise",
+  "en_uzun_duzluk_m": 900,
+  "oval": false,
+  "pit_kaybi_sn": 9.5,
+  "viraj": 16,
+  "yagmur": false,
+  "yukseklik_farki_m": 24.0
+ },
+ "81f860": {
+  "ad": "Alsace - Village",
+  "en_uzun_duzluk_m": 450,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 17,
+  "yagmur": false,
+  "yukseklik_farki_m": 57.3
+ },
+ "890aef": {
+  "ad": "Blue Moon Bay Speedway - Infield A",
+  "en_uzun_duzluk_m": 890,
+  "oval": false,
+  "pit_kaybi_sn": 18.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "893d93": {
+  "ad": "Circuit de Sainte-Croix - B Reverse",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "89bb71": {
+  "ad": "Sardegna - Windmills",
+  "en_uzun_duzluk_m": 298,
+  "oval": false,
+  "pit_kaybi_sn": 6.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 75.0
+ },
+ "8d429d": {
+  "ad": "Eiger Nordwand",
+  "en_uzun_duzluk_m": 250,
+  "oval": false,
+  "pit_kaybi_sn": null,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 90.0
+ },
+ "8dd16b": {
+  "ad": "Nurburgring Nordschleife Tourist Layout",
+  "en_uzun_duzluk_m": 2135,
+  "oval": false,
+  "pit_kaybi_sn": 0.0,
+  "viraj": 73,
+  "yagmur": true,
+  "yukseklik_farki_m": 300.0
+ },
+ "940193": {
+  "ad": "Blue Moon Bay Speedway - Infield A Reverse",
+  "en_uzun_duzluk_m": 890,
+  "oval": false,
+  "pit_kaybi_sn": 20.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "954433": {
+  "ad": "Circuit de Sainte-Croix - A",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 19,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "96dc0c": {
+  "ad": "Lake Louise Short Track Reverse",
+  "en_uzun_duzluk_m": 1024,
+  "oval": false,
+  "pit_kaybi_sn": 9.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 63.0
+ },
+ "97aa3b": {
+  "ad": "Lake Louise Tri-Oval",
+  "en_uzun_duzluk_m": 1184,
+  "oval": false,
+  "pit_kaybi_sn": 9.0,
+  "viraj": 3,
+  "yagmur": false,
+  "yukseklik_farki_m": 78.0
+ },
+ "98a1b3": {
+  "ad": "Sardegna - Windmills Reverse",
+  "en_uzun_duzluk_m": 298,
+  "oval": false,
+  "pit_kaybi_sn": 6.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 75.0
+ },
+ "9caea1": {
+  "ad": "Willow Springs International Raceway: Streets of Willow Springs Reverse",
+  "en_uzun_duzluk_m": 400,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 20.0
+ },
+ "9ec2c6": {
+  "ad": "Nurburgring Sprint",
+  "en_uzun_duzluk_m": 620,
+  "oval": false,
+  "pit_kaybi_sn": 23.0,
+  "viraj": 12,
+  "yagmur": true,
+  "yukseklik_farki_m": 33.0
+ },
+ "9f7218": {
+  "ad": "Circuit de Sainte-Croix - A Reverse",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 19,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "a2910f": {
+  "ad": "Autodrome Lago Maggiore - East End Reverse",
+  "en_uzun_duzluk_m": 500,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 8,
+  "yagmur": false,
+  "yukseklik_farki_m": 42.0
+ },
+ "a5d0f0": {
+  "ad": "Circuit de Barcelona-Catalunya GP Layout No Chicane",
+  "en_uzun_duzluk_m": 1047,
+  "oval": false,
+  "pit_kaybi_sn": 28.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 30.0
+ },
+ "a8725d": {
+  "ad": "Grand Valley - South",
+  "en_uzun_duzluk_m": 995,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 85.0
+ },
+ "a93c4d": {
+  "ad": "Dragon Trail - Gardens Reverse",
+  "en_uzun_duzluk_m": 781,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 17,
+  "yagmur": true,
+  "yukseklik_farki_m": 27.0
+ },
+ "aa8dc5": {
+  "ad": "Circuit de Barcelona-Catalunya Grand Prix Layout",
+  "en_uzun_duzluk_m": 1047,
+  "oval": false,
+  "pit_kaybi_sn": 28.0,
+  "viraj": 16,
+  "yagmur": false,
+  "yukseklik_farki_m": 30.0
+ },
+ "ab5c32": {
+  "ad": "Autodrome Lago Maggiore - West End",
+  "en_uzun_duzluk_m": 373,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 48.0
+ },
+ "afcb24": {
+  "ad": "Tokyo Expressway - South Clockwise",
+  "en_uzun_duzluk_m": 900,
+  "oval": false,
+  "pit_kaybi_sn": 9.5,
+  "viraj": 17,
+  "yagmur": false,
+  "yukseklik_farki_m": 24.0
+ },
+ "b1c9f8": {
+  "ad": "Fuji International Speedway (Short)",
+  "en_uzun_duzluk_m": 1475,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 14,
+  "yagmur": true,
+  "yukseklik_farki_m": 40.0
+ },
+ "b34920": {
+  "ad": "Grand Valley - South Reverse",
+  "en_uzun_duzluk_m": 995,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 85.0
+ },
+ "b72701": {
+  "ad": "Goodwood Motor Circuit",
+  "en_uzun_duzluk_m": 514,
+  "oval": false,
+  "pit_kaybi_sn": 11.0,
+  "viraj": 7,
+  "yagmur": false,
+  "yukseklik_farki_m": 10.0
+ },
+ "bccdd8": {
+  "ad": "Autodrome Lago Maggiore - Centre Reverse",
+  "en_uzun_duzluk_m": 550,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 8,
+  "yagmur": false,
+  "yukseklik_farki_m": 12.0
+ },
+ "bcfdfc": {
+  "ad": "Willow Springs International Raceway: Horse Thief Mile Reverse",
+  "en_uzun_duzluk_m": 216,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 42.0
+ },
+ "c272b2": {
+  "ad": "24 Heures du Mans Racing Circuit",
+  "en_uzun_duzluk_m": 1679,
+  "oval": false,
+  "pit_kaybi_sn": 30.0,
+  "viraj": 38,
+  "yagmur": true,
+  "yukseklik_farki_m": 37.3
+ },
+ "c2fd94": {
+  "ad": "Grand Valley - Highway 1",
+  "en_uzun_duzluk_m": 995,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 97.0
+ },
+ "c42430": {
+  "ad": "Blue Moon Bay Speedway - Infield B Reverse",
+  "en_uzun_duzluk_m": 890,
+  "oval": false,
+  "pit_kaybi_sn": 20.0,
+  "viraj": 5,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "c4a6df": {
+  "ad": "Sardegna - Road Track - C Reverse",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 10,
+  "yagmur": false,
+  "yukseklik_farki_m": 54.0
+ },
+ "c58e28": {
+  "ad": "Daytona Road Course",
+  "en_uzun_duzluk_m": 575,
+  "oval": false,
+  "pit_kaybi_sn": 25.0,
+  "viraj": 12,
+  "yagmur": false,
+  "yukseklik_farki_m": 8.4
+ },
+ "c7e77c": {
+  "ad": "Red Bull Ring Short Track",
+  "en_uzun_duzluk_m": 939,
+  "oval": false,
+  "pit_kaybi_sn": 25.0,
+  "viraj": 6,
+  "yagmur": true,
+  "yukseklik_farki_m": 32.4
+ },
+ "c81c02": {
+  "ad": "Circuit de Sainte-Croix - B",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 44.0
+ },
+ "cdd5eb": {
+  "ad": "Autodrome Lago Maggiore - East End",
+  "en_uzun_duzluk_m": 500,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 8,
+  "yagmur": false,
+  "yukseklik_farki_m": 42.0
+ },
+ "d066e4": {
+  "ad": "Fuji International Speedway",
+  "en_uzun_duzluk_m": 1475,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 16,
+  "yagmur": true,
+  "yukseklik_farki_m": 40.0
+ },
+ "d1f9b5": {
+  "ad": "Autodrome Lago Maggiore - East Reverse",
+  "en_uzun_duzluk_m": 550,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 43.0
+ },
+ "d3bd76": {
+  "ad": "Yas Marina Circuit",
+  "en_uzun_duzluk_m": 1233,
+  "oval": false,
+  "pit_kaybi_sn": null,
+  "viraj": 16,
+  "yagmur": false,
+  "yukseklik_farki_m": 11.0
+ },
+ "d60ebc": {
+  "ad": "Spa 24h Layout",
+  "en_uzun_duzluk_m": 751,
+  "oval": false,
+  "pit_kaybi_sn": 35.0,
+  "viraj": 21,
+  "yagmur": true,
+  "yukseklik_farki_m": 104.0
+ },
+ "d83aeb": {
+  "ad": "Kyoto Driving Park - Yamagiwa Reverse",
+  "en_uzun_duzluk_m": 743,
+  "oval": false,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.6
+ },
+ "d84128": {
+  "ad": "Circuit de Barcelona-Catalunya National",
+  "en_uzun_duzluk_m": 862,
+  "oval": false,
+  "pit_kaybi_sn": 28.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 28.0
+ },
+ "d93f3a": {
+  "ad": "Daytona Tri-Oval",
+  "en_uzun_duzluk_m": 914,
+  "oval": true,
+  "pit_kaybi_sn": 14.0,
+  "viraj": 4,
+  "yagmur": false,
+  "yukseklik_farki_m": 10.0
+ },
+ "da093f": {
+  "ad": "Michelin Raceway Road Atlanta",
+  "en_uzun_duzluk_m": 1275,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 12,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.0
+ },
+ "dcdc93": {
+  "ad": "Tokyo Expressway - Central Counterclockwise",
+  "en_uzun_duzluk_m": 600,
+  "oval": false,
+  "pit_kaybi_sn": 16.0,
+  "viraj": 14,
+  "yagmur": true,
+  "yukseklik_farki_m": 16.0
+ },
+ "e6817f": {
+  "ad": "Autodromo Nazionale Monza",
+  "en_uzun_duzluk_m": 938,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 11,
+  "yagmur": false,
+  "yukseklik_farki_m": 13.5
+ },
+ "e829d7": {
+  "ad": "Autodrome Lago Maggiore - West",
+  "en_uzun_duzluk_m": 800,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 13,
+  "yagmur": false,
+  "yukseklik_farki_m": 49.0
+ },
+ "e86599": {
+  "ad": "Circuit Gilles-Villeneuve",
+  "en_uzun_duzluk_m": 1173,
+  "oval": false,
+  "pit_kaybi_sn": null,
+  "viraj": 14,
+  "yagmur": false,
+  "yukseklik_farki_m": 5.0
+ },
+ "e9eec1": {
+  "ad": "Sardegna - Road Track - A",
+  "en_uzun_duzluk_m": 915,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 15,
+  "yagmur": false,
+  "yukseklik_farki_m": 38.0
+ },
+ "ec1eb6": {
+  "ad": "Mount Panorama Motor Racing Circuit",
+  "en_uzun_duzluk_m": 1916,
+  "oval": false,
+  "pit_kaybi_sn": 23.5,
+  "viraj": 23,
+  "yagmur": false,
+  "yukseklik_farki_m": 174.0
+ },
+ "ede05f": {
+  "ad": "High Speed Ring Reverse",
+  "en_uzun_duzluk_m": 1060,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 6,
+  "yagmur": true,
+  "yukseklik_farki_m": 8.5
+ },
+ "edfde6": {
+  "ad": "Blue Moon Bay Speedway Reverse",
+  "en_uzun_duzluk_m": 1060,
+  "oval": true,
+  "pit_kaybi_sn": 20.0,
+  "viraj": 3,
+  "yagmur": false,
+  "yukseklik_farki_m": 0.0
+ },
+ "ef3232": {
+  "ad": "Special Stage Route X",
+  "en_uzun_duzluk_m": 12000,
+  "oval": true,
+  "pit_kaybi_sn": 24.0,
+  "viraj": 2,
+  "yagmur": false,
+  "yukseklik_farki_m": 65.0
+ },
+ "ef9ee9": {
+  "ad": "Alsace - Village Reverse",
+  "en_uzun_duzluk_m": 450,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 17,
+  "yagmur": false,
+  "yukseklik_farki_m": 57.3
+ },
+ "f18da2": {
+  "ad": "Tsukuba Circuit",
+  "en_uzun_duzluk_m": 445,
+  "oval": false,
+  "pit_kaybi_sn": 17.0,
+  "viraj": 8,
+  "yagmur": true,
+  "yukseklik_farki_m": 5.3
+ },
+ "f3e708": {
+  "ad": "Deep Forest Raceway Reverse",
+  "en_uzun_duzluk_m": 765,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 18,
+  "yagmur": false,
+  "yukseklik_farki_m": 50.0
+ },
+ "f3f7f9": {
+  "ad": "Red Bull Ring",
+  "en_uzun_duzluk_m": 939,
+  "oval": false,
+  "pit_kaybi_sn": 25.0,
+  "viraj": 10,
+  "yagmur": true,
+  "yukseklik_farki_m": 65.45
+ },
+ "f9e0f3": {
+  "ad": "Autodromo Nazionale Monza No Chicane",
+  "en_uzun_duzluk_m": 1238,
+  "oval": false,
+  "pit_kaybi_sn": 15.0,
+  "viraj": 9,
+  "yagmur": false,
+  "yukseklik_farki_m": 13.5
+ },
+ "fbd5bc": {
+  "ad": "24 Heures du Mans Racing Circuit No Chicane",
+  "en_uzun_duzluk_m": 5700,
+  "oval": false,
+  "pit_kaybi_sn": 30.0,
+  "viraj": 32,
+  "yagmur": true,
+  "yukseklik_farki_m": 37.3
+ },
+ "fd4818": {
+  "ad": "Nurburgring 24h",
+  "en_uzun_duzluk_m": 2135,
+  "oval": false,
+  "pit_kaybi_sn": 22.0,
+  "viraj": 89,
+  "yagmur": true,
+  "yukseklik_farki_m": 300.0
+ },
+ "fd9a21": {
+  "ad": "Tokyo Expressway - East Counterclockwise",
+  "en_uzun_duzluk_m": 2000,
+  "oval": false,
+  "pit_kaybi_sn": 10.0,
+  "viraj": 13,
+  "yagmur": true,
+  "yukseklik_farki_m": 32.0
+ }
+}

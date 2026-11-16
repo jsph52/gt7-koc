@@ -1,0 +1,1018 @@
+{
+ "aciklama": "Bilinen pistlerde viraj adları (koç sesli ve ekranda kullanır). xz: pist çizgisinde virajın tepe noktası (GT7 koordinatı), m: başlangıçtan yaklaşık metre. okunus: Türkçe sesin doğru okuması ve ek uyumu için. tur: 'tr' Türkçe ad (kesme işareti yok), 'tri' Türkçe + iyelik (şikanı -> şikanında). Adlar herkese açık pist haritalarından; yerleri pist çizgisinin yön değişiminden eşleştirildi (9 Kasım 2026).",
+ "pistler": {
+  "6e378b": [
+   {
+    "ad": "S Curves",
+    "m": 1220,
+    "xz": [
+     644.8,
+     307.6
+    ],
+    "okunus": "es körvs"
+   },
+   {
+    "ad": "Dunlop",
+    "m": 1710,
+    "xz": [
+     426.9,
+     -43.6
+    ],
+    "okunus": "danlop"
+   },
+   {
+    "ad": "Degner",
+    "m": 2430,
+    "xz": [
+     -158.4,
+     49.9
+    ],
+    "okunus": "degner"
+   },
+   {
+    "ad": "Hairpin",
+    "m": 2890,
+    "xz": [
+     -199.5,
+     -384.9
+    ],
+    "okunus": "herpin"
+   },
+   {
+    "ad": "200R",
+    "m": 3120,
+    "xz": [
+     -346.6,
+     -222.8
+    ],
+    "okunus": "ikiyüz ar"
+   },
+   {
+    "ad": "Spoon",
+    "m": 3930,
+    "xz": [
+     -973.2,
+     -476.1
+    ],
+    "okunus": "spun"
+   },
+   {
+    "ad": "130R",
+    "m": 4900,
+    "xz": [
+     -163.5,
+     -29.0
+    ],
+    "okunus": "yüz otuz ar"
+   },
+   {
+    "ad": "Casio Triangle",
+    "m": 5320,
+    "xz": [
+     181.4,
+     -239.6
+    ],
+    "okunus": "kasio trayangıl"
+   }
+  ],
+  "3c4be1": [
+   {
+    "ad": "La Source",
+    "m": 390,
+    "xz": [
+     -486.5,
+     -927.7
+    ],
+    "okunus": "la surs"
+   },
+   {
+    "ad": "Eau Rouge",
+    "m": 1010,
+    "xz": [
+     -18.7,
+     -552.6
+    ],
+    "okunus": "o ruj"
+   },
+   {
+    "ad": "Raidillon",
+    "m": 1120,
+    "xz": [
+     65.9,
+     -483.0
+    ],
+    "okunus": "redion"
+   },
+   {
+    "ad": "Les Combes",
+    "m": 2390,
+    "xz": [
+     504.9,
+     697.7
+    ],
+    "okunus": "le komb"
+   },
+   {
+    "ad": "Malmedy",
+    "m": 2620,
+    "xz": [
+     466.7,
+     907.0
+    ],
+    "okunus": "malmedi"
+   },
+   {
+    "ad": "Rivage",
+    "m": 3030,
+    "xz": [
+     141.6,
+     1104.2
+    ],
+    "okunus": "rivaj"
+   },
+   {
+    "ad": "Pouhon",
+    "m": 3780,
+    "xz": [
+     156.6,
+     445.8
+    ],
+    "okunus": "puon"
+   },
+   {
+    "ad": "Fagnes",
+    "m": 4490,
+    "xz": [
+     -289.1,
+     817.8
+    ],
+    "okunus": "fany"
+   },
+   {
+    "ad": "Stavelot",
+    "m": 4900,
+    "xz": [
+     -591.5,
+     997.2
+    ],
+    "okunus": "stavlo"
+   },
+   {
+    "ad": "Blanchimont",
+    "m": 6170,
+    "xz": [
+     -171.2,
+     88.0
+    ],
+    "okunus": "blanşimon"
+   },
+   {
+    "ad": "Bus Stop",
+    "m": 6670,
+    "xz": [
+     -284.2,
+     -394.2
+    ],
+    "okunus": "bas stop"
+   }
+  ],
+  "e6817f": [
+   {
+    "ad": "Rettifilo",
+    "m": 900,
+    "xz": [
+     -442.6,
+     -475.3
+    ],
+    "okunus": "retifilo"
+   },
+   {
+    "ad": "Curva Grande",
+    "m": 1440,
+    "xz": [
+     -346.9,
+     -972.8
+    ],
+    "okunus": "kurva grande"
+   },
+   {
+    "ad": "Roggia",
+    "m": 2110,
+    "xz": [
+     283.2,
+     -1130.2
+    ],
+    "okunus": "rocca"
+   },
+   {
+    "ad": "Lesmo 1",
+    "m": 2530,
+    "xz": [
+     668.3,
+     -1251.5
+    ],
+    "okunus": "lesmo bir"
+   },
+   {
+    "ad": "Lesmo 2",
+    "m": 2860,
+    "xz": [
+     718.0,
+     -940.9
+    ],
+    "okunus": "lesmo iki"
+   },
+   {
+    "ad": "Ascari",
+    "m": 3930,
+    "xz": [
+     -122.6,
+     -293.1
+    ],
+    "okunus": "askari"
+   },
+   {
+    "ad": "Parabolica",
+    "m": 5140,
+    "xz": [
+     -329.6,
+     880.0
+    ],
+    "okunus": "parabolika"
+   }
+  ],
+  "ec1eb6": [
+   {
+    "ad": "Hell Corner",
+    "m": 220,
+    "xz": [
+     141.7,
+     -1075.0
+    ],
+    "okunus": "hel korner"
+   },
+   {
+    "ad": "Griffins Bend",
+    "m": 1360,
+    "xz": [
+     -93.7,
+     26.3
+    ],
+    "okunus": "grifins bend"
+   },
+   {
+    "ad": "The Cutting",
+    "m": 1830,
+    "xz": [
+     -519.7,
+     -75.1
+    ],
+    "okunus": "dı kating"
+   },
+   {
+    "ad": "Reid Park",
+    "m": 2470,
+    "xz": [
+     -699.9,
+     442.2
+    ],
+    "okunus": "rid park"
+   },
+   {
+    "ad": "Sulman Park",
+    "m": 2830,
+    "xz": [
+     -554.1,
+     750.6
+    ],
+    "okunus": "salman park"
+   },
+   {
+    "ad": "McPhillamy Park",
+    "m": 3200,
+    "xz": [
+     -192.9,
+     803.4
+    ],
+    "okunus": "mekfilımi park"
+   },
+   {
+    "ad": "Skyline",
+    "m": 3280,
+    "xz": [
+     -114.5,
+     815.2
+    ],
+    "okunus": "skaylayn"
+   },
+   {
+    "ad": "The Esses",
+    "m": 3340,
+    "xz": [
+     -72.6,
+     857.1
+    ],
+    "okunus": "dı esis"
+   },
+   {
+    "ad": "Forrest's Elbow",
+    "m": 3710,
+    "xz": [
+     212.3,
+     1071.5
+    ],
+    "okunus": "forısts elbov"
+   },
+   {
+    "ad": "The Chase",
+    "m": 5310,
+    "xz": [
+     616.0,
+     -445.9
+    ],
+    "okunus": "dı çeys"
+   },
+   {
+    "ad": "Murray's Corner",
+    "m": 5870,
+    "xz": [
+     618.0,
+     -985.3
+    ],
+    "okunus": "marriz korner"
+   }
+  ],
+  "2066d9": [
+   {
+    "ad": "Yokohama-S",
+    "m": 640,
+    "xz": [
+     -1547.3,
+     2290.9
+    ],
+    "okunus": "yokohama es"
+   },
+   {
+    "ad": "Mercedes-Arena",
+    "m": 1070,
+    "xz": [
+     -1715.4,
+     2160.5
+    ],
+    "okunus": "mersedes arena"
+   },
+   {
+    "ad": "Dunlop-Kehre",
+    "m": 2420,
+    "xz": [
+     -2023.8,
+     3155.5
+    ],
+    "okunus": "danlop kere"
+   },
+   {
+    "ad": "NGK-Schikane",
+    "m": 4430,
+    "xz": [
+     -1210.1,
+     1757.8
+    ],
+    "okunus": "en ge ka şikane"
+   },
+   {
+    "ad": "Coca-Cola-Kurve",
+    "m": 4760,
+    "xz": [
+     -931.8,
+     1651.7
+    ],
+    "okunus": "koka kola kurve"
+   }
+  ],
+  "6cdd45": [
+   {
+    "ad": "Andretti Hairpin",
+    "m": 480,
+    "xz": [
+     -339.2,
+     194.0
+    ],
+    "okunus": "andreti herpin"
+   },
+   {
+    "ad": "Corkscrew",
+    "m": 2420,
+    "xz": [
+     403.0,
+     -49.1
+    ],
+    "okunus": "korkskru"
+   },
+   {
+    "ad": "Rainey Curve",
+    "m": 2660,
+    "xz": [
+     334.1,
+     -262.0
+    ],
+    "okunus": "reyni körv"
+   }
+  ],
+  "101516": [
+   {
+    "ad": "S do Senna",
+    "m": 340,
+    "xz": [
+     -269.4,
+     514.3
+    ],
+    "okunus": "es du senna"
+   },
+   {
+    "ad": "Curva do Sol",
+    "m": 540,
+    "xz": [
+     -83.8,
+     503.7
+    ],
+    "okunus": "kurva du sol"
+   },
+   {
+    "ad": "Descida do Lago",
+    "m": 1380,
+    "xz": [
+     226.2,
+     -212.7
+    ],
+    "okunus": "desida du lago"
+   },
+   {
+    "ad": "Pinheirinho",
+    "m": 2400,
+    "xz": [
+     -249.0,
+     -110.8
+    ],
+    "okunus": "pinyeyrinyo"
+   },
+   {
+    "ad": "Bico de Pato",
+    "m": 2680,
+    "xz": [
+     -322.1,
+     -348.6
+    ],
+    "okunus": "biko di pato"
+   },
+   {
+    "ad": "Mergulho",
+    "m": 2870,
+    "xz": [
+     -171.3,
+     -261.3
+    ],
+    "okunus": "merguliyo"
+   },
+   {
+    "ad": "Junção",
+    "m": 3170,
+    "xz": [
+     17.0,
+     -458.0
+    ],
+    "okunus": "junsaun"
+   }
+  ],
+  "d066e4": [
+   {
+    "ad": "TGR Corner",
+    "m": 770,
+    "xz": [
+     603.0,
+     -636.6
+    ],
+    "okunus": "ti ci ar korner"
+   },
+   {
+    "ad": "Coca-Cola Corner",
+    "m": 1280,
+    "xz": [
+     368.1,
+     -211.1
+    ],
+    "okunus": "koka kola korner"
+   },
+   {
+    "ad": "100R",
+    "m": 1750,
+    "xz": [
+     272.2,
+     150.6
+    ],
+    "okunus": "yüz ar"
+   },
+   {
+    "ad": "ADVAN Corner",
+    "m": 2000,
+    "xz": [
+     90.7,
+     -2.9
+    ],
+    "okunus": "advan korner"
+   },
+   {
+    "ad": "300R",
+    "m": 2290,
+    "xz": [
+     50.2,
+     257.9
+    ],
+    "okunus": "üçyüz ar"
+   },
+   {
+    "ad": "Dunlop",
+    "m": 2800,
+    "xz": [
+     -265.9,
+     633.1
+    ],
+    "okunus": "danlop"
+   },
+   {
+    "ad": "Panasonic",
+    "m": 3610,
+    "xz": [
+     -610.8,
+     382.6
+    ],
+    "okunus": "panasonik"
+   }
+  ],
+  "3f4c16": [
+   {
+    "ad": "Paddock Hill",
+    "m": 240,
+    "xz": [
+     83.5,
+     -459.7
+    ],
+    "okunus": "pedok hil"
+   },
+   {
+    "ad": "Druids",
+    "m": 600,
+    "xz": [
+     120.9,
+     -146.1
+    ],
+    "okunus": "druids"
+   },
+   {
+    "ad": "Graham Hill",
+    "m": 840,
+    "xz": [
+     48.3,
+     -350.3
+    ],
+    "okunus": "greyım hil"
+   },
+   {
+    "ad": "Surtees",
+    "m": 1250,
+    "xz": [
+     -273.1,
+     -182.9
+    ],
+    "okunus": "sörtiz"
+   },
+   {
+    "ad": "Hawthorn",
+    "m": 2040,
+    "xz": [
+     409.6,
+     165.5
+    ],
+    "okunus": "hotorn"
+   },
+   {
+    "ad": "Westfield",
+    "m": 2350,
+    "xz": [
+     310.1,
+     448.4
+    ],
+    "okunus": "vestfild"
+   },
+   {
+    "ad": "Sheene",
+    "m": 2750,
+    "xz": [
+     -19.9,
+     307.0
+    ],
+    "okunus": "şin"
+   },
+   {
+    "ad": "Stirlings",
+    "m": 2980,
+    "xz": [
+     6.4,
+     84.5
+    ],
+    "okunus": "störlings"
+   },
+   {
+    "ad": "Clearways",
+    "m": 3410,
+    "xz": [
+     -386.8,
+     -77.1
+    ],
+    "okunus": "klirveyz"
+   }
+  ],
+  "c272b2": [
+   {
+    "ad": "Dunlop şikanı",
+    "m": 830,
+    "xz": [
+     -1092.1,
+     -1977.9
+    ],
+    "tur": "tri"
+   },
+   {
+    "ad": "Esses",
+    "m": 1470,
+    "xz": [
+     -608.2,
+     -2325.3
+    ],
+    "okunus": "esis"
+   },
+   {
+    "ad": "Tertre Rouge",
+    "m": 1880,
+    "xz": [
+     -319.6,
+     -2570.5
+    ],
+    "okunus": "tert ruj"
+   },
+   {
+    "ad": "Birinci şikan",
+    "m": 4110,
+    "xz": [
+     560.5,
+     -613.8
+    ],
+    "tur": "tr"
+   },
+   {
+    "ad": "İkinci şikan",
+    "m": 6060,
+    "xz": [
+     1242.3,
+     1190.6
+    ],
+    "tur": "tr"
+   },
+   {
+    "ad": "Mulsanne",
+    "m": 7700,
+    "xz": [
+     1324.1,
+     2803.6
+    ],
+    "okunus": "mülsan"
+   },
+   {
+    "ad": "Indianapolis",
+    "m": 9790,
+    "xz": [
+     -438.5,
+     1826.1
+    ],
+    "okunus": "indiyanapolis"
+   },
+   {
+    "ad": "Arnage",
+    "m": 10110,
+    "xz": [
+     -737.9,
+     1913.6
+    ],
+    "okunus": "arnaj"
+   },
+   {
+    "ad": "Porsche virajları",
+    "m": 11460,
+    "xz": [
+     -1229.7,
+     674.5
+    ],
+    "okunus": "porşe virajları",
+    "tur": "tri"
+   },
+   {
+    "ad": "Ford şikanı",
+    "m": 13240,
+    "xz": [
+     -1290.3,
+     -952.9
+    ],
+    "tur": "tri"
+   }
+  ],
+  "60d74b": [
+   {
+    "ad": "The 90",
+    "m": 360,
+    "xz": [
+     -291.7,
+     -865.7
+    ],
+    "okunus": "dı naynti"
+   },
+   {
+    "ad": "The Esses",
+    "m": 930,
+    "xz": [
+     115.5,
+     -589.1
+    ],
+    "okunus": "dı esis"
+   },
+   {
+    "ad": "Inner Loop",
+    "m": 1880,
+    "xz": [
+     348.4,
+     289.0
+    ],
+    "okunus": "inır lup"
+   },
+   {
+    "ad": "Outer Loop",
+    "m": 2250,
+    "xz": [
+     328.6,
+     639.9
+    ],
+    "okunus": "autır lup"
+   }
+  ],
+  "f3f7f9": [
+   {
+    "ad": "Niki Lauda",
+    "m": 440,
+    "xz": [
+     140.1,
+     382.9
+    ],
+    "okunus": "niki lauda"
+   },
+   {
+    "ad": "Remus",
+    "m": 1380,
+    "xz": [
+     -390.0,
+     -377.3
+    ],
+    "okunus": "remus"
+   },
+   {
+    "ad": "Schlossgold",
+    "m": 2200,
+    "xz": [
+     399.5,
+     -306.8
+    ],
+    "okunus": "şlosgold"
+   },
+   {
+    "ad": "Rauch",
+    "m": 2690,
+    "xz": [
+     -15.9,
+     -186.9
+    ],
+    "okunus": "rauh"
+   },
+   {
+    "ad": "Würth",
+    "m": 3010,
+    "xz": [
+     82.6,
+     71.4
+    ],
+    "okunus": "vürt"
+   },
+   {
+    "ad": "Rindt",
+    "m": 3750,
+    "xz": [
+     783.5,
+     -34.6
+    ],
+    "okunus": "rint"
+   },
+   {
+    "ad": "Red Bull Mobile",
+    "m": 3950,
+    "xz": [
+     853.8,
+     144.3
+    ],
+    "okunus": "red bul mobayl"
+   }
+  ],
+  "aa8dc5": [
+   {
+    "ad": "Elf",
+    "m": 830,
+    "xz": [
+     -212.2,
+     598.6
+    ],
+    "okunus": "elf"
+   },
+   {
+    "ad": "Renault",
+    "m": 1170,
+    "xz": [
+     -527.6,
+     638.8
+    ],
+    "okunus": "reno"
+   },
+   {
+    "ad": "Repsol",
+    "m": 1730,
+    "xz": [
+     -368.7,
+     195.3
+    ],
+    "okunus": "repsol"
+   },
+   {
+    "ad": "Seat",
+    "m": 2100,
+    "xz": [
+     -428.7,
+     510.5
+    ],
+    "okunus": "seat"
+   },
+   {
+    "ad": "Campsa",
+    "m": 2850,
+    "xz": [
+     -264.9,
+     16.0
+    ],
+    "okunus": "kampsa"
+   },
+   {
+    "ad": "La Caixa",
+    "m": 3450,
+    "xz": [
+     219.4,
+     -301.0
+    ],
+    "okunus": "la kaşa"
+   },
+   {
+    "ad": "RACC şikanı",
+    "m": 4070,
+    "xz": [
+     215.9,
+     -438.7
+    ],
+    "okunus": "rak şikanı",
+    "tur": "tri"
+   }
+  ],
+  "b72701": [
+   {
+    "ad": "Madgwick",
+    "m": 350,
+    "xz": [
+     377.9,
+     457.7
+    ],
+    "okunus": "mecvik"
+   },
+   {
+    "ad": "St Mary's",
+    "m": 1530,
+    "xz": [
+     -503.5,
+     -20.6
+    ],
+    "okunus": "seynt meriz"
+   },
+   {
+    "ad": "Lavant",
+    "m": 2090,
+    "xz": [
+     -686.3,
+     -485.6
+    ],
+    "okunus": "lavınt"
+   },
+   {
+    "ad": "Woodcote",
+    "m": 3240,
+    "xz": [
+     393.7,
+     -425.3
+    ],
+    "okunus": "vudkot"
+   },
+   {
+    "ad": "Şikan",
+    "m": 3540,
+    "xz": [
+     354.3,
+     -151.0
+    ],
+    "tur": "tr"
+   }
+  ],
+  "e86599": [
+   {
+    "ad": "Senna",
+    "m": 250,
+    "xz": [
+     254.3,
+     867.1
+    ],
+    "okunus": "senna"
+   },
+   {
+    "ad": "L'Épingle",
+    "m": 2660,
+    "xz": [
+     -124.4,
+     -950.4
+    ],
+    "okunus": "lepengl"
+   },
+   {
+    "ad": "Şampiyonlar Duvarı",
+    "m": 3840,
+    "xz": [
+     190.7,
+     165.1
+    ],
+    "tur": "tri"
+   }
+  ],
+  "c58e28": [
+   {
+    "ad": "International Horseshoe",
+    "m": 480,
+    "xz": [
+     -451.3,
+     139.5
+    ],
+    "okunus": "internaşınıl horsşu"
+   },
+   {
+    "ad": "Bus Stop",
+    "m": 3910,
+    "xz": [
+     333.7,
+     -16.3
+    ],
+    "okunus": "bas stop"
+   }
+  ],
+  "f18da2": [
+   {
+    "ad": "Dunlop",
+    "m": 820,
+    "xz": [
+     -91.8,
+     -47.8
+    ],
+    "okunus": "danlop"
+   }
+  ]
+ },
+ "ortak": {
+  "d60ebc": "3c4be1",
+  "f9e0f3": "e6817f",
+  "4ff578": "3f4c16",
+  "fbd5bc": "c272b2",
+  "59f32b": "60d74b",
+  "a5d0f0": "aa8dc5",
+  "d84128": "aa8dc5",
+  "4414cb": "6e378b",
+  "9ec2c6": "2066d9",
+  "fd4818": "2066d9",
+  "31acde": "2066d9",
+  "592211": "2066d9"
+ }
+}

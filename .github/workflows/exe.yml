@@ -1,0 +1,107 @@
+# GT7 Türkçe Koç - Windows EXE hazırlama
+# Her güncellemede GitHub'ın Windows bilgisayarında GT7-Koc.exe üretilir ve kısa bir deneme yapılır.
+# "Releases" sayfasına ("son-surum") SADECE main dalından konur: indirilen EXE hep asıl sürümdür.
+# Diğer dallarda (claude/...) EXE yine yapılıp denenir, Actions sayfasından indirilebilir.
+name: EXE hazirla
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: PyInstaller ve ses paketi kur
+        # edge-tts: koçun sesi (herkeste aynı Microsoft Ahmet sesi); pywebview: koç kendi penceresinde
+        # (Windows'un WebView2'si), tarayıcı açılmaz. discord.py + PyNaCl + davey (Discord sesi, uçtan uca
+        # şifreleme) ve miniaudio (MP3 çözme): koçun sesi Discord'dan PS5 kulaklığına. Hepsi EXE'nin içine gömülür.
+        # davey 0.1.7'de KALSIN: davey 0.2 + discord.py 2.7.1 birlikte ses göndermiyor (şifreli oturum hiç hazır olmuyor,
+        # bot kanalda görünür ama sesi gelmez; 14 Kasım 2026'da kullanıcıda yaşandı). discord.py bunu düzeltince yükseltilir.
+        run: pip install pyinstaller==6.11.1 edge-tts==7.3.1 pywebview==6.2.1 discord.py==2.7.1 pynacl==1.5.0 davey==0.1.7 miniaudio==1.73
+
+      - name: EXE olustur
+        shell: bash
+        run: >
+          pyinstaller --onefile --windowed --name GT7-Koc
+          --icon koc/simge/simge.ico
+          --paths koc --paths koc/alinan
+          --add-data "koc/pistler;pistler"
+          --add-data "koc/veri;veri"
+          --add-data "koc/arayuz.html;."
+          --add-data "koc/simge;simge"
+          --add-data "koc/yazitipi;yazitipi"
+          --add-data "koc/alinan/LICENSE;alinan"
+          --add-data "koc/alinan/KAYNAK.md;alinan"
+          --collect-all discord --collect-all davey --collect-all nacl --collect-all miniaudio
+          koc/gt7_arayuz.py
+
+      - name: EXE'yi dene (pencere, sayfa, pist arama, ses)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force deneme | Out-Null
+          Copy-Item dist/GT7-Koc.exe deneme/
+          $p = Start-Process -FilePath deneme/GT7-Koc.exe -PassThru
+          Start-Sleep -Seconds 15
+          $sayfa = Invoke-WebRequest -UseBasicParsing http://localhost:8765/
+          if ($sayfa.Content -notmatch "Türkçe Koç") { throw "Sayfa açılmadı" }
+          $pist = Invoke-RestMethod http://localhost:8765/api/pistler?q=tokyo
+          if ($pist.Count -lt 1) { throw "Pist listesi boş" }
+          $simge = Invoke-WebRequest -UseBasicParsing http://localhost:8765/simge.svg
+          if ($simge.StatusCode -ne 200) { throw "Simge bulunamadı" }
+          $yazi = Invoke-WebRequest -UseBasicParsing http://localhost:8765/yazitipi/barlow-condensed-800i-latin.woff2
+          if ($yazi.StatusCode -ne 200) { throw "Tema yazı tipi bulunamadı" }
+          Invoke-RestMethod -Method Post -ContentType "application/json" -Body '{"id":"779efe"}' http://localhost:8765/api/sec | Out-Null
+          Start-Sleep -Seconds 3
+          $durum = Invoke-RestMethod http://localhost:8765/api/durum
+          if (-not $durum.basladi) { throw "Koç başlamadı" }
+          if ($durum.hata) { throw "Koç hatası: $($durum.hata)" }
+          $ana = Invoke-RestMethod http://localhost:8765/api/ana
+          if (-not ($ana.PSObject.Properties.Name -contains "tt")) { throw "Ana ekran verisi gelmedi" }
+          $cihaz = Invoke-RestMethod http://localhost:8765/api/ses_cihazlari
+          Write-Host "Ses cihazları: $($cihaz.cihazlar -join ', ')"
+          try {
+            $ses = Invoke-WebRequest -UseBasicParsing "http://localhost:8765/api/ses?t=Telsiz%20denemesi"
+            Write-Host "Koçun sesi geldi: $($ses.RawContentLength) bayt"
+          } catch { Write-Host "::warning::Koçun sesi alınamadı (internet/servis): $($_.Exception.Message)" }
+          $dc = Invoke-RestMethod http://localhost:8765/api/discord
+          if (-not $dc.hazir) { throw "Discord paketleri EXE'de yok: $($dc.eksik)" }
+          if (-not $dc.opus) { throw "Discord ses kodlayıcısı (opus) yüklenemedi" }
+          Write-Host "Discord hazır (opus yüklü)."
+          $gunluk = Get-Content -Raw -Encoding utf8 deneme/koc_gunluk.txt
+          Write-Host "--- koc_gunluk.txt ---"; Write-Host $gunluk
+          if ($gunluk -notmatch "Pencere açılıyor") { throw "Pencere açılmaya çalışılmadı" }
+          if ($gunluk -match "Pencere açılamadı") { throw "Pencere açılamadı (günlüğe bak)" }
+          Write-Host "Deneme tamam: $($pist.Count) Tokyo düzeni bulundu, koç başladı, pencere açıldı."
+          Stop-Process -Id $p.Id -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GT7-Koc
+          path: dist/GT7-Koc.exe
+
+      - name: Releases sayfasina koy (sadece main)
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete son-surum --yes --cleanup-tag || true
+          gh release create son-surum dist/GT7-Koc.exe \
+            --target "$GITHUB_SHA" \
+            --title "GT7 Türkçe Koç - son sürüm" \
+            --notes "Kurulum gerekmez. GT7-Koc.exe dosyasını indir, kendi klasörüne koy, çift tıkla.
+          Kayıtlar (turlar, referanslar) EXE ile aynı klasöre yazılır.
+          Windows uyarısı çıkarsa: Ek bilgi > Yine de çalıştır. Güvenlik duvarı sorarsa: İzin ver.
+
+          Kaynak commit: $GITHUB_SHA ($GITHUB_REF_NAME)"

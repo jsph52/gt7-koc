@@ -1,0 +1,21 @@
+# Calisirken otomatik uretilen dosyalar
+__pycache__/
+turlar/
+referanslar/
+raporlar/
+harita.html
+# Bu bilgisayara ozel ayar
+ps_ip.txt
+son_pist.txt
+# EXE hazirlama
+build/
+dist/
+*.spec
+# Kullaniciya ozel ayarlar
+ayarlar.json
+kalibrasyon.json
+# Discord bot anahtari (gizli)
+discord_token.txt
+# Antrenman gecmisi ve indirilen time trial raporu
+antrenmanlar.json
+tt_rapor.json
