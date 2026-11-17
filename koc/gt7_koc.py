@@ -46,9 +46,10 @@ import gt7_hedef
 import gt7_karsilastir
 import gt7_rapor
 from gt7_viraj_adlari import adlandir, eslestir
-from gt7_tur_kurallari import (LapClock, drop_partial, lap_change_ok, note_packet,
-                               off_track_count, race_start, records, span_limit,
-                               tasmalar, time_problem)
+from gt7_tur_kurallari import (LapClock, cizgide_basladi, drop_partial, lap_change_ok,
+                               note_packet, off_track_count, onceki_son, pit_turu,
+                               race_start, records, span_limit, tam_tur, tasmalar,
+                               time_problem)
 
 from gt7_yol import USER_DIR as BASE
 LAP_DIR = os.path.join(BASE, "turlar")
@@ -731,9 +732,15 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     problem = check_lap(lap) or time_problem(lap, lap_ms)
     if not problem and race_start(lap):
         problem = "yarışın ilk turu (ızgaradan kalkış, çizgiden değil)"
+    if not problem:
+        problem = pit_turu(lap)
     limit = span_limit(spans)
     if not problem and limit and lap["dist"][-1] < limit:
         problem = "tur eksik kaydedildi (son turlardan belirgin kısa)"
+    if not problem and not cizgide_basladi(lap):
+        problem = "tur başlangıç çizgisinden başlamadı (kayıt eksik)"
+    if not problem and not tam_tur(lap):
+        problem = "tur başladığı yere dönmedi (kayıt eksik)"
     if not problem and off_track_count(lap):
         problem = "pist dışına çıktın (3+ teker çim, kum ya da toprakta)"
     if not problem and selected and tr["path"] and ters_yon(tr["path"], lap):
@@ -1740,7 +1747,10 @@ class Koc:
                         notify("Tur analizinde hata oldu, kayıt devam ediyor.", [repr(e)], kind="uyari")
                 # yeni tur başlıyor
                 self.canli.reset()
+                onceki = onceki_son(lap) if recording and lap_no == cur_lap_no + 1 else None
                 lap = new_lap()
+                if onceki:
+                    lap["onceki_son"] = onceki
                 recording = records(lap_no, d["toplam_tur"])
                 last_pos = None
                 cur_lap_no = lap_no

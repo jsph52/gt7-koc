@@ -5,6 +5,8 @@ Hangi turun referans olabileceğine karar veren ek kurallar. Fikirler gt7-datalo
 belgelerinden (docs.gt7-datalogger.com, "Lap detection & sessions", "Derived channels",
 "Fuel & race strategy") alındı, kod bu proje için yazıldı.
 """
+import math
+
 FPS = 60
 MAX_STEP = 60          # 1 sn'den uzun paket boşluğu tek kare sayılır (duraklatma, menü)
 TIME_TOL_MS = 500      # kayıt süresi oyunun tur süresinden en fazla bu kadar sapabilir...
@@ -119,3 +121,76 @@ def tasmalar(lap):
         else:
             run, en = 0, 0
     return [tuple(o) for o in out]
+
+
+# --- Tur başlangıcı, tam tur, pit turu ---
+CIZGI_BOY_M = 3        # tur, önceki turun son paketinden iki paket aralığı + 3 m içinde başlamalı...
+CIZGI_YAN_M = 25       # ...yana en fazla 25 m
+TAM_TUR_M = 60         # tur, başladığı yere 60 m ya da uzunluğunun %5'i içinde dönmeli
+TAM_TUR_ORAN = 0.05
+PIT_YAKIT_L = 0.5      # yakıt bu kadar arttıysa pite girilmiştir
+PIT_LASTIK_C = 10      # araba dururken ön ve arka lastikler bu kadar değiştiyse lastik değişmiştir
+PIT_DUR_KMS = 5        # bu hızın altı "duruyor"
+PIT_PKT = 30           # duruştan önceki / sonraki ortalama için paket sayısı (~0,5 sn)
+
+
+def onceki_son(lap):
+    """Turun son konumu, hareket yönü ve hızı: sonraki turun başlangıcını denetlemek için."""
+    x, z = lap.get("x", []), lap.get("z", [])
+    if len(x) < 2:
+        return None
+    return (x[-1], z[-1], x[-1] - x[-2], z[-1] - z[-2], lap["speed"][-1])
+
+
+def cizgide_basladi(lap):
+    """Tur, önceki turun bittiği yerden başladı mı? Önceki tur bilinmiyorsa True."""
+    o = lap.get("onceki_son")
+    if not o or not lap.get("x"):
+        return True
+    x0, z0, dx, dz, v = o
+    ax, az = lap["x"][0] - x0, lap["z"][0] - z0
+    n = math.hypot(dx, dz)
+    if n < 1e-6:
+        return math.hypot(ax, az) <= CIZGI_YAN_M
+    boy = (ax * dx + az * dz) / n            # hareket yönünde
+    yan = abs(ax * dz - az * dx) / n         # yana
+    adim = v / 3.6 / FPS
+    return -CIZGI_BOY_M <= boy <= 2 * adim + CIZGI_BOY_M and yan <= CIZGI_YAN_M
+
+
+def tam_tur(lap):
+    """Tur başladığı yere döndü mü?"""
+    x, z, d = lap.get("x", []), lap.get("z", []), lap.get("dist", [])
+    if len(x) < 2 or not d:
+        return True
+    return math.hypot(x[-1] - x[0], z[-1] - z[0]) <= max(TAM_TUR_M, TAM_TUR_ORAN * d[-1])
+
+
+def pit_turu(lap):
+    """Turda pite girildi mi? Yakıt arttı ya da lastikler bir anda değişti. Sebebi ya da None."""
+    en_az = None
+    for f in lap.get("fuel", []):
+        if f is None:
+            continue
+        if en_az is not None and f - en_az >= PIT_YAKIT_L:
+            return "pite girdin (yakıt alındı)"
+        en_az = f if en_az is None else min(en_az, f)
+    on, arka, hiz = lap.get("tt_f", []), lap.get("tt_r", []), lap.get("speed", [])
+    n = min(len(on), len(arka), len(hiz))
+    i = 0
+    while i < n:                                   # her duruş: öncesi ve sonrası lastik sıcaklığı
+        if hiz[i] >= PIT_DUR_KMS:
+            i += 1
+            continue
+        j = i
+        while j < n and hiz[j] < PIT_DUR_KMS:
+            j += 1
+        if i > 0 and j < n:
+            once = slice(max(0, i - PIT_PKT), i)
+            sonra = slice(j, min(n, j + PIT_PKT))
+            ort = lambda a, s: sum(a[s]) / len(a[s])
+            if abs(ort(on, sonra) - ort(on, once)) >= PIT_LASTIK_C and \
+                    abs(ort(arka, sonra) - ort(arka, once)) >= PIT_LASTIK_C:
+                return "pite girdin (lastikler değişti)"
+        i = j
+    return None
