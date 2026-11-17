@@ -766,7 +766,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 <!-- İnceleme: GT7 duraklatılınca (16 Kasım 2026) -->
 <div class="inceleme-ekran" id="incEkran" hidden>
-  <div class="dur-ust"><div><div class="buyuk2">Duraklatıldı</div><span class="k" id="incAlt"></span></div><div class="olcu" id="incOlcu"></div></div>
+  <div class="dur-ust"><div><div class="buyuk2" id="incBaslik">Duraklatıldı</div><span class="k" id="incAlt"></span></div><div class="olcu" id="incOlcu"></div></div>
   <div class="secenek"><label><input type="checkbox" id="incGecersiz"> Geçersiz turları dahil et</label>
     <label><input type="checkbox" id="incKaza"> Kaza ve pistten çıkma turlarını dahil et</label>
     <span class="sp"></span><button class="kucuk" id="incKapat">Koç ekranına dön</button></div>
@@ -2166,9 +2166,17 @@ function sayfaGoster(s){
 document.querySelectorAll(".menu-nav [data-sayfa]").forEach(b => b.onclick = () => { ttHazirlik = false; sayfaGoster(b.dataset.sayfa); });
 $("menuAyar").onclick = () => { pencereAc("ayarPerde"); dcYukle(); cihazlariYukle(); };
 $("serbestBtn").onclick = async () => { await postJson("/api/antrenman", {basla: "serbest"}); ttHazirlik = false; };
+// Antrenman bitince analiz ekranı açılır (bu antrenmanın turları bitirmeden önce alınır); tur yoksa ana sayfa.
+let incBitti = false;
 async function bitir(){
   if (!await onayla("Antrenmanı bitir", "Turların ve raporun kayıtlı kalır.", "Bitir")) return;
+  let veri = null;
+  try { veri = await (await fetch("/api/seans_inceleme")).json(); } catch(e){}
   await postJson("/api/antrenman", {bitir: true}); ttHazirlik = false; sayfaGoster("ana");
+  if (veri && veri.turlar && veri.turlar.length){
+    incVeri = veri; incBitti = true; incCiz();
+    $("kabuk").hidden = true; $("kocEkrani").hidden = true; $("incEkran").hidden = false; $("incEkran").scrollTop = 0;
+  }
 }
 $("bitirBtn").onclick = bitir; $("ttBitirBtn").onclick = bitir;
 $("ttKocBtn").onclick = () => { ttHazirlik = false; };
@@ -2176,6 +2184,7 @@ $("ttKocBtn").onclick = () => { ttHazirlik = false; };
 let incAcik = false, incKapatildi = false, sonDurak = false;
 function gorunum(d){
   const a = d.antrenman, c = d.canli || {};
+  if (a && !sonAntrenman) incBitti = false;                          // yeni antrenman başladı: bitiş analizi kapanır
   sonAntrenman = a; yerelSes = !!d.yerel_ses;
   const durak = !!(a && c.connected && c.paused);
   const pistte = !!(c.connected && c.on_track && !c.paused);
@@ -2185,6 +2194,7 @@ function gorunum(d){
   if (a && a.mod === "tt" && ttHazirlik && pistte) ttHazirlik = false;   // piste çıktı: koç ekranı
   let ekran = "kabuk";
   if (a) ekran = durak && incAcik && !incKapatildi ? "inceleme" : (a.mod === "tt" && ttHazirlik ? "kabuk" : "koc");
+  else if (incBitti) ekran = "inceleme";
   $("kabuk").hidden = ekran !== "kabuk"; $("kocEkrani").hidden = ekran !== "koc"; $("incEkran").hidden = ekran !== "inceleme";
   if (ekran === "kabuk" && a && a.mod === "tt" && sayfa !== "tt") sayfaGoster("tt");
   if (ekran === "kabuk" && !a && sayfa === "tt") sayfaGoster("ana");
@@ -2423,7 +2433,10 @@ async function incYukle(){
   if (incAcik) incCiz();
 }
 $("incGecersiz").onchange = $("incKaza").onchange = () => incCiz();
-$("incKapat").onclick = () => { incKapatildi = true; $("incEkran").hidden = true; $("kocEkrani").hidden = false; };
+$("incKapat").onclick = () => {
+  if (incBitti){ incBitti = false; $("incEkran").hidden = true; $("kabuk").hidden = false; sayfaGoster("ana"); return; }
+  incKapatildi = true; $("incEkran").hidden = true; $("kocEkrani").hidden = false;
+};
 const ort = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 function siklik(n, N){ return (n === N ? "Her turda" : n / N >= 0.6 ? "Sık" : n === 1 ? "Bir kez" : "Ara sıra") + " · " + n + "/" + N; }
 function incCiz(){
@@ -2432,7 +2445,9 @@ function incCiz(){
   const N = turlar.length;
   const virajlar = Object.keys(d.ref).map(Number).sort((a, b) => a - b);
   enAdEkle(d.pist || "", d.araba || "");
-  yaz("incAlt", "Oyuna dönünce sürüş ekranına geçer · " + (d.pist || "") + (d.araba ? " · " + d.araba : "") + " · " + N + " tur"
+  yaz("incBaslik", incBitti ? "Antrenman bitti" : "Duraklatıldı");
+  yaz("incKapat", incBitti ? "Ana sayfaya dön" : "Koç ekranına dön");
+  yaz("incAlt", (incBitti ? "" : "Oyuna dönünce sürüş ekranına geçer · ") + (d.pist || "") + (d.araba ? " · " + d.araba : "") + " · " + N + " tur"
     + (d.rekor_ref ? " · Rekor turuna göre" : " · Kendi en iyi geçişlerine göre"));
   // Üst ölçüler
   const temiz = d.turlar.filter(t => !t.gecersiz).map(t => t.ms);
