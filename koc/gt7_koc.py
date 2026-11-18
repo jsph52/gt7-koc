@@ -28,7 +28,7 @@ from gt7_kopru import (LINE_MIN_M, compare, corner_table, de, faz_ozeti, fren_ka
 from gt7_canli import CanliKoc, ayar_oku, esikler, gecmise_ekle, onemli_virajlar, vites_turu_tahmin
 from gt7_konusma import acik_yaz
 from gt7_yorum import ses_ozeti
-from gt7_ayar import AyarKocu, tur_desenleri
+from gt7_ayar import AyarKocu, tur_desenleri, yardim_satirlari
 from gt7_cekis import ADLAR as CEKIS_ADLARI, dagilim_yazi, ogren as cekis_ogren, cekis_turu
 from gt7_fren_sesi import FREN_PAYI_M, Beeper, BrakeCountdown, brake_points, kendi_kaymalari
 from gt7_kalibrasyon import ReactionTest, load_delay, save_delay
@@ -474,7 +474,8 @@ def new_lap():
                             "brake", "gear", "rpm", "suggested_gear",
                             "slip_fl", "slip_fr", "slip_rl", "slip_rr",
                             "sus_fl", "sus_fr", "sus_rl", "sus_rr", "fuel",
-                            "revlim", "tt_f", "tt_r", "slip_body", "yaw", "wheel_angle", "body_h")}
+                            "revlim", "tt_f", "tt_r", "slip_body", "yaw", "wheel_angle", "body_h",
+                            "tcs", "asm")}
 
 
 def save_lap_csv(lap, lap_ms, car):
@@ -497,7 +498,7 @@ SLOW_START_KMH = 40  # başlangıç hızı en iyi turdan bu kadar düşükse tur
 CSV_ONLY = ("slip_fl", "slip_fr", "slip_rl", "slip_rr",
             "sus_fl", "sus_fr", "sus_rl", "sus_rr", "fuel",
             "revlim", "tt_f", "tt_r", "slip_body", "yaw", "loose",
-            "body_h")  # referans dosyasına yazılmaz
+            "body_h", "tcs", "asm")  # referans dosyasına yazılmaz
 
 
 def check_lap(lap):
@@ -866,7 +867,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         ak = state.setdefault("ayar_kocu", AyarKocu())
         ayar_satir, ayar_ses = ak.tur_ekle(tur_desenleri(lap, corners), cekis,
                                            dagilim if cekis == "4x4" else None)
-        out += ayar_satir
+        out += yardim_satirlari(lap, corners) + ayar_satir
         state["oneriler"] = ak.liste()
     except Exception as e:  # öneri hatası tur analizini durdurmasın
         print(f"(Ayar önerisi hesaplanamadı: {e!r})")
@@ -1785,6 +1786,8 @@ class Koc:
                 lap["fuel"].append(pkt.fuel_level)
                 note_packet(lap, pkt)
                 lap["revlim"].append(1 if flags & 0x20 else 0)
+                lap["asm"].append(1 if flags & 0x400 else 0)     # kayma önleyici devrede
+                lap["tcs"].append(1 if flags & 0x800 else 0)     # çekiş kontrolü devrede
                 lap["tt_f"].append((pkt.tire_temp_fl + pkt.tire_temp_fr) / 2)
                 lap["tt_r"].append((pkt.tire_temp_rl + pkt.tire_temp_rr) / 2)
                 # Önden / arkadan kayma için: gövde kayması, dönme hızı, teker açısı (sadece C biçimi)

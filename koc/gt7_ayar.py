@@ -25,6 +25,9 @@ UZUN_VITES_HIZ = 150      # km/s: turda bu hızı geçip son vitese hiç çıkı
 DIP_ORAN = 0.35           # yerden yükseklik turun ortancasının bu oranının altına inerse "dibe oturma"
 DIP_ORNEK = 3             # ... en az bu kadar örnek sürerse bir olay
 DIP_OLAY = 2              # turda bu kadar olay olursa desen
+TCS_COK_S = 3.0           # çekiş kontrolü turda bu kadar saniyeden fazla devredeyse "çok çalışıyor"
+PKT_HZ = 60
+PATINAJ_KODLARI = ("arka_patinaj", "on_patinaj", "dort_patinaj", "cikis_arka")
 
 # kod: (başlık, sürerken yapılacak ayar ya da None, garaj ayarı ya da None, sürüş tavsiyesi)
 KURALLAR = {
@@ -72,6 +75,10 @@ KURALLAR = {
                     None,
                     "Yerden yüksekliği biraz artır ya da yayları biraz sertleştir.",
                     "Kerblere ve tümseklere sert girme."),
+    "tcs_cok": ("Çekiş kontrolü çok devreye giriyor, motor gücünü kesiyor",
+                "TCS'yi bir kademe azalt.",
+                None,
+                "Çıkışta gazı biraz daha kademeli aç; çekiş kontrolü gücü kesmeden hızlanırsın."),
     "onden": ("Viraj ortasında burun dışarı kaçıyor (önden kayma)",
               None,
               "Ön denge çubuğunu yumuşat ya da arkayı sertleştir; ön aero varsa biraz artır.",
@@ -85,6 +92,7 @@ CANLI_KISA = {  # tur sonunda sesli söylenecek kısa hâli (kısaltmasız: ses 
     "dort_patinaj": "Çıkışta dört teker patinaj yapıyor. Çekiş kontrolünü bir kademe yükselt.",
     "giris_arka": "Viraja girerken arka kayıyor. Fren dengesini bir kademe öne almalısın.",
     "cikis_arka": "Çıkışta arka kayıyor. Çekiş kontrolünü bir kademe yükselt.",
+    "tcs_cok": "Çekiş kontrolü çok devreye giriyor, motor gücünü kesiyor. Bir kademe düşür.",
 }
 NOT = "Ayar ancak araçta o parça ayarlanabiliyorsa yapılabilir (fren dengesi için fren dengesi kontrolcüsü gerekir)."
 
@@ -108,6 +116,46 @@ def _yakin_viraj(wins, total, d):
     return w.n if w and abs(w.apex - d) <= EVENT_CORNER_M else None
 
 
+def yardim_sureleri(lap, corners):
+    """Çekiş kontrolü ve kayma önleyicinin turda devrede kaldığı süre ve en çok devreye girdiği virajlar:
+    {"tcs": (sn, [viraj, ...]), "asm": (sn, [...])}. Bilgi yoksa ya da hiç devreye girmediyse anahtar yok."""
+    out = {}
+    d = lap.get("dist") or []
+    wins = None
+    for ad in ("tcs", "asm"):
+        b = lap.get(ad) or []
+        n = sum(b[:len(d)])
+        if not n:
+            continue
+        sayac = {}
+        if corners:
+            if wins is None:
+                wins = place_corners(corners, to_samples(lap))
+            for i, v in enumerate(b[:len(d)]):
+                if v:
+                    no = _yakin_viraj(wins, d[-1], d[i])
+                    if no is not None:
+                        sayac[no] = sayac.get(no, 0) + 1
+        en_cok = [no for no, k in sorted(sayac.items(), key=lambda kv: -kv[1]) if k >= PKT_HZ // 4][:3]
+        out[ad] = (n / PKT_HZ, sorted(en_cok))
+    return out
+
+
+def yardim_satirlari(lap, corners):
+    """Tur notları için: "Çekiş kontrolü (TCS) bu turda 4.2 sn devreye girdi, en çok Viraj 3 ve 7'de." """
+    adlar = {"tcs": "Çekiş kontrolü (TCS)", "asm": "Kayma önleyici (ASM)"}
+    satirlar = []
+    for ad, (sn, virajlar) in yardim_sureleri(lap, corners).items():
+        if sn < 0.1:
+            continue
+        yer = ""
+        if virajlar:
+            yer = ", en çok Viraj " + ", ".join(str(v) for v in virajlar[:-1]) \
+                + (" ve " if len(virajlar) > 1 else "") + de(virajlar[-1])
+        satirlar.append(f"{adlar[ad]} bu turda {sn:.1f} sn devreye girdi{yer}.")
+    return satirlar
+
+
 def tur_desenleri(lap, corners):
     """Bir turdaki desenler: {(kod, viraj_no)}. Viraj bulunamazsa viraj None."""
     s = to_samples(lap)
@@ -116,6 +164,11 @@ def tur_desenleri(lap, corners):
         return out
     wins = place_corners(corners, s)
     total = s["dist"][-1]
+    # Çekiş kontrolü çok çalışıyor: motor gücünü kesiyor
+    tcs = yardim_sureleri(lap, corners).get("tcs")
+    if tcs and tcs[0] > TCS_COK_S:
+        for no in tcs[1] or [None]:
+            out.add(("tcs_cok", no))
     # Teker olayları: kilit (fren) ve patinaj (gaz)
     if s.get("slip_fl"):
         for e in detect_events(s):
@@ -221,6 +274,7 @@ class AyarKocu:
         son = self.turlar[-PENCERE:]
         satirlar, ses = [], None
         aktif = set()
+        aktif_once = {kod for kod in KURALLAR if sum(1 for t in son if any(k == kod for k, _ in t)) >= TEKRAR}
         for kod in KURALLAR:
             kac = sum(1 for t in son if any(k == kod for k, _ in t))
             if kac < TEKRAR:
@@ -228,6 +282,8 @@ class AyarKocu:
             aktif.add(kod)
             virajlar = sorted({v for t in son for k, v in t if k == kod and v is not None})
             baslik, canli, garaj, surus = kural_metni(kod, cekis, dagilim)
+            if kod in PATINAJ_KODLARI and "tcs_cok" in aktif_once:
+                canli = None    # çekiş kontrolü zaten çok çalışıyor: "artır" denmez
             yer = ("Viraj " + ", ".join(str(v) for v in virajlar)) if virajlar else "pistte"
             neden = f"{yer} — son {len(son)} turun {kac}'inde görüldü."
             if cekis in ADLAR and kod.endswith("patinaj"):
@@ -239,7 +295,7 @@ class AyarKocu:
                                 + (f"Sürerken: {canli} " if canli else "")
                                 + (f"Garajda: {garaj}" if garaj else ""))
             # Aynı ayar (ör. TCS) başka bir desenle zaten söylendiyse tekrar söylenmez
-            ayni = any(KURALLAR[k][1] == canli for k in self.soylenen)
+            ayni = canli is not None and any(KURALLAR[k][1] == canli for k in self.soylenen)
             if canli and kod not in self.soylenen and not ayni and ses is None:
                 ses = CANLI_KISA.get(kod)
                 self.soylenen.add(kod)
