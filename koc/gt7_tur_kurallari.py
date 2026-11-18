@@ -194,3 +194,22 @@ def pit_turu(lap):
                 return "pite girdin (lastikler değişti)"
         i = j
     return None
+
+
+# --- Isınma turu ---
+ISINMA_C = 60          # tur başında lastik ortalaması bunun altındaysa ısınma turu
+ISINMA_PKT = 60        # tur başındaki ortalama için paket sayısı (~1 sn)
+
+
+def lastik_ort(on, arka):
+    """Ön ve arka lastik ortalaması; sıcaklık bilgisi yoksa (0 ya da eksi) None."""
+    if on is None or arka is None or on <= 0 or arka <= 0:
+        return None
+    return (on + arka) / 2
+
+
+def isinma_turu(lap):
+    """Tur soğuk lastiklerle mi başladı? (ilk ~1 sn'nin lastik ortalaması 60 °C'nin altında)"""
+    degerler = [lastik_ort(a, b) for a, b in zip(lap.get("tt_f", [])[:ISINMA_PKT], lap.get("tt_r", [])[:ISINMA_PKT])]
+    degerler = [v for v in degerler if v is not None]
+    return bool(degerler) and sum(degerler) / len(degerler) < ISINMA_C
