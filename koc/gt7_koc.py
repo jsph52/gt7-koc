@@ -901,7 +901,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
             if sp:
                 state["strateji"] = sp
                 out.append(gt7_strateji.satir(sp, pit_sn))
-                strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}))
+                strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}), pit_sn)
         elif yakit_tur is not None:
             out.append(f"Yakıt: bu tempoyla yaklaşık {yakit_tur:.1f} tur daha yeter.")
 
