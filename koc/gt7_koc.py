@@ -501,6 +501,13 @@ CSV_ONLY = ("slip_fl", "slip_fr", "slip_rl", "slip_rr",
             "body_h", "tcs", "asm")  # referans dosyasına yazılmaz
 
 
+def yakit_kac_tur(yakit, tur_basi):
+    """Depodaki yakıt şu anki tempoyla kaç tur yeter (bilinmiyorsa None)."""
+    if yakit is None or not tur_basi or tur_basi <= 0:
+        return None
+    return round(max(0.0, yakit) / tur_basi, 1)
+
+
 def check_lap(lap):
     """Turda referansı bozacak bir hata var mı? Varsa sebebini döndürür."""
     d, sp, g = lap["dist"], lap["speed"], lap["gear"]
@@ -893,6 +900,8 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         fuel_laps = state.setdefault("fuel_laps", [])
         fuel_laps.insert(0, lap_fuel(len(fuel_laps) + 1, lap_ms, lap["fuel"][0] - lap["fuel"][-1], car))
         yakit_tur = fuel_laps_left(fuel_laps, lap["fuel"][-1], car)
+        # Sürerken "yakıt kaç tur yeter" kutusu için tur başına ortalama tüketim (L)
+        state["yakit_tur_basi"] = lap["fuel"][-1] / yakit_tur if yakit_tur else None
         kalan = opts.get("kalan_tur")
         if yakit_tur is not None and kalan:
             # Yarışta: pit / yakıt stratejisi (kaç pit, hangi tur, kaç litre)
@@ -1919,5 +1928,6 @@ class Koc:
                 "pist_dogru": bool(self.pist_dogru and sel), "pist_secili": bool(sel),
                 "cekis": cekis_turu(d["araba"]) if d["araba"] else None,
                 "strateji": gt7_strateji.kisa(state.get("strateji")) if d["toplam_tur"] > 0 else None,
+                "yakit_tur": yakit_kac_tur(pkt.fuel_level, state.get("yakit_tur_basi")),
                 **ek,
             }

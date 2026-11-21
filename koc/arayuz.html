@@ -848,6 +848,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
           <div><small>Yağ basıncı</small><b id="mBasinc">—</b></div>
           <div><small>Yükseklik</small><b id="mYukseklik">—</b></div>
           <div id="yakitKutu"><small id="mYakitEt">Yakıt</small><b id="mYakit">—</b></div>
+          <div id="yakitTurKutu" title="Son turların tüketimine göre depodaki yakıtın kaç tur yeteceği"><small>Yakıt yeter</small><b id="mYakitTur">—</b></div>
           <div id="zeminKutu"><small>Zemin</small><b id="mZemin">—</b></div>
           <div id="turboKutu" hidden><small>Turbo</small><b id="mTurbo">—</b></div>
           <div id="siraKutu" hidden><small>Yarış sırası</small><b id="mSira">—</b></div>
@@ -2033,6 +2034,10 @@ function aracBilgi(c){
   $("siraKutu").hidden = !c.sira; if (c.sira) yaz("mSira", `${c.sira[0]}. / ${c.sira[1]}`);
   $("hibritKutu").hidden = !("hibrit" in c); if ("hibrit" in c) yaz("mHibrit", c.hibrit === null ? "—" : c.hibrit);
   yaz("mYakit", c.yakit !== undefined ? c.yakit.toFixed(1) + " L" : "—");
+  // Yakıt kaç tur yeter: 3 turun altı sarı, 1,5 turun altı kırmızı
+  const yt = c.yakit_tur;
+  yaz("mYakitTur", yt !== null && yt !== undefined ? yt.toFixed(1) + " tur" : "—");
+  $("mYakitTur").className = yt === null || yt === undefined ? "" : yt < 1.5 ? "kirmizi" : yt < 3 ? "sari" : "yesil";
   // Yarışta pit planı (gt7_strateji): "Yakıt · pit en geç 9. tur"
   yaz("mYakitEt", c.strateji ? "Yakıt · " + c.strateji : "Yakıt");
   $("yakitKutu").title = c.strateji ? "Pit planı: " + c.strateji + " (ayrıntı tur notlarında)" : "";
