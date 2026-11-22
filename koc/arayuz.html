@@ -729,6 +729,72 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .ayar-nav{width:200px}
   .perde{padding:16px}
 }
+/* ---------- Telefon görünümü ---------- */
+#tel{display:none}
+@media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse){
+  body{overflow:auto}
+  #kocEkrani.app{display:block;height:auto;min-height:100dvh;padding:0 0 58px;margin:0}
+  #kocEkrani>header{display:none}
+  #tel{display:block}
+  .tel-ust{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:8px;height:42px;background:#000;border-bottom:3px solid var(--accent);padding-right:4px}
+  .tel-logo{align-self:stretch;display:flex;align-items:center;gap:5px;background:var(--accent);padding:0 18px 0 10px;font-weight:800;font-style:italic;font-size:20px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+  .tel-logo b{color:#000}
+  .tel-pist{flex:1;min-width:0;font-weight:700;font-size:15px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tel-dur{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;text-transform:uppercase;color:#c9ced8;white-space:nowrap}
+  .tel-menu-ac{background:none;border:0;color:#fff;font-size:24px;padding:0 10px;min-height:42px}
+  .tel-menu{position:fixed;top:45px;right:6px;z-index:70;display:flex;flex-direction:column;gap:4px;background:#17181b;border:1px solid var(--line);padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+  .tel-menu[hidden]{display:none}
+  .tel-menu button{text-align:left;font-size:18px;padding:12px 16px}
+  .tel-canli{display:flex;flex-direction:column;gap:10px;padding:10px;min-height:calc(100dvh - 45px - 58px - 52px)}
+  .tel-canli small,.tel-sure small{display:block;font-size:14px;font-weight:700;text-transform:uppercase;color:#8a93a3}
+  .tel-canli b{font-style:italic;font-weight:800;line-height:.9}
+  .tel-fark{background:var(--panel);border-left:8px solid #5d6575;padding:10px 14px}
+  .tel-fark b{display:block;font-size:min(30vw,120px)}
+  .tel-fark span{font-size:20px;font-weight:700;text-transform:uppercase}
+  .tel-fark.on{background:rgba(0,210,106,.12);border-color:var(--ok)} .tel-fark.on b,.tel-fark.on span{color:var(--ok)}
+  .tel-fark.geri{background:rgba(255,45,58,.12);border-color:var(--bad)} .tel-fark.geri b,.tel-fark.geri span{color:var(--bad)}
+  .tel-viraj{background:var(--panel);border-left:8px solid var(--warn);padding:10px 14px}
+  .tel-vno{display:flex;align-items:baseline;gap:14px;min-width:0}
+  .tel-vno b{font-size:min(21vw,84px);color:var(--warn)}
+  .tel-vno span{font-size:min(13vw,52px);font-style:italic;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tel-bip{display:flex;gap:8px;margin-top:10px}.tel-bip i{flex:1;height:14px;background:#2c2e33;transform:skewX(-14deg)}.tel-bip i.on{background:var(--warn)}
+  .tel-sure{display:grid;grid-template-columns:auto 1fr 1fr;gap:14px;background:var(--panel);padding:8px 14px}
+  .tel-sure b{font-size:min(8vw,32px);font-style:italic;font-weight:800;white-space:nowrap}
+  .tel-hiz{display:flex;align-items:center;gap:10px;padding:0 4px}
+  .tel-hiz>b{font-size:46px}
+  .tel-hiz small{font-weight:700;color:#8a93a3;text-transform:uppercase}
+  .tel-hiz span{font-size:38px;font-weight:800;font-style:italic;background:var(--accent);padding:0 12px;transform:skewX(-10deg)}
+  .tel-hiz .isik{flex:1;display:flex;gap:4px}.tel-hiz .isik i{height:10px;border-radius:0;transform:skewX(-14deg)}
+  .tel-band{display:flex;align-items:center;gap:10px;background:#fff;color:#000;padding:10px 12px;font-weight:700;font-size:20px;min-height:52px}
+  .tel-band i{font-style:italic;font-weight:800;background:var(--accent);color:#fff;padding:2px 8px;font-size:14px;text-transform:uppercase;transform:skewX(-10deg);white-space:nowrap}
+  .tel-band span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .tel-band.kotu i{background:var(--bad)} .tel-band.iyi i{background:var(--ok);color:#000} .tel-band.once i{background:var(--warn);color:#000}
+  .tel-sek{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:#0b0c0e;border-top:1px solid var(--line)}
+  .tel-sek button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-size:16px;font-weight:700;text-transform:uppercase;color:#8a93a3;clip-path:none;margin:0}
+  .tel-sek button.s{color:#fff;background:#17181b;box-shadow:inset 0 3px 0 var(--accent)}
+  /* Canlı sekmesi dışında: koç ekranının ilgili kartı tam genişlikte */
+  body:not([data-tel="canli"]) .tel-canli, body:not([data-tel="canli"]) .tel-band{display:none}
+  body[data-tel="canli"] #kocEkrani .govde{display:none}
+  body:not([data-tel="canli"]) #kocEkrani .govde{display:block;padding:8px}
+  body:not([data-tel="canli"]) #kocEkrani .govde .sol, body:not([data-tel="canli"]) #kocEkrani .govde .band,
+  body:not([data-tel="canli"]) #kocEkrani .govde .kart.serit{display:none}
+  body[data-tel="turlar"] #kocEkrani .harita-kart, body[data-tel="mesajlar"] #kocEkrani .harita-kart,
+  body[data-tel="harita"] #kocEkrani .turlar-kart{display:none}
+  body[data-tel="turlar"] .turlar-kart :is(.ayrac,.mini-sekme,#kocMesajlar,#oneriler){display:none!important}
+  body[data-tel="mesajlar"] .turlar-kart :is(.kart-ust,#hedefSerit,#turlar,.ayrac){display:none!important}
+  #kocEkrani .turlar-kart,#kocEkrani .harita-kart{min-height:calc(100dvh - 45px - 58px - 16px);contain:none}
+  #kocEkrani .ust-sira{contain:none;min-height:0;display:block}
+}
+/* Yatay telefon: canlı bilgiler iki sütun, sekmeler gizli */
+@media (max-height:500px) and (orientation:landscape) and (pointer:coarse){
+  #kocEkrani.app{padding-bottom:0}
+  .tel-sek{display:none}
+  body[data-tel] .tel-canli{display:grid!important;grid-template-columns:1.2fr 1fr;grid-template-areas:"fark viraj" "sure hiz";min-height:calc(100dvh - 45px - 52px)}
+  body[data-tel] .tel-band{display:flex!important}
+  body[data-tel] #kocEkrani .govde{display:none!important}
+  .tel-fark{grid-area:fark}.tel-viraj{grid-area:viraj}.tel-sure{grid-area:sure}.tel-hiz{grid-area:hiz}
+  .tel-fark b{font-size:min(26vh,120px)} .tel-vno b{font-size:min(18vh,80px)} .tel-vno span{font-size:min(10vh,46px)}
+}
 </style>
 </head>
 <body>
@@ -805,6 +871,31 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </div>
 
 <div class="app" id="kocEkrani" hidden>
+<!-- Telefon görünümü (≤760 px ya da yatay telefon): sadece sürerken gerekenler; sekmelerle turlar / harita / mesajlar -->
+<div class="tel" id="tel">
+  <div class="tel-ust">
+    <div class="tel-logo">GT7 <b>KOÇ</b></div>
+    <div class="tel-pist" id="telPist">—</div>
+    <div class="tel-dur"><i class="nokta" id="telNokta"></i><span id="telDur">—</span></div>
+    <button class="tel-menu-ac" id="telMenuAc" aria-label="Menü" aria-expanded="false">☰</button>
+  </div>
+  <div class="tel-menu" id="telMenu" hidden>
+    <button id="telSesDugme">Bu telefonda ses: kapalı</button>
+    <button id="telPistDegistir">Pist değiştir</button>
+    <button id="telAyar">Ayarlar</button>
+    <button id="telBitir" class="bitir">Antrenmanı bitir</button>
+  </div>
+  <div class="tel-canli">
+    <div class="tel-fark" id="telFarkKutu"><small id="telFarkBaslik">Canlı fark</small><b id="telFark">—</b><span id="telFarkYazi"></span></div>
+    <div class="tel-viraj"><small>Sıradaki viraj</small><div class="tel-vno"><b id="telVNo">—</b><span id="telVM">—</span></div>
+      <div class="tel-bip" id="telBip"><i></i><i></i><i></i></div></div>
+    <div class="tel-sure"><div><small>Tur</small><b id="telTur">—</b></div><div><small>Son</small><b id="telSon">—</b></div><div><small>En iyi</small><b id="telEnIyi" class="mor">—</b></div></div>
+    <div class="tel-hiz"><b id="telHiz">0</b><small>km/s</small><span id="telVites">N</span>
+      <div class="isik" id="telDevir"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="tel-band" id="telBand"><i id="telBandEt">Son yorum</i><span id="telBandYazi">Koçun son söylediği burada görünür.</span></div>
+  <nav class="tel-sek" id="telSek"><button data-tel="canli" class="s">Canlı</button><button data-tel="turlar">Turlar</button><button data-tel="harita">Harita</button><button data-tel="mesajlar">Mesajlar</button></nav>
+</div>
 <header>
   <div class="logo">GT7 <b>KOÇ</b></div>
   <!-- Tek şerit: mod | pist ✎ | (Time Trial hazırlık, odak, yarış) | bağlantı ve kayıt -->
@@ -915,7 +1006,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         <div class="harita-alt"><span id="haritaNot">&nbsp;</span><span>En iyi <b id="haritaEnIyi">—</b> · İdeal <b id="haritaIdeal">—</b></span></div>
       </section>
 
-      <section class="kart">
+      <section class="kart turlar-kart">
         <div class="kart-ust"><h2>Turlar</h2>
           <div style="display:flex;gap:6px"><button class="kucuk" id="kturAc" title="İki turun hız, gaz, fren çizgileri üst üste">Karşılaştır</button><button class="kucuk" id="raporAc" title="Bu seansın tek sayfalık özeti">Rapor</button><button class="kucuk" id="incelemeAc">İnceleme</button><button class="kucuk" id="notlarAc">Notlar</button></div></div>
         <div class="hedef" id="hedefSerit" title="Tıkla: hedef süreyi koy / değiştir; farkı hangi virajların kapatacağını gör">
@@ -1483,7 +1574,11 @@ function sesSus(){
   sesSira.forEach(o => o.iptal = true); sesSira = [];
   if (sesCalan) sesCalan.dur();
 }
+// Telefon görünümü: koçun sesi zaten bilgisayardan gelir; telefonda ses varsayılan kapalı (bu cihaza özel)
+const TELEFON = window.matchMedia("(max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse)");
+const telSesAcik = () => localStorage.getItem("telSes") === "acik";
 function soyle(metin, oncelikli, zorla){
+  if (TELEFON.matches && !telSesAcik() && !zorla) return false;
   // Ses Discord'a gidiyorsa (koç kendisi gönderir) bu bilgisayarda çalma; "Sesi dene" (zorla) her zaman çalar
   if (sesAyar.ses_cikisi === "discord" && !zorla) return false;
   if (yerelSes) return false;      // ses seçilen cihazdan koçun kendisinden çıkıyor
@@ -2618,6 +2713,43 @@ $("ipGonder2").onclick = async () => {
 };
 
 // ---------- Durum döngüsü ----------
+// Telefon görünümü: koç ekranındaki değerleri büyük kutulara kopyalar
+function telGuncelle(){
+  if (!TELEFON.matches) return;
+  const metin = id => $(id).textContent;
+  yaz("telPist", metin("pistAd")); yaz("telDur", metin("baglantiYazi"));
+  $("telNokta").className = $("baglantiNokta").className;
+  yaz("telFark", metin("fark")); yaz("telFarkYazi", metin("farkYazi"));
+  yaz("telFarkBaslik", metin("farkBaslik"));
+  const fk = $("farkKutu").classList;
+  $("telFarkKutu").className = "tel-fark" + (fk.contains("on") ? " on" : fk.contains("geri") ? " geri" : "");
+  yaz("telVNo", metin("svNo")); yaz("telVM", metin("svMesafe"));
+  const bip = [...$("bipler").querySelectorAll("i")];
+  [...$("telBip").children].forEach((e, i) => e.className = bip[i] ? bip[i].className : "");
+  yaz("telTur", metin("tur")); yaz("telSon", metin("sonTur")); yaz("telEnIyi", metin("enIyi"));
+  yaz("telHiz", metin("hiz")); yaz("telVites", metin("vites"));
+  const led = [...$("devirIsigi").children];
+  [...$("telDevir").children].forEach((e, i) => e.className = led[i] ? led[i].className : "");
+  yaz("telBandEt", metin("bandEtiket")); yaz("telBandYazi", metin("anlik"));
+  $("telBand").className = "tel-band " + $("band").className.replace("band", "").trim();
+}
+function telSesYaz(){ yaz("telSesDugme", "Bu telefonda ses: " + (telSesAcik() ? "açık" : "kapalı")); }
+document.body.dataset.tel = "canli";
+$("telSek").onclick = e => {
+  const b = e.target.closest("button[data-tel]"); if (!b) return;
+  document.body.dataset.tel = b.dataset.tel;
+  [...$("telSek").children].forEach(x => x.classList.toggle("s", x === b));
+  window.scrollTo(0, 0);
+};
+const telMenuKapat = () => { $("telMenu").hidden = true; $("telMenuAc").setAttribute("aria-expanded", "false"); };
+$("telMenuAc").onclick = () => { const ac = $("telMenu").hidden; $("telMenu").hidden = !ac; $("telMenuAc").setAttribute("aria-expanded", String(ac)); telSesYaz(); };
+$("telSesDugme").onclick = () => { localStorage.setItem("telSes", telSesAcik() ? "kapali" : "acik"); if (!telSesAcik()) sesSus(); telSesYaz(); };
+$("telPistDegistir").onclick = () => { telMenuKapat(); secimAc(false); };
+$("telAyar").onclick = () => { telMenuKapat(); $("ayarAc").click(); };
+$("telBitir").onclick = () => { telMenuKapat(); bitir(); };
+document.addEventListener("click", e => { if (!$("telMenu").hidden && !e.target.closest("#telMenu,#telMenuAc")) telMenuKapat(); });
+telSesYaz();
+
 async function durum(){
   let d;
   try { d = await (await fetch("/api/durum?son=" + sonMesaj)).json(); }
@@ -2674,6 +2806,7 @@ async function durum(){
   }
   aracGoster(c);
   if (bagli) aracBilgi(c);
+  telGuncelle();
   if (d.inceleme_surum && d.inceleme_surum !== incelemeSurum){ incelemeSurum = d.inceleme_surum; incelemeYenile(); }
   if (d.ayar){
     window.sonAyar = d.ayar;
