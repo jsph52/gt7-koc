@@ -231,11 +231,15 @@ HARITA_W, HARITA_H = 1000, 600   # arayüz haritasının çizim alanı (SVG biri
 # Haritadaki daire ve etiket boyları
 DAIRE_R = 14                      # viraj dairesi yarıçapı (eskiden 20)
 HAP_W, HAP_H = 58, 26             # fark etiketi ("hap") boyu (eskiden 80 × 36)
+_DAIRE_R, _HAP_W, _HAP_H = DAIRE_R, HAP_W, HAP_H
+BUYUK_OLCEK = 1.6                 # basit görünüm haritasında etiket ve daire çarpanı
 
 
-def etiket_yerlestir(noktalar, cizgi, W, H):
+def etiket_yerlestir(noktalar, cizgi, W, H, olcek=1.0):
     """Viraj farkı etiketleri: pist merkezinden dışa doğru, pistin, dairelerin, kenarın ve
-    birbirinin üstüne binmeyecek ilk yere. noktalar: [(x, y)], cizgi: pist noktaları."""
+    birbirinin üstüne binmeyecek ilk yere. noktalar: [(x, y)], cizgi: pist noktaları.
+    olcek: etiket ve daire boyu çarpanı (basit görünümde büyük)."""
+    HAP_W, HAP_H, DAIRE_R = _HAP_W * olcek, _HAP_H * olcek, _DAIRE_R * olcek
     cx0 = sum(p[0] for p in cizgi) / len(cizgi)
     cy0 = sum(p[1] for p in cizgi) / len(cizgi)
     seyrek = cizgi[::2]
@@ -253,7 +257,7 @@ def etiket_yerlestir(noktalar, cizgi, W, H):
     for px, py in noktalar:
         taban = math.atan2(py - cy0, px - cx0)
         yer = None
-        for r in (40, 48, 58, 70, 84, 100, 118):
+        for r in [k * olcek for k in (40, 48, 58, 70, 84, 100, 118, 140, 165)]:
             for da in (0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180):
                 a = taban + math.radians(da)
                 lx, ly = px + math.cos(a) * r, py + math.sin(a) * r
@@ -262,7 +266,7 @@ def etiket_yerlestir(noktalar, cizgi, W, H):
                     break
             if yer:
                 break
-        konan.append(yer or (px, max(HAP_H / 2 + 4, py - 40)))
+        konan.append(yer or (px, max(HAP_H / 2 + 4, py - 40 * olcek)))
     return konan
 
 
@@ -297,12 +301,14 @@ def bolum_yollari(pts, daireler, oranlar=None):
     return out
 
 
-def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
+def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None, olcek=1.0):
     """Arayüz haritası: gri pist, numaralı viraj daireleri, renkli fark etiketleri, araç noktası.
     cizgi_xz: [(x, z)] pist çizgisi; corners: [{"no", "x", "z"}]; deltas: {no: saniye};
-    sinirlar: {no: (başlangıç, bitiş) tur oranı} (compare'in bölümleri; yoksa iki virajın ortası)."""
+    sinirlar: {no: (başlangıç, bitiş) tur oranı} (compare'in bölümleri; yoksa iki virajın ortası);
+    olcek: etiket ve daire boyu çarpanı (basit görünümde büyük, kenar payı da büyür)."""
     deltas = deltas or {}
-    W, H, PAD = HARITA_W, HARITA_H, 70
+    HAP_W, HAP_H, DAIRE_R = _HAP_W * olcek, _HAP_H * olcek, _DAIRE_R * olcek
+    W, H, PAD = HARITA_W, HARITA_H, 70 * olcek
     xs = [p[0] for p in cizgi_xz]
     zs = [p[1] for p in cizgi_xz]
     minx, maxx, minz, maxz = min(xs), max(xs), min(zs), max(zs)
@@ -317,7 +323,7 @@ def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
     pts = [P(x, z) for x, z in cizgi_xz[::adim]]
     yol = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
     daireler = [P(c["x"], c["z"]) for c in corners]
-    etiketler = etiket_yerlestir(daireler, pts, W, H)
+    etiketler = etiket_yerlestir(daireler, pts, W, H, olcek)
     sx, sy = pts[0]
     out = [f'<path d="{yol}" class="pist-dis"/><path d="{yol}" class="pist-ic"/>',
            ]
@@ -336,13 +342,14 @@ def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
         if dl is not None:
             out.append(f'<line x1="{px:.0f}" y1="{py:.0f}" x2="{lx:.0f}" y2="{ly:.0f}" stroke="{renk}" '
                        f'stroke-width="1.5" opacity=".6" class="h-cizgi"/>')
-        out.append(f'<circle cx="{px:.0f}" cy="{py:.0f}" r="{DAIRE_R}" fill="#0d0f13" stroke="{renk}" stroke-width="3" class="h-daire"/>'
-                   f'<text x="{px:.0f}" y="{py + 5:.0f}" class="vno">{c["no"]}</text>')
+        out.append(f'<circle cx="{px:.0f}" cy="{py:.0f}" r="{DAIRE_R:.0f}" fill="#0d0f13" stroke="{renk}" stroke-width="3" class="h-daire"/>'
+                   f'<text x="{px:.0f}" y="{py + 5 * olcek:.0f}" class="vno">{c["no"]}</text>')
         if dl is not None:
-            out.append(f'<rect x="{lx - HAP_W / 2:.0f}" y="{ly - HAP_H / 2:.0f}" width="{HAP_W}" height="{HAP_H}" '
+            out.append(f'<rect x="{lx - HAP_W / 2:.0f}" y="{ly - HAP_H / 2:.0f}" width="{HAP_W:.0f}" height="{HAP_H:.0f}" '
                        f'rx="{HAP_H / 2:.0f}" fill="{renk}" stroke="#0a0c10" stroke-width="2" class="h-hap"/>'
-                       f'<text x="{lx:.0f}" y="{ly + 5:.0f}" class="vfark">{isaretli(dl).replace("-", "−")}</text>')
-    return (f'<svg viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" data-minx="{minx:.3f}" '
+                       f'<text x="{lx:.0f}" y="{ly + 5 * olcek:.0f}" class="vfark">{isaretli(dl).replace("-", "−")}</text>')
+    sinif = ' class="buyuk"' if olcek > 1 else ""
+    return (f'<svg{sinif} viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" data-minx="{minx:.3f}" '
             f'data-minz="{minz:.3f}" data-sc="{sc:.6f}" data-ox="{ox:.2f}" data-oz="{oz:.2f}">'
             + "".join(out) + '<circle class="arac" r="9" fill="#ff6a3d" stroke="#fff" stroke-width="2.5" '
             'cx="-50" cy="-50"/></svg>')
@@ -1054,7 +1061,11 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     # Yeni arayüz: harita SVG'si, viraj tablosu, viraj şeridi, tur listesi
     deltas = {r["no"]: r["delta"] for r in (cmp_res or [])}
     sinirlar = {r["no"]: r["bolum"] for r in (cmp_res or []) if r.get("bolum")}
+    en_cok = sorted(((no, d) for no, d in deltas.items() if d >= 0.05), key=lambda x: -x[1])[:2]
     state["harita"] = {"svg": harita_svg(list(zip(best_lap["x"], best_lap["z"])), corners, deltas, sinirlar),
+                       "svg_buyuk": harita_svg(list(zip(best_lap["x"], best_lap["z"])), corners, deltas, sinirlar,
+                                               BUYUK_OLCEK),
+                       "en_cok": [[no, round(d, 2)] for no, d in en_cok],
                        "tablo": viraj_tablosu(best_lap, corners, cmp_res),
                        "serit": viraj_seridi(corners, gecmis),
                        "en_iyi": sure(best_lap["lap_ms"]),

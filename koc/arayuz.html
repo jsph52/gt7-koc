@@ -729,6 +729,67 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .ayar-nav{width:200px}
   .perde{padding:16px}
 }
+/* ---------- Basit görünüm (masaüstü / tablet) ---------- */
+#basit{display:none}
+body.basit #kocEkrani>.govde{display:none}
+body.basit #basit{display:grid;min-height:0;gap:12px;
+  grid-template-columns:clamp(300px,21vw,420px) minmax(0,1fr) clamp(290px,20vw,390px);
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto auto;
+  grid-template-areas:"fark harita turlar" "viraj harita arac" "surus surus surus" "band band band"}
+#basit .kart{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+#basit small{display:block;font-size:16px;font-weight:700;text-transform:uppercase;color:var(--dim)}
+#basit b{font-style:italic;font-weight:800;line-height:.9}
+.b-fark{grid-area:fark}.b-viraj{grid-area:viraj}.b-harita{grid-area:harita}.b-turlar{grid-area:turlar}.b-arac{grid-area:arac}
+.b-fk{flex:1;display:flex;flex-direction:column;justify-content:center;padding:6px 26px 10px;background:var(--panel2);clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)}
+.b-fk>b{font-size:clamp(70px,11vh,130px)}
+.b-fk-alt{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+.b-fk-alt>span{font-size:24px;font-weight:700;text-transform:uppercase}
+.b-spark{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.b-spark svg{width:150px;height:56px}
+.b-fk.on{background:linear-gradient(90deg,rgba(0,210,106,.22),rgba(0,210,106,.04))}.b-fk.on b,.b-fk.on span{color:var(--ok)}
+.b-fk.geri{background:linear-gradient(90deg,rgba(255,45,58,.22),rgba(255,45,58,.04))}.b-fk.geri b,.b-fk.geri span{color:var(--bad)}
+.b-vr{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 6px}
+.b-vno{display:flex;align-items:baseline;gap:20px;min-width:0}
+.b-vno b:first-child{font-size:clamp(70px,10vh,120px);color:var(--warn)}
+.b-vno b+b{font-size:clamp(42px,6vh,66px);white-space:nowrap}
+.b-bip{display:flex;gap:10px;align-items:center}.b-bip i{flex:1;height:18px;background:#2c2e33;transform:skewX(-14deg)}.b-bip i.on{background:var(--warn)}
+.b-bip small{flex:none;margin-left:8px}
+.b-ipucu{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:21px;font-weight:700;min-height:30px}
+.b-h{padding:2px 10px;font-style:italic}.b-h.kotu{background:rgba(255,45,58,.18);color:var(--bad)}.b-h.iyi{background:rgba(0,210,106,.16);color:var(--ok)}
+.b-hr{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.b-hr svg{width:100%;height:100%}
+#basit svg.buyuk .vfark{font-size:24px}#basit svg.buyuk .vno{font-size:21px}
+#basit svg.buyuk .arac{r:13;fill:#ffd400;stroke:#000}
+.b-hr-alt{display:flex;justify-content:space-between;gap:12px;font-size:18px;font-weight:600;text-transform:uppercase;color:var(--muted)}
+.b-hr-alt b{color:var(--warn);font-style:normal}
+.b-sat{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:2px 14px}
+.b-sat b{font-size:clamp(28px,3.6vh,38px);text-align:right;white-space:nowrap}.b-sonuk{color:var(--muted)}
+.b-tl{display:flex;flex-direction:column;gap:4px;margin-top:4px;min-height:0;overflow:hidden}
+.b-tl div{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:10px;background:var(--panel2);padding:3px 10px;font-size:21px;font-weight:700;font-style:italic}
+.b-tl div i{font-style:normal;color:var(--dim);font-size:15px}
+.b-arac-ic{flex:1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+.b-ls{display:grid;grid-template-columns:52px 26px 52px;grid-template-rows:58px 58px;gap:6px}
+.b-ls span{display:flex;align-items:center;justify-content:center;font-style:italic;font-weight:800;font-size:22px;color:#000;background:var(--c,#3a4049)}
+.b-ls i{grid-row:1/3;grid-column:2;background:#000;border:2px solid #2c2e33}
+.b-ls span:nth-of-type(1){grid-area:1/1}.b-ls span:nth-of-type(2){grid-area:1/3}.b-ls span:nth-of-type(3){grid-area:2/1}.b-ls span:nth-of-type(4){grid-area:2/3}
+.b-yk b{font-size:clamp(26px,3.2vh,34px);white-space:nowrap}
+#bLastikDurum{font-size:20px;font-weight:700}
+.b-surus{grid-area:surus;flex-direction:row!important;align-items:center;gap:22px!important;padding:8px 20px}
+.b-surus>b{font-size:clamp(56px,8vh,84px)}
+.b-vt{font-size:clamp(44px,6vh,64px);font-weight:800;font-style:italic;background:var(--accent);padding:0 20px;transform:skewX(-10deg)}
+.b-surus .isik{flex:1;display:flex;gap:6px}.b-surus .isik i{height:20px;border-radius:0;transform:skewX(-14deg)}
+.b-pd{display:grid;grid-template-columns:auto 200px;gap:6px 10px;align-items:center}
+.b-pd span{display:block;height:12px;background:#22252b;position:relative}.b-pd i{position:absolute;inset:0 auto 0 0;background:var(--ok)}.b-pd i.fren{background:var(--bad)}
+#basit .band{grid-area:band;height:clamp(54px,7vh,72px);font-size:clamp(22px,3vh,32px)}
+#gorunumDugme.secili{background:#fff;color:#000}
+#basit .band small{font-size:clamp(15px,1.9vh,20px);align-self:stretch;display:flex;align-items:center}
+@media (max-width:1400px){
+  body.basit #basit{grid-template-columns:clamp(260px,22vw,320px) minmax(0,1fr) clamp(250px,21vw,300px)}
+  .b-arac-ic{grid-template-columns:1fr;justify-items:start;gap:10px}
+  .b-spark svg{width:100px}
+  .b-fk-alt>span{font-size:20px}
+  .b-pd{grid-template-columns:auto 140px}
+}
+
 /* ---------- Telefon görünümü ---------- */
 #tel{display:none}
 @media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse){
@@ -736,6 +797,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   #kocEkrani.app{display:block;height:auto;min-height:100dvh;padding:0 0 58px;margin:0}
   #kocEkrani>header{display:none}
   #tel{display:block}
+  body.basit #basit{display:none}
+  body.basit[data-tel="canli"] #kocEkrani>.govde{display:none}
   .tel-ust{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:8px;height:42px;background:#000;border-bottom:3px solid var(--accent);padding-right:4px}
   .tel-logo{align-self:stretch;display:flex;align-items:center;gap:5px;background:var(--accent);padding:0 18px 0 10px;font-weight:800;font-style:italic;font-size:20px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
   .tel-logo b{color:#000}
@@ -775,7 +838,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   /* Canlı sekmesi dışında: koç ekranının ilgili kartı tam genişlikte */
   body:not([data-tel="canli"]) .tel-canli, body:not([data-tel="canli"]) .tel-band{display:none}
   body[data-tel="canli"] #kocEkrani .govde{display:none}
-  body:not([data-tel="canli"]) #kocEkrani .govde{display:block;padding:8px}
+  body:not([data-tel="canli"]) #kocEkrani .govde{display:block!important;padding:8px}
   body:not([data-tel="canli"]) #kocEkrani .govde .sol, body:not([data-tel="canli"]) #kocEkrani .govde .band,
   body:not([data-tel="canli"]) #kocEkrani .govde .kart.serit{display:none}
   body[data-tel="turlar"] #kocEkrani .harita-kart, body[data-tel="mesajlar"] #kocEkrani .harita-kart,
@@ -909,6 +972,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <button id="sesDugme" class="ikon-dugme" title="Koçun konuşmasını aç / kapat (fren uyarısı etkilenmez). Ayrıntı: Ayarlar › Ses">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path id="sesIkonAcik" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path id="sesIkonKapali" hidden d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     <span id="sesDugmeYazi">Ses açık</span></button>
+  <button id="gorunumDugme" title="Sade ekran: harita, canlı fark, sıradaki viraj, süreler, yakıt ve lastikler büyük">◧ Basit görünüm</button>
   <button id="ayarAc">⚙ Ayarlar</button>
   <button id="bitirBtn" class="bitir">Antrenmanı bitir</button>
 </header>
@@ -1026,6 +1090,34 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div id="serit"><div class="bos" style="padding:10px 0">İki temiz turdan sonra her virajın turdan tura farkı burada renkli tabloda birikir.</div></div>
     </section>
   </div>
+</div>
+
+<!-- Basit görünüm: harita büyük; canlı fark, sıradaki viraj, süreler, araç, sürüş ve son yorum -->
+<div class="basit" id="basit">
+  <section class="kart b-fark"><h2 id="bFarkBaslik">Canlı fark</h2>
+    <div class="b-fk" id="bFarkKutu"><b id="bFark">—</b>
+      <div class="b-fk-alt"><span id="bFarkYazi">referans tur bekleniyor</span>
+        <div class="b-spark"><small>Bu tur</small><svg id="bSpark" viewBox="0 0 200 56" preserveAspectRatio="none"></svg></div></div></div></section>
+  <section class="kart b-viraj"><h2>Sıradaki viraj</h2>
+    <div class="b-vr"><div class="b-vno"><b id="bVNo">—</b><b id="bVM">—</b></div>
+      <div class="b-bip" id="bBip"><i></i><i></i><i></i><small id="bBipYazi">3. seste frene bas</small></div>
+      <div class="b-ipucu"><small id="bGecenEt">Geçen tur</small><span class="b-h" id="bGecen">—</span><span id="bIpucu"></span></div></div></section>
+  <section class="kart b-harita"><div class="kart-ust"><h2>Harita · son tur viraj farkları</h2>
+      <div class="leg"><span><i style="background:var(--ok)"></i>kazandın</span><span><i style="background:var(--bad)"></i>kaybettin</span><span><i style="background:var(--accent);border-radius:50%"></i>araban</span></div></div>
+    <div class="b-hr" id="bHarita"><div class="bos">İlk temiz turdan sonra harita burada görünür.</div></div>
+    <div class="b-hr-alt"><span id="bEnCok">&nbsp;</span><span>İdeal <b id="bIdeal">—</b></span></div></section>
+  <section class="kart b-turlar"><h2>Turlar</h2>
+    <div class="b-sat"><small>Tur</small><b id="bTur">—</b><small>Son</small><b id="bSon">—</b>
+      <small>En iyi</small><b id="bEnIyi" class="mor">—</b><small>Hedef</small><b id="bHedef" class="b-sonuk">—</b></div>
+    <div class="b-tl" id="bTurlar"></div></section>
+  <section class="kart b-arac"><h2>Araç</h2>
+    <div class="b-arac-ic"><div class="b-ls" id="bLastik"><span></span><i></i><span></span><span></span><span></span></div>
+      <div class="b-yk"><small>Yakıt</small><b><span id="bYakit">—</span><span id="bYakitTur"></span></b>
+        <small style="margin-top:12px">Lastikler</small><div id="bLastikDurum">—</div></div></div></section>
+  <section class="kart b-surus"><b id="bHiz">0</b><small>km/s</small><span class="b-vt" id="bVites">N</span>
+    <div class="isik" id="bDevir"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="b-pd"><small>Gaz</small><span><i id="bGaz"></i></span><small>Fren</small><span><i id="bFren" class="fren"></i></span></div></section>
+  <div class="band" id="bBand"><small id="bBandEt">SON YORUM</small><div id="bBandYazi">Koçun son söylediği burada görünür.</div></div>
 </div>
 
 </div>
@@ -2052,12 +2144,23 @@ async function haritaYenile(){
   const svg = kutu.querySelector("svg[data-sc]");
   harita = svg ? {nokta: svg.querySelector(".arac"), minx: +svg.dataset.minx, minz: +svg.dataset.minz,
                   sc: +svg.dataset.sc, ox: +svg.dataset.ox, oz: +svg.dataset.oz} : null;
+  // Basit görünüm: aynı harita, büyük etiketlerle
+  $("bHarita").innerHTML = h && h.svg_buyuk ? h.svg_buyuk : '<div class="bos">İlk temiz turdan sonra harita burada görünür.</div>';
+  const bsvg = $("bHarita").querySelector("svg[data-sc]");
+  haritaBuyuk = bsvg ? {nokta: bsvg.querySelector(".arac"), minx: +bsvg.dataset.minx, minz: +bsvg.dataset.minz,
+                        sc: +bsvg.dataset.sc, ox: +bsvg.dataset.ox, oz: +bsvg.dataset.oz} : null;
+  yaz("bIdeal", h && h.ideal ? h.ideal : "—");
+  yaz("bEnCok", h && h.en_cok && h.en_cok.length ? "Son turda en çok: " + h.en_cok.map(([n, d]) => `Viraj ${n} (+${d.toFixed(2)})`).join(" · ") : " ");
+  basitTurlar(r.turlar);
 }
+let haritaBuyuk = null;
 function aracGoster(c){
-  if (!harita || !harita.nokta) return;
-  if (c.x === undefined || !c.connected){ harita.nokta.setAttribute("cx", -50); return; }
-  harita.nokta.setAttribute("cx", (harita.ox + (c.x - harita.minx) * harita.sc).toFixed(1));
-  harita.nokta.setAttribute("cy", (harita.oz + (c.z - harita.minz) * harita.sc).toFixed(1));
+  for (const h of [harita, haritaBuyuk]){      // normal ve basit görünüm haritası (ölçekleri farklı)
+    if (!h || !h.nokta) continue;
+    if (c.x === undefined || !c.connected){ h.nokta.setAttribute("cx", -50); continue; }
+    h.nokta.setAttribute("cx", (h.ox + (c.x - h.minx) * h.sc).toFixed(1));
+    h.nokta.setAttribute("cy", (h.oz + (c.z - h.minz) * h.sc).toFixed(1));
+  }
 }
 
 // ---------- Araç (canlı): lastik, G, devir ışığı, motor ----------
@@ -2713,6 +2816,81 @@ $("ipGonder2").onclick = async () => {
 };
 
 // ---------- Durum döngüsü ----------
+// Basit görünüm: koç ekranındaki değerleri büyük kartlara kopyalar (ayrı veri yok)
+const basitSecili = () => localStorage.getItem("gorunum") === "basit";
+function gorunumUygula(){
+  const b = basitSecili();
+  document.body.classList.toggle("basit", b);
+  yaz("gorunumDugme", b ? "◧ Normal görünüm" : "◧ Basit görünüm");
+  $("gorunumDugme").classList.toggle("secili", b);
+  if (b) basitGuncelle();
+}
+$("gorunumDugme").onclick = () => { localStorage.setItem("gorunum", basitSecili() ? "normal" : "basit"); gorunumUygula(); };
+let sparkTur = null, sparkNok = [];
+function basitGuncelle(c){
+  if (!document.body.classList.contains("basit") || TELEFON.matches) return;
+  const metin = id => $(id).textContent;
+  c = c || {};
+  yaz("bFarkBaslik", metin("farkBaslik").toLowerCase().replace(/^./, h => h.toUpperCase()));
+  yaz("bFark", metin("fark")); yaz("bFarkYazi", metin("farkYazi"));
+  const fk = $("farkKutu").classList;
+  $("bFarkKutu").className = "b-fk" + (fk.contains("on") ? " on" : fk.contains("geri") ? " geri" : "");
+  // Bu tur: canlı farkın tur boyunca gidişatı
+  if (c.tur !== undefined && c.tur !== sparkTur){ sparkTur = c.tur; sparkNok = []; }
+  if (typeof c.fark === "number" && c.on_track && !c.paused) sparkNok.push(c.fark);
+  if (sparkNok.length > 600) sparkNok = sparkNok.filter((_, i) => i % 2 === 0);
+  if (sparkNok.length > 1){
+    const mx = Math.max(0.1, ...sparkNok.map(Math.abs)), y = v => (28 - v / mx * 26).toFixed(1);
+    const son = sparkNok[sparkNok.length - 1];
+    $("bSpark").innerHTML = `<line x1="0" x2="200" y1="28" y2="28" stroke="#5d6575" stroke-dasharray="4 4"/>` +
+      `<polyline fill="none" stroke="${son > 0.05 ? "var(--bad)" : son < -0.05 ? "var(--ok)" : "#fff"}" stroke-width="3" vector-effect="non-scaling-stroke" points="${
+        sparkNok.map((v, i) => (i / (sparkNok.length - 1) * 200).toFixed(1) + "," + y(v)).join(" ")}"/>`;
+  } else $("bSpark").innerHTML = "";
+  // Sıradaki viraj
+  yaz("bVNo", metin("svNo")); yaz("bVM", metin("svMesafe"));
+  const bip = [...$("bipler").querySelectorAll("i")];
+  [...$("bBip").querySelectorAll("i")].forEach((e, i) => e.className = bip[i] ? bip[i].className : "");
+  yaz("bBipYazi", metin("bipYazi"));
+  const s = c.siradaki;
+  const k = s && s.kayip !== null && s.kayip !== undefined ? s.kayip : null;
+  yaz("bGecen", k === null ? "—" : farkYazi(k));
+  $("bGecen").className = "b-h" + (k === null ? "" : k > 0.02 ? " kotu" : k < -0.02 ? " iyi" : "");
+  yaz("bIpucu", s && s.ipucu ? s.ipucu.charAt(0).toUpperCase() + s.ipucu.slice(1) + "." : (s ? (s.fren ? "" : "Gazı kesmeden geç.") : ""));
+  // Turlar
+  yaz("bTur", metin("tur")); yaz("bSon", metin("sonTur")); yaz("bEnIyi", metin("enIyi")); yaz("bHedef", metin("hedefSure"));
+  // Araç
+  for (let i = 0; i < 4; i++){
+    const t = $("teker" + i), h = $("bLastik").querySelectorAll("span")[i];
+    h.style.setProperty("--c", t.style.getPropertyValue("--c")); h.textContent = t.querySelector("b").textContent;
+  }
+  const L = c.lastik;
+  if (L && L.every(v => v > 0)){
+    const sicak = L.map((v, i) => v > 100 ? LASTIK_ADI[i] : null).filter(Boolean), ort = L.reduce((a, b) => a + b, 0) / 4;
+    yaz("bLastikDurum", sicak.length ? (sicak.length > 2 ? "Lastikler çok sıcak." : sicak.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(", ") + " çok sıcak.")
+      : ort < 60 ? "Lastikler soğuk." : ort < 70 ? "Lastikler ısınıyor." : "Lastikler ideal aralıkta.");
+  } else yaz("bLastikDurum", "—");
+  yaz("bYakit", metin("mYakit")); yaz("bYakitTur", metin("mYakitTur")); $("bYakitTur").className = $("mYakitTur").className;
+  // Sürüş
+  yaz("bHiz", metin("hiz")); yaz("bVites", metin("vites"));
+  const led = [...$("devirIsigi").children];
+  [...$("bDevir").children].forEach((e, i) => e.className = led[i] ? led[i].className : "");
+  $("bGaz").style.width = $("gaz").style.width; $("bFren").style.width = $("fren").style.width;
+  // Son yorum
+  yaz("bBandEt", metin("bandEtiket")); yaz("bBandYazi", metin("anlik")); $("bBand").className = $("band").className;
+}
+function basitTurlar(liste){
+  const kutu = $("bTurlar"); kutu.innerHTML = "";
+  for (const t of (liste || []).slice(0, 4)){
+    const d = el("div"); d.append(el("i", "", t.rekor ? "★" : String(t.no)), el("span", "", t.sure || ""));
+    const f = el("span", "", t.ref_disi ? "ref. dışı" : t.fark === null ? "ilk" : eksi((t.fark > 0 ? "+" : "") + t.fark.toFixed(2)));
+    f.style.color = t.rekor ? "var(--mor)" : t.ref_disi || t.fark === null ? "var(--dim)" : t.fark > 0 ? "var(--bad)" : "var(--ok)";
+    if (t.rekor) d.firstChild.style.color = "var(--mor)";
+    d.append(f); kutu.append(d);
+  }
+}
+
+gorunumUygula();
+
 // Telefon görünümü: koç ekranındaki değerleri büyük kutulara kopyalar
 function telGuncelle(){
   if (!TELEFON.matches) return;
@@ -2807,6 +2985,7 @@ async function durum(){
   aracGoster(c);
   if (bagli) aracBilgi(c);
   telGuncelle();
+  basitGuncelle(c);
   if (d.inceleme_surum && d.inceleme_surum !== incelemeSurum){ incelemeSurum = d.inceleme_surum; incelemeYenile(); }
   if (d.ayar){
     window.sonAyar = d.ayar;
