@@ -551,6 +551,29 @@ header .bitir{margin-left:6px}
 header button{white-space:nowrap}
 header .haplar{flex-wrap:nowrap;gap:5px}
 header .y-hap{font-size:14px;padding:2px 8px}
+/* Üst çubuk şeridi: bitişik eğik kutular (TV yayını grafiği) */
+header .serit{display:flex;align-items:stretch;height:34px;min-width:0;transform:skewX(-10deg)}
+header .serit>span,header .s-haplar>span{display:flex;align-items:center;gap:8px;padding:0 14px;font-weight:700;text-transform:uppercase;font-size:17px;white-space:nowrap;background:#1c1f25;color:#fff;border-left:2px solid #000}
+header .serit .s-mod{background:#fff;color:#000;border-left:0}
+header .serit .s-pist{min-width:0;overflow:hidden}
+header .s-pist #pistAd{overflow:hidden;text-overflow:ellipsis}
+header .s-deg{color:#8a93a3;font-size:16px;cursor:pointer;padding-left:2px}
+header .s-deg:hover,header .s-deg:focus{color:#fff;outline:0}
+header .serit .s-haplar{display:flex;padding:0;border:0;background:none}
+header .s-haplar:empty{display:none}
+header .s-haplar .h-tt{color:var(--ok)}
+header .s-haplar .h-tt.eksik{color:var(--warn)}
+header .s-haplar .h-odak{background:var(--accent)}
+header .s-haplar .h-yaris{color:#8a93a3}
+header .s-haplar .h-yaris.acik{color:var(--ok)}
+header .s-haplar .tikla{cursor:pointer}
+header .s-haplar .tikla:hover{filter:brightness(1.25)}
+header .serit .s-dur{color:#c9ced8}
+@media (max-width:760px){   /* telefon: şerit satırlara bölünür, pist adı kaybolmaz */
+  header .serit{flex-wrap:wrap;height:auto;row-gap:4px;max-width:100%}
+  header .serit>span,header .s-haplar>span{height:30px;font-size:15px;padding:0 10px}
+  header .serit .s-pist{order:-1;flex:1 1 100%;max-width:none}
+}
 .kabuk .tt-bas{display:flex;gap:30px;align-items:center;background:var(--panel);padding:16px 24px;margin-top:14px;border-left:8px solid var(--accent)}
 .kabuk .sayilar{display:flex;gap:40px;margin-top:12px;flex-wrap:wrap}
 .kabuk .kontrol{display:grid;grid-template-columns:140px 1fr 1fr;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}
@@ -659,7 +682,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   html[data-tema="yayin"] .logo{font-size:26px;padding:0 28px 0 14px;margin-left:-12px}
   html[data-tema="yayin"] header .pill{font-size:16px;padding:6px 4px}
   html[data-tema="yayin"] header button{padding-left:11px;padding-right:11px}
-  #kayitDurum{display:none}
+  header .s-pist{max-width:340px}
+  header .serit>span,header .s-haplar>span{font-size:15px;padding:0 10px}
 }
 /* Dikey tablet (iPad 744–1024 px genişlik): canlı | harita, son yorum, araç | turlar, viraj geçmişi */
 @media (orientation:portrait) and (min-width:700px){
@@ -669,8 +693,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   html[data-tema="yayin"] .logo{min-height:50px}
   /* Üst çubuk iki satır: logo + bağlantı + pist / haplar + düğmeler */
   header::after{content:"";order:1;flex-basis:100%;height:0}
-  header .haplar,header button{order:2}
-  header .haplar{margin-right:auto;padding:6px 0}
+  header button{order:2;margin:6px 0}
+  header #sesDugme{margin-left:auto}
+  header .serit{flex:1 1 auto}
   header .sp{display:none}
   .harita-alt{flex-wrap:wrap;gap:2px 10px}.harita-alt span:last-child{white-space:nowrap}#haritaNot{order:2;flex:1 1 100%;font-size:15px}
   .govde{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"canli harita" "band band" "arac turlar" "serit serit";overflow:visible}
@@ -782,11 +807,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <div class="app" id="kocEkrani" hidden>
 <header>
   <div class="logo">GT7 <b>KOÇ</b></div>
-  <div class="haplar" id="haplar"></div>
-  <div class="pill"><i class="nokta" id="baglantiNokta"></i><span id="baglantiYazi">Başlamadı</span></div>
-  <div class="pill" id="pistRozet">Pist <strong id="pistAd">—</strong></div>
-  <div class="pill" id="kayitDurum">Pist seçince koç başlar.</div>
-  <button id="pistDegistir">Pist değiştir</button>
+  <!-- Tek şerit: mod | pist ✎ | (Time Trial hazırlık, odak, yarış) | bağlantı ve kayıt -->
+  <div class="serit">
+    <span class="s-mod" id="sMod">Koç</span>
+    <span class="s-pist"><span id="pistAd">—</span><span class="s-deg" id="pistDegistir" role="button" tabindex="0" title="Pist değiştir">✎</span></span>
+    <span class="s-haplar" id="haplar"></span>
+    <span class="s-dur"><i class="nokta" id="baglantiNokta"></i><span id="baglantiYazi">Başlamadı</span></span>
+  </div>
   <div class="sp"></div>
   <button id="sesDugme" class="ikon-dugme" title="Koçun konuşmasını aç / kapat (fren uyarısı etkilenmez). Ayrıntı: Ayarlar › Ses">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path id="sesIkonAcik" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path id="sesIkonKapali" hidden d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1518,6 +1545,7 @@ function secimAc(ilk){
   setTimeout(() => $("ara").focus(), 50);
 }
 $("pistDegistir").onclick = () => secimAc(false);
+$("pistDegistir").onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); secimAc(false); } };
 $("secimKapat").onclick = () => $("secim").classList.remove("acik");
 let araZaman;
 $("ara").oninput = () => { clearTimeout(araZaman); araZaman = setTimeout(pistAra, 200); };
@@ -2195,6 +2223,7 @@ function gorunum(d){
   $("kabuk").hidden = ekran !== "kabuk"; $("kocEkrani").hidden = ekran !== "koc"; $("incEkran").hidden = ekran !== "inceleme";
   if (ekran === "kabuk" && a && a.mod === "tt" && sayfa !== "tt") sayfaGoster("tt");
   if (ekran === "kabuk" && !a && sayfa === "tt") sayfaGoster("ana");
+  yaz("sMod", !a ? "Koç" : a.mod === "tt" ? "Time Trial" : "Serbest antrenman");
   haplarGoster($("haplar"), a, true);
   if (sayfa === "tt") haplarGoster($("ttHaplar"), a, false);
   $("bitirBtn").hidden = !a;
@@ -2208,10 +2237,10 @@ function gorunum(d){
   yaz("menuSes", kocSessiz ? "Koç sessiz" : "Koç");
   // Üst çubuk: odak virajı ve yarışta tavsiye hapları
   const ek = $("haplar");
-  if (a && d.odak){ const h = el("span", "y-hap ok tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
+  if (a && d.odak){ const h = el("span", "h-odak tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
     h.onclick = () => postJson("/api/odak", {no: null}); ek.append(h); }
   if (a && c.toplam_tur > 0){ const acik = ay.yaris_tavsiye === "acik";
-    const h = el("span", "y-hap tikla" + (acik ? " ok" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
+    const h = el("span", "h-yaris tikla" + (acik ? " acik" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
     h.title = "Yarışta viraj tavsiyesi verilsin mi? Tıkla."; h.onclick = () => ayarGonder("yaris_tavsiye", acik ? "kapali" : "acik"); ek.append(h); }
   odakSecGuncelle(d);
 }
@@ -2220,8 +2249,16 @@ function haplarGoster(kutu, a, ustCubuk){
   if (!a) return;
   const hap = (metin, ok, tikla) => { const h = el("span", "y-hap" + (ok ? " ok" : "") + (tikla ? " tikla" : ""), metin);
     if (tikla){ h.title = "Time Trial hazırlık ekranını aç"; h.onclick = () => { ttHazirlik = true; sayfaGoster("tt"); }; } kutu.append(h); };
-  if (a.mod !== "tt"){ if (ustCubuk) hap("Serbest antrenman", false); return; }
+  if (a.mod !== "tt") return;
   if (a.araba) enAdEkle(a.araba);
+  if (ustCubuk){      // üst şeritte üç onay tek kutu: "✓ Hazır 3/3" (tıklayınca hazırlık ekranı)
+    const n = [a.pist_dogru, !!a.araba, !!a.rekor_turu].filter(Boolean).length;
+    const h = el("span", "h-tt tikla" + (n < 3 ? " eksik" : ""), (n === 3 ? "✓ Hazır " : "Hazırlık ") + n + "/3");
+    h.title = "Pist " + (a.pist_dogru ? "✓" : "doğrulanıyor") + " · Araba " + (a.araba ? "✓" : "bekleniyor")
+      + " · Rekor turu " + (a.rekor_turu ? "✓" : "yok") + ". Tıkla: Time Trial hazırlık ekranı.";
+    h.onclick = () => { ttHazirlik = true; sayfaGoster("tt"); };
+    kutu.append(h); return;
+  }
   hap(a.pist_dogru ? "✓ Pist" : "Pist doğrulanıyor", a.pist_dogru, ustCubuk);
   hap(a.araba ? (ustCubuk ? "✓ Araba" : "✓ Araba · " + a.araba) : "Araba bekleniyor", !!a.araba, ustCubuk);
   hap(a.rekor_turu ? "✓ Rekor turu" : "Rekor turu yok", a.rekor_turu, ustCubuk);
@@ -2606,7 +2643,8 @@ async function durum(){
   const c = d.canli || {};
   const bagli = !!c.connected;
   $("baglantiNokta").className = "nokta " + (d.hata ? "kotu" : bagli ? "ok" : "bekle");
-  yaz("baglantiYazi", d.hata ? "Hata" : bagli ? "Bağlı · " + (c.target || "PS5") : "PS5 bekleniyor");
+  if (!bagli) yaz("baglantiYazi", d.hata ? "Hata" : "PS5 bekleniyor");
+  $("baglantiNokta").title = bagli ? "PS5 bağlı: " + (c.target || "") : "";
   $("bagNokta2").className = $("baglantiNokta").className;
   yaz("bagDurum2", d.hata ? d.hata : bagli ? "Bağlı: " + (c.target || "PS5") + (c.c_bicimi === false ? " (kısa veri biçimi)" : "")
     : "PS5 bekleniyor. PS5 açık, GT7 çalışıyor ve aynı ev ağında olmalı; koç kendisi de arıyor.");
@@ -2630,11 +2668,9 @@ async function durum(){
     }
     yaz("sonTur", c.son_tur && !c.son_tur.startsWith("-") ? c.son_tur : "—");
     yaz("enIyi", c.en_iyi && !c.en_iyi.startsWith("-") ? c.en_iyi : "—");
-    yaz("kayitDurum", c.paused ? "Oyun duraklatıldı" : c.recording ? "● Kayıt"
-      : "Başlangıç çizgisini geç");
+    yaz("baglantiYazi", c.paused ? "Duraklatıldı" : c.recording ? "Kayıt" : "Başlangıç çizgisini geç");
     siradakiGoster(c);
   } else {
-    yaz("kayitDurum", "Veri bekleniyor");
   }
   aracGoster(c);
   if (bagli) aracBilgi(c);
