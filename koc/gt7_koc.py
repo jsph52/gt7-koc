@@ -46,7 +46,7 @@ import gt7_hedef
 import gt7_karsilastir
 import gt7_rapor
 from gt7_viraj_adlari import adlandir, eslestir
-from gt7_tur_kurallari import (LapClock, cizgide_basladi, drop_partial,
+from gt7_tur_kurallari import (LapClock, LastikTakip, YenidenBaslama, yaris_mi, sureli_yaris, cizgide_basladi, drop_partial,
                                lap_change_ok, note_packet, off_track_count,
                                onceki_son, pit_turu,
                                race_start, records, span_limit, tam_tur, tasmalar,
@@ -941,6 +941,11 @@ def lap_end(lap, lap_ms, car, state, opts=None):
                 strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}), pit_sn)
         elif yakit_tur is not None:
             out.append(f"Yakıt: bu tempoyla yaklaşık {yakit_tur:.1f} tur daha yeter.")
+    # Lastik yaşı (telemetride aşınma yok; kaç tur kullanıldığı biliniyor)
+    if lap.get("lastik_degisti"):
+        out.append("Lastikler bu turda değişti.")
+    elif opts.get("lastik_tur"):
+        out.append(f"Lastikler: bu takımla {opts['lastik_tur']} tur sürdün.")
 
     ozet = tur_ozeti(lap)
     if ozet:
@@ -1157,6 +1162,8 @@ class Koc:
         self.muhendis = Muhendis()      # motor / lastik / sıra / son tur telsiz anonsları
         self.muhendis_dedi = False      # "Yarış mühendisi devrede." bir kez söylenir
         self.yaris_bitti = None         # yarış bittiyse toplam tur sayısı: koç yeni yarışa kadar susar
+        self.lastik = LastikTakip()     # pitte lastik değişimi (teker yarıçapından)
+        self.lastik_tur = 0             # şu anki lastiklerle kaç tur sürüldü
         self.ayar = ayar_oku()
         self.vites_oylari = []          # son turların manuel/otomatik tahmini
         self.car = None
@@ -1605,6 +1612,7 @@ class Koc:
         lap = new_lap()
         cur_lap_no = None
         clock = LapClock()              # tur saati: paket numarasından, duraklatma eklenmez
+        yeniden = YenidenBaslama()      # oyunda "yeniden dene": yarım tur atılır
         clock_t = 0.0                   # aynı saatle sürekli zaman (G hesabı için)
         recording = False
         last_pos = None
@@ -1758,6 +1766,7 @@ class Koc:
 
             if d["araba"] != self.car:
                 self.car = d["araba"]
+                self.lastik_tur = 0
                 notify(f"Araba: {araba_adi(self.car)}")
                 self.son_cmp = None
                 self.hazirla_gerek = True
@@ -1765,6 +1774,19 @@ class Koc:
                 cur_lap_no = lap_no
             dt = clock.step(pid)
             clock_t += dt
+            # Turlu ya da süreli yarış (süreli yarışta toplam tur 0, yarış sırası var)
+            yaris = yaris_mi(d["toplam_tur"], pkt.race_position, pkt.total_positions)
+            # Yeniden başlatma (oyun içi saat geri gitti): yarım tur kaydedilmez, lastikler yeni, koç baştan
+            if yeniden.guncelle(pkt.day_progression_ms):
+                if lap["t"]:
+                    notify("Yeniden başlatıldı.", ["Yarım kalan tur kaydedilmedi."])
+                lap = new_lap()
+                last_pos = None
+                cur_lap_no = lap_no
+                recording = records(lap_no, d["toplam_tur"])
+                self.canli.reset()
+                self.lastik_tur = 0
+                self.yaris_bitti = None
             # Yarış bitti mi: tur sayacı toplam turu geçti (bitiş çizgisi). Yeni yarışa / yeniden başlamaya kadar
             # koç susar (canlı koç, fren uyarısı, mühendis); tur sayacı 1..toplam arasına dönünce yeniden konuşur.
             if self.yaris_bitti and (d["toplam_tur"] != self.yaris_bitti or 1 <= lap_no <= d["toplam_tur"]):
@@ -1775,6 +1797,11 @@ class Koc:
                 self.yaris_bitti = d["toplam_tur"]
                 bitis = bitis_cumlesi(pkt.race_position, pkt.total_positions)
             if lap_no != cur_lap_no and lap_change_ok(lap_no, cur_lap_no, kayit_acik, paused):
+                # Lastik yaşı: biten her tur bir tur; tur sayacı geri dönünce (yeni yarış / yeniden başlama) yeni lastik
+                if lap_no == cur_lap_no + 1 and cur_lap_no >= 1:
+                    self.lastik_tur += 1
+                elif lap_no < cur_lap_no:
+                    self.lastik_tur = 0
                 if recording and lap_no == cur_lap_no + 1 and rekor_modu:
                     try:
                         if self.rekor_kaydet(lap, d["son_tur"], d["araba"]):
@@ -1794,14 +1821,15 @@ class Koc:
                                                 "dagilim": self.ayar.get("guc_dagilimi", {}).get(str(d["araba"])),
                                                 "duzeltilen": list(self.canli.duzeltilen),
                                                 "kapasite": pkt.fuel_capacity, "tur_no": lap_no,
+                                                "lastik_tur": self.lastik_tur,
                                                 "fren_sesi": self.fren is not None,
                                                 "rekor_tur": self.rekor_ref(), "odak": self.odak,
-                                                "yaris_sessiz": d["toplam_tur"] > 0
+                                                "yaris_sessiz": yaris
                                                 and self.ayar.get("yaris_tavsiye") != "acik",
                                                 "tt": self.tt_hedef(state, d["araba"]), "bitis": bitis,
                                                 "sira": (pkt.race_position, pkt.total_positions,
                                                          self.muhendis.sira_degisimi(pkt.race_position))
-                                                if d["toplam_tur"] > 0 and pkt.total_positions >= 2 else None})
+                                                if yaris and pkt.total_positions >= 2 else None})
                         self.hazirla_gerek = True
                         bitis = None        # tur sonu mesajı bitişi söyledi
                     except Exception as e:  # analiz hatası koçu durdurmasın
@@ -1843,6 +1871,11 @@ class Koc:
                 lap["sus_rr"].append(pkt.suspension_rr)
                 lap["fuel"].append(pkt.fuel_level)
                 note_packet(lap, pkt)
+                if self.lastik.guncelle(d["hiz"], (pkt.tire_radius_fl, pkt.tire_radius_fr,
+                                                   pkt.tire_radius_rl, pkt.tire_radius_rr)):
+                    lap["lastik_degisti"] = True
+                    self.lastik_tur = 0
+                    notify("Lastikler değişti.", ["Lastik yaşı sıfırlandı; bu tur referans alınmaz (pit turu)."])
                 lap["revlim"].append(1 if flags & 0x20 else 0)
                 lap["asm"].append(1 if flags & 0x400 else 0)     # kayma önleyici devrede
                 lap["tcs"].append(1 if flags & 0x800 else 0)     # çekiş kontrolü devrede
@@ -1876,15 +1909,17 @@ class Koc:
             if recording and on_track and not paused and lap["t"] and not self.yaris_bitti:
                 uyari, fark, _ = self.canli.adim(lap["x"][-1], lap["z"][-1], lap["dist"][-1], lap["t"][-1],
                                                  d["hiz"], d["fren"], d["gaz"],
-                                                 lap["loose"][-1] if lap.get("loose") else None)
+                                                 lap["loose"][-1] if lap.get("loose") else None,
+                                                abs(pkt.angular_velocity_y))
                 islak = state.get("islak")   # ıslak pist şüphesi: kuru tura göre uyarılar susar
-                if d["toplam_tur"] > 0 and self.ayar.get("yaris_tavsiye") != "acik":
+                if yaris and self.ayar.get("yaris_tavsiye") != "acik":
                     uyari = self.canli.cikis = None   # yarışta viraj tavsiyesi yok (ayar yaris_tavsiye)
+                # Ekranda viraj numarası durur, seste yok ("Frene biraz daha geç bas.")
                 if uyari and not islak:
-                    notify(uyari, kind="anlik", ses=uyari)
+                    notify(uyari, kind="anlik", ses=self.canli.uyari_ses or uyari)
                 cikis, self.canli.cikis = self.canli.cikis, None
                 if cikis and not islak and self.ayar.get("cikis_yorumu") != "kapali":
-                    notify(cikis, kind="sonra", ses=cikis)
+                    notify(cikis, kind="sonra", ses=self.canli.cikis_ses or cikis)
             # Yarış mühendisi: motor, lastik, sıra, son tur (kısa telsiz anonsları)
             try:
                 for metin, kritik in self.muhendis.guncelle(clock_t, pkt, on_track and not self.yaris_bitti,
@@ -1956,7 +1991,8 @@ class Koc:
                 "hiz": d["hiz"], "vites": vites_yazi(d["vites"]),
                 "onerilen": vites_yazi(d["onerilen_vites"]) if d["onerilen_vites"] not in (0, 15) else "",
                 "devir": d["devir"], "gaz": d["gaz"], "fren": d["fren"],
-                "tur": lap_no, "toplam_tur": d["toplam_tur"],
+                "tur": lap_no, "toplam_tur": d["toplam_tur"], "yaris": yaris, "lastik_tur": self.lastik_tur,
+                "sureli": sureli_yaris(d["toplam_tur"], pkt.race_position, pkt.total_positions),
                 "son_tur": sure(d["son_tur"]), "en_iyi": sure(d["en_iyi"]),
                 "araba": d["araba"], "araba_adi": araba_adi(d["araba"]), "yakit": pkt.fuel_level, "x": d["konum"][0], "z": d["konum"][2],
                 "fark": fark, "vites_turu": self.vites_turu[0], "vites_algilandi": self.vites_turu[1],

@@ -2511,7 +2511,7 @@ function gorunum(d){
   const ek = $("haplar");
   if (a && d.odak){ const h = el("span", "h-odak tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
     h.onclick = () => postJson("/api/odak", {no: null}); ek.append(h); }
-  if (a && c.toplam_tur > 0){ const acik = ay.yaris_tavsiye === "acik";
+  if (a && (c.toplam_tur > 0 || c.yaris)){ const acik = ay.yaris_tavsiye === "acik";
     const h = el("span", "h-yaris tikla" + (acik ? " acik" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
     h.title = "Yarışta viraj tavsiyesi verilsin mi? Tıkla."; h.onclick = () => ayarGonder("yaris_tavsiye", acik ? "kapali" : "acik"); ek.append(h); }
   odakSecGuncelle(d);
