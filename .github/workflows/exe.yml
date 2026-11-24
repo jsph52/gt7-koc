@@ -41,6 +41,7 @@ jobs:
           --add-data "koc/arayuz.html;."
           --add-data "koc/simge;simge"
           --add-data "koc/yazitipi;yazitipi"
+          --add-data "LICENSE;."
           --add-data "koc/alinan/LICENSE;alinan"
           --add-data "koc/alinan/KAYNAK.md;alinan"
           --collect-all discord --collect-all davey --collect-all nacl --collect-all miniaudio
@@ -112,6 +113,7 @@ jobs:
           - **Kayıtlar:** Belgeler\GT7 Koc klasöründe tutulur; yeni sürümde korunur.
           - **Windows uyarısı:** Ek bilgi > Yine de çalıştır. Güvenlik duvarı: İzin ver.
           - **Gereksinimler:** Windows 10 / 11, ses için internet bağlantısı.
+          - **Lisans:** GPL-3.0, ücretsiz ve açık kaynak.
 
           Ayrıntılar: https://github.com/jsph52/gt7-koc#readme
 
