@@ -6,12 +6,13 @@ belgesinden ("Sesli uyarı ilkeleri"): kalıcılık + histerezis + bekleme süre
 - Motor: su sıcaklığı (110/106, kritik 120/116 °C), yağ sıcaklığı (130/126, kritik 140/136 °C),
   yağ basıncı (< 2,0 bar, 2000 devir üstü, 1,5 sn; 2,4'te temizlenir)
 - Lastik: herhangi biri 110 °C (104'te temizlenir); ön/arka ya da sol/sağ farkı 15 °C (10'da temizlenir)
-- Lastik: lastikler ısındı (arabaya göre: ortalama sürüşün başından en az 5 °C yükseldi ve son 30 sn'de
-  1,5 °C'den az değişti, yani sabitlendi; bir kez, durunca / pitte baştan),
+- Lastik: lastikler ısındı (arabaya göre: ortalama görülen en düşük değerinden en az 5 °C yükseldi ve son 30 sn
+  boyunca 3 °C'lik bir aralıkta kaldı, yani sabitlendi; bir kez, durunca / pitte / yeni yarışta baştan),
   lastikler hızla soğuyor = pist ıslanıyor olabilir (80 km/s üstünde son ~20 sn'nin ortalaması son ~3 dk'nınkinden
   10 °C düşük, 10 sn; 4'te temizlenir; 2 dk hızlı sürüş görülmeden ve lastikler 60 °C'yi bulmadan karar yok).
   Telemetride hava / yağmur bilgisi yok: bu bir tahmin. Eşikler tahmini, gerçek oyunda denenmedi.
-- Yarış: sıra değişimi (3 sn sabit kalınca), yarının yarısı, son tur
+- Yarış: liderliğe geçince / ilk üçe girince (3 sn sabit kalınca), yarının yarısı, son tur. Diğer sıra
+  değişimleri sürerken söylenmez; tur sonu sesinde sıra değiştiyse söylenir (`sira_degisimi`).
 Zamanlar paket saatiyle ölçülür (duraklatma süre saymaz). Pistte değilken ya da duraklatılmışken susar.
 """
 
@@ -20,7 +21,7 @@ SICAKLIK_KALICI_S = 5.0
 YAG_BASINC_KALICI_S = 1.5
 DENGE_KALICI_S = 10.0
 SIRA_SABIT_S = 3.0     # sıra bu kadar saniye değişmeden kalınca söylenir
-SIRA_ARA_S = 8.0       # iki sıra anonsu arasında en az bu kadar saniye
+SIRA_ARA_S = 60.0      # iki sıra anonsu ("Lidersin!", "İlk üçtesin.") arasında en az bu kadar saniye
 
 # (anahtar, tetik, temizlenme, şiddet, cümle)
 SU = [("su_kritik", 120, 116, "kritik", "Su sıcaklığı kritik!"),
@@ -30,12 +31,13 @@ YAG = [("yag_kritik", 140, 136, "kritik", "Yağ sıcaklığı kritik!"),
 LASTIK_YUKSEK = (110, 104)
 # Lastikler ısındı: soğuk başlayan lastikler ısınınca bir kez söylenir
 # Lastikler ısındı: sabit sıcaklık yerine arabanın kendi çalışma sıcaklığına göre. Ortalama yumuşatılır
-# (ISINDI_TAU), başlangıçtan ISINDI_ARTIS kadar yükselmiş ve son ISINDI_PENCERE_S içinde ISINDI_SABIT'ten az
-# değişmişse lastikler o arabanın çalışma sıcaklığına gelmiş sayılır. Sıcak başlayan lastikte söylenmez.
+# (ISINDI_TAU), görülen en düşük değerden ISINDI_ARTIS kadar yükselmiş ve son ISINDI_PENCERE_S boyunca
+# ISINDI_SABIT genişliğinde bir aralıkta kalmışsa lastikler o arabanın çalışma sıcaklığına gelmiş sayılır.
+# Sıcak başlayıp hiç soğumayan lastikte söylenmez.
 ISINDI_TAU = 8.0               # yumuşatma (sn): frende yükselip düzlükte düşen dalgalanma karışmasın
 ISINDI_ARTIS = 5.0             # başlangıca göre en az bu kadar ısınmış olmalı (°C)
 ISINDI_PENCERE_S = 30.0        # sabitlenme bu süreye bakılarak anlaşılır
-ISINDI_SABIT = 1.5             # pencerede bundan az değişim = sabitlendi (°C)
+ISINDI_SABIT = 3.0             # pencerede en yüksek − en düşük bundan azsa sabitlendi (°C)
 ISINDI_EN_AZ = 40.0            # bunun altındaki ortalamada söylenmez (°C)
 SOGUK_MIN_KMH = 40
 ISLAK_FARK = (10, 4)           # uzun ortalama − kısa ortalama (°C): tetik, temizlenme
@@ -110,6 +112,17 @@ class Muhendis:
         self.sira_aday = None
         self.sira_aday_t = 0.0
         self.sira_son_t = -1e9
+        self.sira_tur = None            # tur sonu sesinde karşılaştırılan sıra (başlangıç ya da önceki tur sonu)
+        # Yeni yarış: lastiklerin ısınması baştan izlenir (hareketli başlangıçta araba hiç durmaz)
+        self._isinma_sifirla()
+        self.son_soylenen.pop("lastik_isindi", None)
+
+    def sira_degisimi(self, sira):
+        """Tur sonunda: önceki tur sonundan (ya da başlangıçtan) bu yana sıra farkı (+ kazanılan), sonra günceller."""
+        onceki, self.sira_tur = self.sira_tur, sira
+        if onceki is None or not sira or sira < 1:
+            return 0
+        return onceki - sira
 
     def _soyle(self, out, t, anahtar, metin, kritik=False):
         son = self.son_soylenen.get(anahtar)
@@ -141,11 +154,12 @@ class Muhendis:
         self.isinma_iz.append((t, self.isinma_ort))
         while self.isinma_iz and t - self.isinma_iz[0][0] > ISINDI_PENCERE_S:
             self.isinma_iz.pop(0)
-        bas_t, eski = self.isinma_iz[0]
-        if t - bas_t < ISINDI_PENCERE_S - 1:
+        self.isinma_bas = min(self.isinma_bas, self.isinma_ort)   # başta soğuyup sonra ısınan lastik de sayılır
+        if t - self.isinma_iz[0][0] < ISINDI_PENCERE_S - 1:
             return
+        degerler = [v for _, v in self.isinma_iz]
         if (self.isinma_ort - self.isinma_bas >= ISINDI_ARTIS and self.isinma_ort >= ISINDI_EN_AZ
-                and abs(self.isinma_ort - eski) < ISINDI_SABIT):
+                and max(degerler) - min(degerler) < ISINDI_SABIT):
             self.isindi_dedi = True
             self._soyle(out, t, "lastik_isindi", "Lastikler ısındı, artık araca güvenebilirsin.")
 
@@ -271,15 +285,21 @@ class Muhendis:
         if self.sira_duyurulan is None:
             self.sira_duyurulan = sira
             self.sira_aday = sira
+            if self.sira_tur is None:
+                self.sira_tur = sira    # başlangıç sırası: ilk tur sonunda buna göre
             return
         if sira != self.sira_aday:
             self.sira_aday, self.sira_aday_t = sira, t
             return
-        if sira != self.sira_duyurulan and t - self.sira_aday_t >= SIRA_SABIT_S \
-                and t - self.sira_son_t >= SIRA_ARA_S:
-            fark = self.sira_duyurulan - sira
-            kac = "Bir sıra" if abs(fark) == 1 else f"{abs(fark)} sıra"
-            fiil = "yükseldin" if fark > 0 else "kaybettin"
-            out.append((f"{kac} {fiil}. Şimdi {sira}. sıradasın.", False))
-            self.sira_duyurulan = sira
+        if sira != self.sira_duyurulan and t - self.sira_aday_t >= SIRA_SABIT_S:
+            # Her sıra değişimi söylenmez (çok konuşuyordu): sadece liderliğe geçince ve ilk üçe girince
+            onceki, self.sira_duyurulan = self.sira_duyurulan, sira
+            if t - self.sira_son_t < SIRA_ARA_S:
+                return
+            if sira == 1:
+                out.append(("Lidersin!", False))
+            elif sira <= 3 < onceki and arac >= 4:
+                out.append(("İlk üçtesin.", False))
+            else:
+                return
             self.sira_son_t = t

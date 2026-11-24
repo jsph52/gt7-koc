@@ -923,13 +923,18 @@ def lap_end(lap, lap_ms, car, state, opts=None):
             yy = state.get("yaris_yakit")
             if not yy or yy["araba"] != car or (opts.get("tur_no") or 0) <= 2:
                 yy = state["yaris_yakit"] = {"araba": car, "turlar": []}
+                state["strateji_durum"] = {}        # yeni yarış: neyin söylendiği baştan
             harcanan = lap["fuel"][0] - lap["fuel"][-1]
             if not yy["turlar"] or harcanan >= 0.5 * max(yy["turlar"]):   # pitten çıkış gibi yarım turlar sayılmaz
                 yy["turlar"].append(harcanan)
-            tur_basi, artti = gt7_strateji.tuketim(yy["turlar"])
+            tur_basi, degisim = gt7_strateji.tuketim(yy["turlar"])
             sp = gt7_strateji.plan(lap["fuel"][-1], opts.get("kapasite"), tur_basi, kalan, opts.get("tur_no") or 0)
             if sp:
-                sp["artti"] = artti
+                sp["artti"] = degisim == "artti"
+                sp["son_tur"] = yy["turlar"][-1]
+                ds = gt7_strateji.degisim_satiri(yy["turlar"], degisim)
+                if ds:
+                    out.append(ds)
                 gt7_strateji.guclu_ek(sp, yy["turlar"])
                 state["strateji"] = sp
                 out.append(gt7_strateji.satir(sp, pit_sn))
@@ -1794,7 +1799,8 @@ class Koc:
                                                 "yaris_sessiz": d["toplam_tur"] > 0
                                                 and self.ayar.get("yaris_tavsiye") != "acik",
                                                 "tt": self.tt_hedef(state, d["araba"]), "bitis": bitis,
-                                                "sira": (pkt.race_position, pkt.total_positions)
+                                                "sira": (pkt.race_position, pkt.total_positions,
+                                                         self.muhendis.sira_degisimi(pkt.race_position))
                                                 if d["toplam_tur"] > 0 and pkt.total_positions >= 2 else None})
                         self.hazirla_gerek = True
                         bitis = None        # tur sonu mesajı bitişi söyledi

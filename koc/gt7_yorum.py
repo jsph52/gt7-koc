@@ -129,6 +129,17 @@ def virajlar_metni(nolar):
     return nolar[0] if len(nolar) == 1 else ", ".join(nolar[:-1]) + " ve " + nolar[-1]
 
 
+SAYI_AD = {1: "Bir", 2: "İki", 3: "Üç", 4: "Dört", 5: "Beş"}
+
+
+def sira_cumlesi(sira, fark):
+    """Tur sonunda sıra değişimi: "İki sıra kazandın, 4. sıradasın." (fark > 0 kazanılan sıra)."""
+    kac = SAYI_AD.get(abs(fark), str(abs(fark)))
+    fiil = "kazandın" if fark > 0 else "kaybettin"
+    yer = "lidersin" if sira == 1 else f"{sira}. sıradasın"
+    return f"{kac} sıra {fiil}, {yer}."
+
+
 def ses_ozeti(lap_ms, best_before, problem, gecmis, cmp_res, manuel,
               yakit_tur=None, kalan_tur=None, lastik=None, teker_tekrar=(), revlim_s=None, ayar_ses=None,
               duzeltilen=(), sira=None, tempo=None, fren_ses=None, pit_sn=None, strateji_ses=None,
@@ -137,11 +148,12 @@ def ses_ozeti(lap_ms, best_before, problem, gecmis, cmp_res, manuel,
     Tavsiye her zaman vardır (Notlar'daki analiz sesli de söylenir):
     fren alışkanlığı ya da en çok kaybettiren viraj, sebebi ve ne yapmalı.
     duzeltilen: geçen sefer söylenen sorunu bu turda düzeltilen virajlar (kısa övgü).
-    sira: yarışta (sıra, araç sayısı); süreden önce söylenir.
+    sira: yarışta (sıra, araç sayısı, önceki tur sonundan bu yana kazanılan sıra); sıra değiştiyse süreden
+    önce söylenir ("İki sıra kazandın, 4. sıradasın."), değişmediyse söylenmez.
     tempo: tempo düşüşü cümlesi; fren_ses: fren alışkanlığı cümlesi (ikisi de odaktan önce gelir)."""
     parcalar = [sure_yorumu(lap_ms, best_before, problem)]
-    if sira:
-        parcalar.insert(0, f"{sira[0]}. sıradasın.")
+    if sira and len(sira) > 2 and sira[2]:
+        parcalar.insert(0, sira_cumlesi(sira[0], sira[2]))
     krit = kritikler(yakit_tur, kalan_tur, lastik, list(teker_tekrar), revlim_s, manuel, pit_sn, strateji_ses,
                      hava_ses)
     yaris_kritik = bool(krit and (krit[0].startswith("Yakıt") or krit[0] == strateji_ses))
