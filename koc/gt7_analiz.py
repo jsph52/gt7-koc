@@ -27,10 +27,6 @@ TEMPO_DUSUK_MS = 800     # son 3 turun ortalaması en iyiden bu kadar yavaşsa s
 TEMPO_TEMIZ_MS = 400     # ... bu kadara inince uyarı temizlenir
 FREN_ALISKANLIK_M = 10   # son 2 turun ikisinde de en az bu kadar sapma
 TUTARSIZ_SN = 0.08       # virajda bundan büyük standart sapma "tutarsız"
-ISLAK_YAVAS = 1.03       # ıslak tahmini: tur en iyiden en az %3 yavaş
-ISLAK_VIRAJ_ORAN = 0.8   # ... virajların en az %80'inde 0,03 sn+ kayıp
-ISLAK_LASTIK_DUSUS = 5   # ... ve lastik ortalaması önceki turlardan en az bu kadar °C düşük
-KURU_YAKIN = 1.02        # ıslak şüphesindeyken temiz tur en iyiye bu kadar yaklaşınca pist kurumuş sayılır
 
 
 # ---------------- Ters yön ----------------
@@ -205,27 +201,3 @@ def fren_aliskanligi(state, cmp_res):
                    + ("Biraz daha geç bas." if yon == "erken" else "Biraz daha erken bas."))
             break
     return satirlar, ses
-
-
-# ---------------- Islak pist tahmini ----------------
-def islak_tur(state, cmp_res, lap_ms, best_ms, lastik_ort):
-    """Tutuş düşüşü: neredeyse her virajda kayıp + belirgin yavaş tur + lastikler soğumuş.
-    Döner (ekran satırı ya da None, ses ya da None (seansta bir kez), ıslak mı)."""
-    onceki = state.setdefault("lastik_turlar", [])
-    sonuc = (None, None, False)
-    if cmp_res and len(cmp_res) >= 4 and best_ms and lap_ms >= ISLAK_YAVAS * best_ms and onceki and lastik_ort:
-        n = sum(1 for r in cmp_res if r["delta"] > 0.03)
-        son = onceki[-5:]
-        dusus = sum(son) / len(son) - lastik_ort
-        if n >= ISLAK_VIRAJ_ORAN * len(cmp_res) and dusus >= ISLAK_LASTIK_DUSUS:
-            satir = (f"Tutuş düştü: {len(cmp_res)} virajın {n} tanesinde yavaşsın ve lastikler önceki turlardan "
-                     f"{dusus:.0f} °C soğuk. Pist ıslak olabilir; viraj uyarıları pist kuruyana kadar susar.")
-            ses = None
-            if not state.get("islak_dedi"):
-                state["islak_dedi"] = True
-                ses = "Bütün virajlarda yavaşladın, lastikler soğudu. Pist ıslak olabilir."
-            sonuc = (satir, ses, True)
-    if lastik_ort and not sonuc[2]:
-        onceki.append(lastik_ort)
-        del onceki[:-10]
-    return sonuc

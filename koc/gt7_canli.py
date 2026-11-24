@@ -44,8 +44,8 @@ VARSAYILAN = {"uyari": "sorunlu",    # "hepsi" ya da "sorunlu"
               "yaris_tavsiye": "kapali",  # yarışta viraj tavsiyesi (16 Kasım 2026): kapalı = sadece mühendis + tur süresi
               "yonlendir_port": "",    # veri yönlendirme: PS5 paketleri bu porta da kopyalanır (boş = kapalı)
               "ses_cihazi": "",        # koçun sesi ve fren uyarısı hangi ses cihazından (boş = Windows varsayılanı)      # rekor turunda fren noktası önce: yok / az (10 m) / orta (20 m) / cok (30 m)
-              "surum": 3}            # ayar dosyası sürümü (eski ayarları bir kez günceller)
-AYAR_SURUM = 3
+              "surum": 4}            # ayar dosyası sürümü (eski ayarları bir kez günceller)
+AYAR_SURUM = 4
 # Arayüzden gelebilecek değerler (başka değer yazılmaz; discord_kanal ve ses_duzeyi ayrıca denetlenir)
 SECENEKLER = {"uyari": ("sorunlu", "hepsi"), "vites": ("algila", "manuel", "otomatik"),
               "fren_sesi": ("acik", "kapali"), "cikis_yorumu": ("acik", "kapali"),
@@ -102,6 +102,11 @@ def ayar_oku():
         # Eskiden mühendis anonsları "Viraj sesi" ya da "Tur sesi" açıksa okunurdu: aynı davranış korunur
         if "ses_viraj" in a or "ses_tur" in a:
             a.setdefault("ses_muhendis", "acik" if "acik" in (a.get("ses_viraj"), a.get("ses_tur")) else "kapali")
+    if a and a.get("surum", 1) < 4:
+        # Eski sürümlerde sesli koç varsayılan kapalıydı ve ayar dosyasında öyle kalmış olabilir:
+        # bir kez açılır (sonra kullanıcının seçimi korunur).
+        a.update(ses_viraj="acik", ses_tur="acik", ses_muhendis="acik", sessiz="kapali")
+    if a:
         a["surum"] = AYAR_SURUM
     if a.get("hassasiyet") in ESKI_HASSASIYET:   # 14 Kasım 2026: 3 seviye (saniye) -> 5 seviye (yüzde)
         a["hassasiyet"] = ESKI_HASSASIYET[a["hassasiyet"]]
