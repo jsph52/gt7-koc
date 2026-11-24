@@ -58,6 +58,11 @@ def plan(yakit, kapasite, tur_basi, kalan_tur, simdiki_tur):
         if kapasite:
             al = min(al, math.floor(kapasite - depoda))
         p["alinacak"] = max(1, al)
+        if kapasite:
+            # Pit ekranı yakıtı litre değil, depo doluluğu (%) olarak gösterir ("Refuel 91%" = pitten sonra
+            # depo %91 dolu): gereken doluluk 5'lik basamağa yukarı yuvarlanır (biraz pay, ekranda kolay ayar)
+            yuzde = math.ceil((depoda + p["alinacak"]) / kapasite * 100 / 5 - 1e-9) * 5
+            p["doluluk"] = yuzde if yuzde < 100 else None     # None: depoyu doldur
     else:
         p["alinacak"] = None                        # depoyu doldur
     return p
@@ -125,7 +130,12 @@ def satir(p, pit_sn=None):
                    else f"{p['en_erken']}.–{p['en_gec']}. tur")
         s = (f"Strateji: {p['pit_sayisi']} pit gerekli. Pit penceresi: {pencere} "
              f"(en geç {p['en_gec']}. turun sonunda gir)")
-    s += (f", en az {p['alinacak']} L al." if p.get("alinacak") else ", depoyu doldur.")
+    if p.get("doluluk"):
+        s += f", depoyu en az %{p['doluluk']} doldur (en az {p['alinacak']} L)."
+    elif p.get("alinacak") and "doluluk" not in p:
+        s += f", en az {p['alinacak']} L al."
+    else:
+        s += ", depoyu doldur."
     if pit_sn:
         s += f" Pit ~{pit_sn:.0f} sn kaybettirir."
     h = harita(p, pit_sn)
@@ -171,7 +181,12 @@ def sesli(p, durum, pit_sn=None):
         return None
     # "al." cümle sonunda ses motorunca harf harf okunuyordu: "almalısın" denir
     arti = "Yakıt tüketimin arttı. " if p.get("artti") else ""
-    al = f"En az {p['alinacak']} litre yakıt almalısın." if p.get("alinacak") else "Depoyu doldur."
+    if p.get("doluluk"):
+        al = f"Depoyu en az yüzde {p['doluluk']} doldur."
+    elif p.get("alinacak") and "doluluk" not in p:      # depo kapasitesi bilinmiyorsa litre
+        al = f"En az {p['alinacak']} litre yakıt almalısın."
+    else:
+        al = "Depoyu doldur."
     if p["tur"] == p["en_gec"] and durum.get("pit_turu_dedi") != p["en_gec"]:
         durum["pit_turu_dedi"] = p["en_gec"]
         return f"Bu tur sonunda pite gir. {al}"
