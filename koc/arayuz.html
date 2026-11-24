@@ -123,6 +123,7 @@ header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--li
 .motor small{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .motor b{display:block;font-size:clamp(17px,2.1vh,24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #mZemin{font-size:clamp(14px,1.7vh,19px)}
+.motor.cok #yakitKutu{grid-column:span 2}   /* litre + kaç tur yeteceği yan yana sığsın */
 
 /* Harita */
 .harita-kart{padding:12px 16px}
@@ -550,6 +551,29 @@ header .bitir{margin-left:6px}
 header button{white-space:nowrap}
 header .haplar{flex-wrap:nowrap;gap:5px}
 header .y-hap{font-size:14px;padding:2px 8px}
+/* Üst çubuk şeridi: bitişik eğik kutular (TV yayını grafiği) */
+header .serit{display:flex;align-items:stretch;height:34px;min-width:0;transform:skewX(-10deg)}
+header .serit>span,header .s-haplar>span{display:flex;align-items:center;gap:8px;padding:0 14px;font-weight:700;text-transform:uppercase;font-size:17px;white-space:nowrap;background:#1c1f25;color:#fff;border-left:2px solid #000}
+header .serit .s-mod{background:#fff;color:#000;border-left:0}
+header .serit .s-pist{min-width:0;overflow:hidden}
+header .s-pist #pistAd{overflow:hidden;text-overflow:ellipsis}
+header .s-deg{color:#8a93a3;font-size:16px;cursor:pointer;padding-left:2px}
+header .s-deg:hover,header .s-deg:focus{color:#fff;outline:0}
+header .serit .s-haplar{display:flex;padding:0;border:0;background:none}
+header .s-haplar:empty{display:none}
+header .s-haplar .h-tt{color:var(--ok)}
+header .s-haplar .h-tt.eksik{color:var(--warn)}
+header .s-haplar .h-odak{background:var(--accent)}
+header .s-haplar .h-yaris{color:#8a93a3}
+header .s-haplar .h-yaris.acik{color:var(--ok)}
+header .s-haplar .tikla{cursor:pointer}
+header .s-haplar .tikla:hover{filter:brightness(1.25)}
+header .serit .s-dur{color:#c9ced8}
+@media (max-width:760px){   /* telefon: şerit satırlara bölünür, pist adı kaybolmaz */
+  header .serit{flex-wrap:wrap;height:auto;row-gap:4px;max-width:100%}
+  header .serit>span,header .s-haplar>span{height:30px;font-size:15px;padding:0 10px}
+  header .serit .s-pist{order:-1;flex:1 1 100%;max-width:none}
+}
 .kabuk .tt-bas{display:flex;gap:30px;align-items:center;background:var(--panel);padding:16px 24px;margin-top:14px;border-left:8px solid var(--accent)}
 .kabuk .sayilar{display:flex;gap:40px;margin-top:12px;flex-wrap:wrap}
 .kabuk .kontrol{display:grid;grid-template-columns:140px 1fr 1fr;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}
@@ -658,7 +682,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   html[data-tema="yayin"] .logo{font-size:26px;padding:0 28px 0 14px;margin-left:-12px}
   html[data-tema="yayin"] header .pill{font-size:16px;padding:6px 4px}
   html[data-tema="yayin"] header button{padding-left:11px;padding-right:11px}
-  #kayitDurum{display:none}
+  header .s-pist{max-width:340px}
+  header .serit>span,header .s-haplar>span{font-size:15px;padding:0 10px}
 }
 /* Dikey tablet (iPad 744–1024 px genişlik): canlı | harita, son yorum, araç | turlar, viraj geçmişi */
 @media (orientation:portrait) and (min-width:700px){
@@ -668,8 +693,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   html[data-tema="yayin"] .logo{min-height:50px}
   /* Üst çubuk iki satır: logo + bağlantı + pist / haplar + düğmeler */
   header::after{content:"";order:1;flex-basis:100%;height:0}
-  header .haplar,header button{order:2}
-  header .haplar{margin-right:auto;padding:6px 0}
+  header button{order:2;margin:6px 0}
+  header #sesDugme{margin-left:auto}
+  header .serit{flex:1 1 auto}
   header .sp{display:none}
   .harita-alt{flex-wrap:wrap;gap:2px 10px}.harita-alt span:last-child{white-space:nowrap}#haritaNot{order:2;flex:1 1 100%;font-size:15px}
   .govde{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"canli harita" "band band" "arac turlar" "serit serit";overflow:visible}
@@ -702,6 +728,135 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .inceleme-ekran .grafik svg{max-height:300px}
   .ayar-nav{width:200px}
   .perde{padding:16px}
+}
+/* ---------- Basit görünüm (masaüstü / tablet) ---------- */
+#basit{display:none}
+body.basit #kocEkrani>.govde{display:none}
+body.basit #basit{display:grid;min-height:0;gap:12px;
+  grid-template-columns:clamp(300px,21vw,420px) minmax(0,1fr) clamp(290px,20vw,390px);
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto auto;
+  grid-template-areas:"fark harita turlar" "viraj harita arac" "surus surus surus" "band band band"}
+#basit .kart{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+#basit small{display:block;font-size:16px;font-weight:700;text-transform:uppercase;color:var(--dim)}
+#basit b{font-style:italic;font-weight:800;line-height:.9}
+.b-fark{grid-area:fark}.b-viraj{grid-area:viraj}.b-harita{grid-area:harita}.b-turlar{grid-area:turlar}.b-arac{grid-area:arac}
+.b-fk{flex:1;display:flex;flex-direction:column;justify-content:center;padding:6px 26px 10px;background:var(--panel2);clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)}
+.b-fk>b{font-size:clamp(70px,11vh,130px)}
+.b-fk-alt{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+.b-fk-alt>span{font-size:24px;font-weight:700;text-transform:uppercase}
+.b-spark{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.b-spark svg{width:150px;height:56px}
+.b-fk.on{background:linear-gradient(90deg,rgba(0,210,106,.22),rgba(0,210,106,.04))}.b-fk.on b,.b-fk.on span{color:var(--ok)}
+.b-fk.geri{background:linear-gradient(90deg,rgba(255,45,58,.22),rgba(255,45,58,.04))}.b-fk.geri b,.b-fk.geri span{color:var(--bad)}
+.b-vr{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 6px}
+.b-vno{display:flex;align-items:baseline;gap:20px;min-width:0}
+.b-vno b:first-child{font-size:clamp(70px,10vh,120px);color:var(--warn)}
+.b-vno b+b{font-size:clamp(42px,6vh,66px);white-space:nowrap}
+.b-bip{display:flex;gap:10px;align-items:center}.b-bip i{flex:1;height:18px;background:#2c2e33;transform:skewX(-14deg)}.b-bip i.on{background:var(--warn)}
+.b-bip small{flex:none;margin-left:8px}
+.b-ipucu{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:21px;font-weight:700;min-height:30px}
+.b-h{padding:2px 10px;font-style:italic}.b-h.kotu{background:rgba(255,45,58,.18);color:var(--bad)}.b-h.iyi{background:rgba(0,210,106,.16);color:var(--ok)}
+.b-hr{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.b-hr svg{width:100%;height:100%}
+#basit svg.buyuk .vfark{font-size:24px}#basit svg.buyuk .vno{font-size:21px}
+#basit svg.buyuk .arac{r:13;fill:#ffd400;stroke:#000}
+.b-hr-alt{display:flex;justify-content:space-between;gap:12px;font-size:18px;font-weight:600;text-transform:uppercase;color:var(--muted)}
+.b-hr-alt b{color:var(--warn);font-style:normal}
+.b-sat{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:2px 14px}
+.b-sat b{font-size:clamp(28px,3.6vh,38px);text-align:right;white-space:nowrap}.b-sonuk{color:var(--muted)}
+.b-tl{display:flex;flex-direction:column;gap:4px;margin-top:4px;min-height:0;overflow:hidden}
+.b-tl div{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:10px;background:var(--panel2);padding:3px 10px;font-size:21px;font-weight:700;font-style:italic}
+.b-tl div i{font-style:normal;color:var(--dim);font-size:15px}
+.b-arac-ic{flex:1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+.b-ls{display:grid;grid-template-columns:52px 26px 52px;grid-template-rows:58px 58px;gap:6px}
+.b-ls span{display:flex;align-items:center;justify-content:center;font-style:italic;font-weight:800;font-size:22px;color:#000;background:var(--c,#3a4049)}
+.b-ls i{grid-row:1/3;grid-column:2;background:#000;border:2px solid #2c2e33}
+.b-ls span:nth-of-type(1){grid-area:1/1}.b-ls span:nth-of-type(2){grid-area:1/3}.b-ls span:nth-of-type(3){grid-area:2/1}.b-ls span:nth-of-type(4){grid-area:2/3}
+.b-yk b{font-size:clamp(26px,3.2vh,34px);white-space:nowrap}
+#bLastikDurum{font-size:20px;font-weight:700}
+.b-surus{grid-area:surus;flex-direction:row!important;align-items:center;gap:22px!important;padding:8px 20px}
+.b-surus>b{font-size:clamp(56px,8vh,84px)}
+.b-vt{font-size:clamp(44px,6vh,64px);font-weight:800;font-style:italic;background:var(--accent);padding:0 20px;transform:skewX(-10deg)}
+.b-surus .isik{flex:1;display:flex;gap:6px}.b-surus .isik i{height:20px;border-radius:0;transform:skewX(-14deg)}
+.b-pd{display:grid;grid-template-columns:auto 200px;gap:6px 10px;align-items:center}
+.b-pd span{display:block;height:12px;background:#22252b;position:relative}.b-pd i{position:absolute;inset:0 auto 0 0;background:var(--ok)}.b-pd i.fren{background:var(--bad)}
+#basit .band{grid-area:band;height:clamp(54px,7vh,72px);font-size:clamp(22px,3vh,32px)}
+#gorunumDugme.secili{background:#fff;color:#000}
+#basit .band small{font-size:clamp(15px,1.9vh,20px);align-self:stretch;display:flex;align-items:center}
+@media (max-width:1400px){
+  body.basit #basit{grid-template-columns:clamp(260px,22vw,320px) minmax(0,1fr) clamp(250px,21vw,300px)}
+  .b-arac-ic{grid-template-columns:1fr;justify-items:start;gap:10px}
+  .b-spark svg{width:100px}
+  .b-fk-alt>span{font-size:20px}
+  .b-pd{grid-template-columns:auto 140px}
+}
+
+/* ---------- Telefon görünümü ---------- */
+#tel{display:none}
+@media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse){
+  body{overflow:auto}
+  #kocEkrani.app{display:block;height:auto;min-height:100dvh;padding:0 0 58px;margin:0}
+  #kocEkrani>header{display:none}
+  #tel{display:block}
+  body.basit #basit{display:none}
+  body.basit[data-tel="canli"] #kocEkrani>.govde{display:none}
+  .tel-ust{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:8px;height:42px;background:#000;border-bottom:3px solid var(--accent);padding-right:4px}
+  .tel-logo{align-self:stretch;display:flex;align-items:center;gap:5px;background:var(--accent);padding:0 18px 0 10px;font-weight:800;font-style:italic;font-size:20px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+  .tel-logo b{color:#000}
+  .tel-pist{flex:1;min-width:0;font-weight:700;font-size:15px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tel-dur{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;text-transform:uppercase;color:#c9ced8;white-space:nowrap}
+  .tel-menu-ac{background:none;border:0;color:#fff;font-size:24px;padding:0 10px;min-height:42px}
+  .tel-menu{position:fixed;top:45px;right:6px;z-index:70;display:flex;flex-direction:column;gap:4px;background:#17181b;border:1px solid var(--line);padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+  .tel-menu[hidden]{display:none}
+  .tel-menu button{text-align:left;font-size:18px;padding:12px 16px}
+  .tel-canli{display:flex;flex-direction:column;gap:10px;padding:10px;min-height:calc(100dvh - 45px - 58px - 52px)}
+  .tel-canli small,.tel-sure small{display:block;font-size:14px;font-weight:700;text-transform:uppercase;color:#8a93a3}
+  .tel-canli b{font-style:italic;font-weight:800;line-height:.9}
+  .tel-fark{background:var(--panel);border-left:8px solid #5d6575;padding:10px 14px}
+  .tel-fark b{display:block;font-size:min(30vw,120px)}
+  .tel-fark span{font-size:20px;font-weight:700;text-transform:uppercase}
+  .tel-fark.on{background:rgba(0,210,106,.12);border-color:var(--ok)} .tel-fark.on b,.tel-fark.on span{color:var(--ok)}
+  .tel-fark.geri{background:rgba(255,45,58,.12);border-color:var(--bad)} .tel-fark.geri b,.tel-fark.geri span{color:var(--bad)}
+  .tel-viraj{background:var(--panel);border-left:8px solid var(--warn);padding:10px 14px}
+  .tel-vno{display:flex;align-items:baseline;gap:14px;min-width:0}
+  .tel-vno b{font-size:min(21vw,84px);color:var(--warn)}
+  .tel-vno span{font-size:min(13vw,52px);font-style:italic;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tel-bip{display:flex;gap:8px;margin-top:10px}.tel-bip i{flex:1;height:14px;background:#2c2e33;transform:skewX(-14deg)}.tel-bip i.on{background:var(--warn)}
+  .tel-sure{display:grid;grid-template-columns:auto 1fr 1fr;gap:14px;background:var(--panel);padding:8px 14px}
+  .tel-sure b{font-size:min(8vw,32px);font-style:italic;font-weight:800;white-space:nowrap}
+  .tel-hiz{display:flex;align-items:center;gap:10px;padding:0 4px}
+  .tel-hiz>b{font-size:46px}
+  .tel-hiz small{font-weight:700;color:#8a93a3;text-transform:uppercase}
+  .tel-hiz span{font-size:38px;font-weight:800;font-style:italic;background:var(--accent);padding:0 12px;transform:skewX(-10deg)}
+  .tel-hiz .isik{flex:1;display:flex;gap:4px}.tel-hiz .isik i{height:10px;border-radius:0;transform:skewX(-14deg)}
+  .tel-band{display:flex;align-items:center;gap:10px;background:#fff;color:#000;padding:10px 12px;font-weight:700;font-size:20px;min-height:52px}
+  .tel-band i{font-style:italic;font-weight:800;background:var(--accent);color:#fff;padding:2px 8px;font-size:14px;text-transform:uppercase;transform:skewX(-10deg);white-space:nowrap}
+  .tel-band span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .tel-band.kotu i{background:var(--bad)} .tel-band.iyi i{background:var(--ok);color:#000} .tel-band.once i{background:var(--warn);color:#000}
+  .tel-sek{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:#0b0c0e;border-top:1px solid var(--line)}
+  .tel-sek button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-size:16px;font-weight:700;text-transform:uppercase;color:#8a93a3;clip-path:none;margin:0}
+  .tel-sek button.s{color:#fff;background:#17181b;box-shadow:inset 0 3px 0 var(--accent)}
+  /* Canlı sekmesi dışında: koç ekranının ilgili kartı tam genişlikte */
+  body:not([data-tel="canli"]) .tel-canli, body:not([data-tel="canli"]) .tel-band{display:none}
+  body[data-tel="canli"] #kocEkrani .govde{display:none}
+  body:not([data-tel="canli"]) #kocEkrani .govde{display:block!important;padding:8px}
+  body:not([data-tel="canli"]) #kocEkrani .govde .sol, body:not([data-tel="canli"]) #kocEkrani .govde .band,
+  body:not([data-tel="canli"]) #kocEkrani .govde .kart.serit{display:none}
+  body[data-tel="turlar"] #kocEkrani .harita-kart, body[data-tel="mesajlar"] #kocEkrani .harita-kart,
+  body[data-tel="harita"] #kocEkrani .turlar-kart{display:none}
+  body[data-tel="turlar"] .turlar-kart :is(.ayrac,.mini-sekme,#kocMesajlar,#oneriler){display:none!important}
+  body[data-tel="mesajlar"] .turlar-kart :is(.kart-ust,#hedefSerit,#turlar,.ayrac){display:none!important}
+  #kocEkrani .turlar-kart,#kocEkrani .harita-kart{min-height:calc(100dvh - 45px - 58px - 16px);contain:none}
+  #kocEkrani .ust-sira{contain:none;min-height:0;display:block}
+}
+/* Yatay telefon: canlı bilgiler iki sütun, sekmeler gizli */
+@media (max-height:500px) and (orientation:landscape) and (pointer:coarse){
+  #kocEkrani.app{padding-bottom:0}
+  .tel-sek{display:none}
+  body[data-tel] .tel-canli{display:grid!important;grid-template-columns:1.2fr 1fr;grid-template-areas:"fark viraj" "sure hiz";min-height:calc(100dvh - 45px - 52px)}
+  body[data-tel] .tel-band{display:flex!important}
+  body[data-tel] #kocEkrani .govde{display:none!important}
+  .tel-fark{grid-area:fark}.tel-viraj{grid-area:viraj}.tel-sure{grid-area:sure}.tel-hiz{grid-area:hiz}
+  .tel-fark b{font-size:min(26vh,120px)} .tel-vno b{font-size:min(18vh,80px)} .tel-vno span{font-size:min(10vh,46px)}
 }
 </style>
 </head>
@@ -779,17 +934,45 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </div>
 
 <div class="app" id="kocEkrani" hidden>
+<!-- Telefon görünümü (≤760 px ya da yatay telefon): sadece sürerken gerekenler; sekmelerle turlar / harita / mesajlar -->
+<div class="tel" id="tel">
+  <div class="tel-ust">
+    <div class="tel-logo">GT7 <b>KOÇ</b></div>
+    <div class="tel-pist" id="telPist">—</div>
+    <div class="tel-dur"><i class="nokta" id="telNokta"></i><span id="telDur">—</span></div>
+    <button class="tel-menu-ac" id="telMenuAc" aria-label="Menü" aria-expanded="false">☰</button>
+  </div>
+  <div class="tel-menu" id="telMenu" hidden>
+    <button id="telSesDugme">Bu telefonda ses: kapalı</button>
+    <button id="telPistDegistir">Pist değiştir</button>
+    <button id="telAyar">Ayarlar</button>
+    <button id="telBitir" class="bitir">Antrenmanı bitir</button>
+  </div>
+  <div class="tel-canli">
+    <div class="tel-fark" id="telFarkKutu"><small id="telFarkBaslik">Canlı fark</small><b id="telFark">—</b><span id="telFarkYazi"></span></div>
+    <div class="tel-viraj"><small>Sıradaki viraj</small><div class="tel-vno"><b id="telVNo">—</b><span id="telVM">—</span></div>
+      <div class="tel-bip" id="telBip"><i></i><i></i><i></i></div></div>
+    <div class="tel-sure"><div><small>Tur</small><b id="telTur">—</b></div><div><small>Son</small><b id="telSon">—</b></div><div><small>En iyi</small><b id="telEnIyi" class="mor">—</b></div></div>
+    <div class="tel-hiz"><b id="telHiz">0</b><small>km/s</small><span id="telVites">N</span>
+      <div class="isik" id="telDevir"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="tel-band" id="telBand"><i id="telBandEt">Son yorum</i><span id="telBandYazi">Koçun son söylediği burada görünür.</span></div>
+  <nav class="tel-sek" id="telSek"><button data-tel="canli" class="s">Canlı</button><button data-tel="turlar">Turlar</button><button data-tel="harita">Harita</button><button data-tel="mesajlar">Mesajlar</button></nav>
+</div>
 <header>
   <div class="logo">GT7 <b>KOÇ</b></div>
-  <div class="haplar" id="haplar"></div>
-  <div class="pill"><i class="nokta" id="baglantiNokta"></i><span id="baglantiYazi">Başlamadı</span></div>
-  <div class="pill" id="pistRozet">Pist <strong id="pistAd">—</strong></div>
-  <div class="pill" id="kayitDurum">Pist seçince koç başlar.</div>
-  <button id="pistDegistir">Pist değiştir</button>
+  <!-- Tek şerit: mod | pist ✎ | (Time Trial hazırlık, odak, yarış) | bağlantı ve kayıt -->
+  <div class="serit">
+    <span class="s-mod" id="sMod">Koç</span>
+    <span class="s-pist"><span id="pistAd">—</span><span class="s-deg" id="pistDegistir" role="button" tabindex="0" title="Pist değiştir">✎</span></span>
+    <span class="s-haplar" id="haplar"></span>
+    <span class="s-dur"><i class="nokta" id="baglantiNokta"></i><span id="baglantiYazi">Başlamadı</span></span>
+  </div>
   <div class="sp"></div>
   <button id="sesDugme" class="ikon-dugme" title="Koçun konuşmasını aç / kapat (fren uyarısı etkilenmez). Ayrıntı: Ayarlar › Ses">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path id="sesIkonAcik" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path id="sesIkonKapali" hidden d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     <span id="sesDugmeYazi">Ses açık</span></button>
+  <button id="gorunumDugme" title="Sade ekran: harita, canlı fark, sıradaki viraj, süreler, yakıt ve lastikler büyük">◧ Basit görünüm</button>
   <button id="ayarAc">⚙ Ayarlar</button>
   <button id="bitirBtn" class="bitir">Antrenmanı bitir</button>
 </header>
@@ -847,7 +1030,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
           <div><small>Yağ</small><b id="mYag">—</b></div>
           <div><small>Yağ basıncı</small><b id="mBasinc">—</b></div>
           <div><small>Yükseklik</small><b id="mYukseklik">—</b></div>
-          <div id="yakitKutu"><small id="mYakitEt">Yakıt</small><b id="mYakit">—</b></div>
+          <div id="yakitKutu"><small id="mYakitEt">Yakıt</small><b><span id="mYakit">—</span><span id="mYakitTur"></span></b></div>
           <div id="zeminKutu"><small>Zemin</small><b id="mZemin">—</b></div>
           <div id="turboKutu" hidden><small>Turbo</small><b id="mTurbo">—</b></div>
           <div id="siraKutu" hidden><small>Yarış sırası</small><b id="mSira">—</b></div>
@@ -887,7 +1070,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         <div class="harita-alt"><span id="haritaNot">&nbsp;</span><span>En iyi <b id="haritaEnIyi">—</b> · İdeal <b id="haritaIdeal">—</b></span></div>
       </section>
 
-      <section class="kart">
+      <section class="kart turlar-kart">
         <div class="kart-ust"><h2>Turlar</h2>
           <div style="display:flex;gap:6px"><button class="kucuk" id="kturAc" title="İki turun hız, gaz, fren çizgileri üst üste">Karşılaştır</button><button class="kucuk" id="raporAc" title="Bu seansın tek sayfalık özeti">Rapor</button><button class="kucuk" id="incelemeAc">İnceleme</button><button class="kucuk" id="notlarAc">Notlar</button></div></div>
         <div class="hedef" id="hedefSerit" title="Tıkla: hedef süreyi koy / değiştir; farkı hangi virajların kapatacağını gör">
@@ -907,6 +1090,34 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div id="serit"><div class="bos" style="padding:10px 0">İki temiz turdan sonra her virajın turdan tura farkı burada renkli tabloda birikir.</div></div>
     </section>
   </div>
+</div>
+
+<!-- Basit görünüm: harita büyük; canlı fark, sıradaki viraj, süreler, araç, sürüş ve son yorum -->
+<div class="basit" id="basit">
+  <section class="kart b-fark"><h2 id="bFarkBaslik">Canlı fark</h2>
+    <div class="b-fk" id="bFarkKutu"><b id="bFark">—</b>
+      <div class="b-fk-alt"><span id="bFarkYazi">referans tur bekleniyor</span>
+        <div class="b-spark"><small>Bu tur</small><svg id="bSpark" viewBox="0 0 200 56" preserveAspectRatio="none"></svg></div></div></div></section>
+  <section class="kart b-viraj"><h2>Sıradaki viraj</h2>
+    <div class="b-vr"><div class="b-vno"><b id="bVNo">—</b><b id="bVM">—</b></div>
+      <div class="b-bip" id="bBip"><i></i><i></i><i></i><small id="bBipYazi">3. seste frene bas</small></div>
+      <div class="b-ipucu"><small id="bGecenEt">Geçen tur</small><span class="b-h" id="bGecen">—</span><span id="bIpucu"></span></div></div></section>
+  <section class="kart b-harita"><div class="kart-ust"><h2>Harita · son tur viraj farkları</h2>
+      <div class="leg"><span><i style="background:var(--ok)"></i>kazandın</span><span><i style="background:var(--bad)"></i>kaybettin</span><span><i style="background:var(--accent);border-radius:50%"></i>araban</span></div></div>
+    <div class="b-hr" id="bHarita"><div class="bos">İlk temiz turdan sonra harita burada görünür.</div></div>
+    <div class="b-hr-alt"><span id="bEnCok">&nbsp;</span><span>İdeal <b id="bIdeal">—</b></span></div></section>
+  <section class="kart b-turlar"><h2>Turlar</h2>
+    <div class="b-sat"><small>Tur</small><b id="bTur">—</b><small>Son</small><b id="bSon">—</b>
+      <small>En iyi</small><b id="bEnIyi" class="mor">—</b><small>Hedef</small><b id="bHedef" class="b-sonuk">—</b></div>
+    <div class="b-tl" id="bTurlar"></div></section>
+  <section class="kart b-arac"><h2>Araç</h2>
+    <div class="b-arac-ic"><div class="b-ls" id="bLastik"><span></span><i></i><span></span><span></span><span></span></div>
+      <div class="b-yk"><small>Yakıt</small><b><span id="bYakit">—</span><span id="bYakitTur"></span></b>
+        <small style="margin-top:12px">Lastikler</small><div id="bLastikDurum">—</div></div></div></section>
+  <section class="kart b-surus"><b id="bHiz">0</b><small>km/s</small><span class="b-vt" id="bVites">N</span>
+    <div class="isik" id="bDevir"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="b-pd"><small>Gaz</small><span><i id="bGaz"></i></span><small>Fren</small><span><i id="bFren" class="fren"></i></span></div></section>
+  <div class="band" id="bBand"><small id="bBandEt">SON YORUM</small><div id="bBandYazi">Koçun son söylediği burada görünür.</div></div>
 </div>
 
 </div>
@@ -1455,7 +1666,11 @@ function sesSus(){
   sesSira.forEach(o => o.iptal = true); sesSira = [];
   if (sesCalan) sesCalan.dur();
 }
+// Telefon görünümü: koçun sesi zaten bilgisayardan gelir; telefonda ses varsayılan kapalı (bu cihaza özel)
+const TELEFON = window.matchMedia("(max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse)");
+const telSesAcik = () => localStorage.getItem("telSes") === "acik";
 function soyle(metin, oncelikli, zorla){
+  if (TELEFON.matches && !telSesAcik() && !zorla) return false;
   // Ses Discord'a gidiyorsa (koç kendisi gönderir) bu bilgisayarda çalma; "Sesi dene" (zorla) her zaman çalar
   if (sesAyar.ses_cikisi === "discord" && !zorla) return false;
   if (yerelSes) return false;      // ses seçilen cihazdan koçun kendisinden çıkıyor
@@ -1517,6 +1732,7 @@ function secimAc(ilk){
   setTimeout(() => $("ara").focus(), 50);
 }
 $("pistDegistir").onclick = () => secimAc(false);
+$("pistDegistir").onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); secimAc(false); } };
 $("secimKapat").onclick = () => $("secim").classList.remove("acik");
 let araZaman;
 $("ara").oninput = () => { clearTimeout(araZaman); araZaman = setTimeout(pistAra, 200); };
@@ -1928,12 +2144,23 @@ async function haritaYenile(){
   const svg = kutu.querySelector("svg[data-sc]");
   harita = svg ? {nokta: svg.querySelector(".arac"), minx: +svg.dataset.minx, minz: +svg.dataset.minz,
                   sc: +svg.dataset.sc, ox: +svg.dataset.ox, oz: +svg.dataset.oz} : null;
+  // Basit görünüm: aynı harita, büyük etiketlerle
+  $("bHarita").innerHTML = h && h.svg_buyuk ? h.svg_buyuk : '<div class="bos">İlk temiz turdan sonra harita burada görünür.</div>';
+  const bsvg = $("bHarita").querySelector("svg[data-sc]");
+  haritaBuyuk = bsvg ? {nokta: bsvg.querySelector(".arac"), minx: +bsvg.dataset.minx, minz: +bsvg.dataset.minz,
+                        sc: +bsvg.dataset.sc, ox: +bsvg.dataset.ox, oz: +bsvg.dataset.oz} : null;
+  yaz("bIdeal", h && h.ideal ? h.ideal : "—");
+  yaz("bEnCok", h && h.en_cok && h.en_cok.length ? "Son turda en çok: " + h.en_cok.map(([n, d]) => `Viraj ${n} (+${d.toFixed(2)})`).join(" · ") : " ");
+  basitTurlar(r.turlar);
 }
+let haritaBuyuk = null;
 function aracGoster(c){
-  if (!harita || !harita.nokta) return;
-  if (c.x === undefined || !c.connected){ harita.nokta.setAttribute("cx", -50); return; }
-  harita.nokta.setAttribute("cx", (harita.ox + (c.x - harita.minx) * harita.sc).toFixed(1));
-  harita.nokta.setAttribute("cy", (harita.oz + (c.z - harita.minz) * harita.sc).toFixed(1));
+  for (const h of [harita, haritaBuyuk]){      // normal ve basit görünüm haritası (ölçekleri farklı)
+    if (!h || !h.nokta) continue;
+    if (c.x === undefined || !c.connected){ h.nokta.setAttribute("cx", -50); continue; }
+    h.nokta.setAttribute("cx", (h.ox + (c.x - h.minx) * h.sc).toFixed(1));
+    h.nokta.setAttribute("cy", (h.oz + (c.z - h.minz) * h.sc).toFixed(1));
+  }
 }
 
 // ---------- Araç (canlı): lastik, G, devir ışığı, motor ----------
@@ -2033,12 +2260,18 @@ function aracBilgi(c){
   $("siraKutu").hidden = !c.sira; if (c.sira) yaz("mSira", `${c.sira[0]}. / ${c.sira[1]}`);
   $("hibritKutu").hidden = !("hibrit" in c); if ("hibrit" in c) yaz("mHibrit", c.hibrit === null ? "—" : c.hibrit);
   yaz("mYakit", c.yakit !== undefined ? c.yakit.toFixed(1) + " L" : "—");
+  // Yakıt kaç tur yeter: 3 turun altı sarı, 1,5 turun altı kırmızı
+  const yt = c.yakit_tur;
+  yaz("mYakitTur", yt !== null && yt !== undefined ? " · " + (yt >= 10 ? Math.round(yt) : yt.toFixed(1)) + " tur" : "");
+  $("mYakitTur").className = yt === null || yt === undefined ? "" : yt < 1.5 ? "kirmizi" : yt < 3 ? "sari" : "yesil";
   // Yarışta pit planı (gt7_strateji): "Yakıt · pit en geç 9. tur"
   yaz("mYakitEt", c.strateji ? "Yakıt · " + c.strateji : "Yakıt");
-  $("yakitKutu").title = c.strateji ? "Pit planı: " + c.strateji + " (ayrıntı tur notlarında)" : "";
+  $("yakitKutu").title = (c.strateji ? "Pit planı: " + c.strateji + " (ayrıntı tur notlarında). " : "")
+    + "Tur: son turların tüketimine göre depodaki yakıtın kaç tur yeteceği.";
   $("mYakitEt").style.color = c.strateji && /pit/i.test(c.strateji) ? "var(--warn)" : "";
   // 6'dan fazla kutu varsa (turbo, yarış sırası, hibrit) 4 sütuna geç ki ekran taşmasın
-  const gorunen = [...$("motor").children].filter(e => !e.hidden).length;
+  // Yakıt kutusu "kaç tur" de yazıyorsa iki sütun genişliğindedir: iki kutu sayılır
+  const gorunen = [...$("motor").children].filter(e => !e.hidden).length + ($("mYakitTur").textContent ? 1 : 0);
   $("motor").classList.toggle("cok", gorunen > 6);
   const z = c.zemin, zb = $("mZemin");
   if (!z){ yaz("mZemin", "—"); zb.className = ""; }
@@ -2188,6 +2421,7 @@ function gorunum(d){
   $("kabuk").hidden = ekran !== "kabuk"; $("kocEkrani").hidden = ekran !== "koc"; $("incEkran").hidden = ekran !== "inceleme";
   if (ekran === "kabuk" && a && a.mod === "tt" && sayfa !== "tt") sayfaGoster("tt");
   if (ekran === "kabuk" && !a && sayfa === "tt") sayfaGoster("ana");
+  yaz("sMod", !a ? "Koç" : a.mod === "tt" ? "Time Trial" : "Serbest antrenman");
   haplarGoster($("haplar"), a, true);
   if (sayfa === "tt") haplarGoster($("ttHaplar"), a, false);
   $("bitirBtn").hidden = !a;
@@ -2201,10 +2435,10 @@ function gorunum(d){
   yaz("menuSes", kocSessiz ? "Koç sessiz" : "Koç");
   // Üst çubuk: odak virajı ve yarışta tavsiye hapları
   const ek = $("haplar");
-  if (a && d.odak){ const h = el("span", "y-hap ok tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
+  if (a && d.odak){ const h = el("span", "h-odak tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
     h.onclick = () => postJson("/api/odak", {no: null}); ek.append(h); }
   if (a && c.toplam_tur > 0){ const acik = ay.yaris_tavsiye === "acik";
-    const h = el("span", "y-hap tikla" + (acik ? " ok" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
+    const h = el("span", "h-yaris tikla" + (acik ? " acik" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
     h.title = "Yarışta viraj tavsiyesi verilsin mi? Tıkla."; h.onclick = () => ayarGonder("yaris_tavsiye", acik ? "kapali" : "acik"); ek.append(h); }
   odakSecGuncelle(d);
 }
@@ -2213,8 +2447,16 @@ function haplarGoster(kutu, a, ustCubuk){
   if (!a) return;
   const hap = (metin, ok, tikla) => { const h = el("span", "y-hap" + (ok ? " ok" : "") + (tikla ? " tikla" : ""), metin);
     if (tikla){ h.title = "Time Trial hazırlık ekranını aç"; h.onclick = () => { ttHazirlik = true; sayfaGoster("tt"); }; } kutu.append(h); };
-  if (a.mod !== "tt"){ if (ustCubuk) hap("Serbest antrenman", false); return; }
+  if (a.mod !== "tt") return;
   if (a.araba) enAdEkle(a.araba);
+  if (ustCubuk){      // üst şeritte üç onay tek kutu: "✓ Hazır 3/3" (tıklayınca hazırlık ekranı)
+    const n = [a.pist_dogru, !!a.araba, !!a.rekor_turu].filter(Boolean).length;
+    const h = el("span", "h-tt tikla" + (n < 3 ? " eksik" : ""), (n === 3 ? "✓ Hazır " : "Hazırlık ") + n + "/3");
+    h.title = "Pist " + (a.pist_dogru ? "✓" : "doğrulanıyor") + " · Araba " + (a.araba ? "✓" : "bekleniyor")
+      + " · Rekor turu " + (a.rekor_turu ? "✓" : "yok") + ". Tıkla: Time Trial hazırlık ekranı.";
+    h.onclick = () => { ttHazirlik = true; sayfaGoster("tt"); };
+    kutu.append(h); return;
+  }
   hap(a.pist_dogru ? "✓ Pist" : "Pist doğrulanıyor", a.pist_dogru, ustCubuk);
   hap(a.araba ? (ustCubuk ? "✓ Araba" : "✓ Araba · " + a.araba) : "Araba bekleniyor", !!a.araba, ustCubuk);
   hap(a.rekor_turu ? "✓ Rekor turu" : "Rekor turu yok", a.rekor_turu, ustCubuk);
@@ -2574,6 +2816,118 @@ $("ipGonder2").onclick = async () => {
 };
 
 // ---------- Durum döngüsü ----------
+// Basit görünüm: koç ekranındaki değerleri büyük kartlara kopyalar (ayrı veri yok)
+const basitSecili = () => localStorage.getItem("gorunum") === "basit";
+function gorunumUygula(){
+  const b = basitSecili();
+  document.body.classList.toggle("basit", b);
+  yaz("gorunumDugme", b ? "◧ Normal görünüm" : "◧ Basit görünüm");
+  $("gorunumDugme").classList.toggle("secili", b);
+  if (b) basitGuncelle();
+}
+$("gorunumDugme").onclick = () => { localStorage.setItem("gorunum", basitSecili() ? "normal" : "basit"); gorunumUygula(); };
+let sparkTur = null, sparkNok = [];
+function basitGuncelle(c){
+  if (!document.body.classList.contains("basit") || TELEFON.matches) return;
+  const metin = id => $(id).textContent;
+  c = c || {};
+  yaz("bFarkBaslik", metin("farkBaslik").toLowerCase().replace(/^./, h => h.toUpperCase()));
+  yaz("bFark", metin("fark")); yaz("bFarkYazi", metin("farkYazi"));
+  const fk = $("farkKutu").classList;
+  $("bFarkKutu").className = "b-fk" + (fk.contains("on") ? " on" : fk.contains("geri") ? " geri" : "");
+  // Bu tur: canlı farkın tur boyunca gidişatı
+  if (c.tur !== undefined && c.tur !== sparkTur){ sparkTur = c.tur; sparkNok = []; }
+  if (typeof c.fark === "number" && c.on_track && !c.paused) sparkNok.push(c.fark);
+  if (sparkNok.length > 600) sparkNok = sparkNok.filter((_, i) => i % 2 === 0);
+  if (sparkNok.length > 1){
+    const mx = Math.max(0.1, ...sparkNok.map(Math.abs)), y = v => (28 - v / mx * 26).toFixed(1);
+    const son = sparkNok[sparkNok.length - 1];
+    $("bSpark").innerHTML = `<line x1="0" x2="200" y1="28" y2="28" stroke="#5d6575" stroke-dasharray="4 4"/>` +
+      `<polyline fill="none" stroke="${son > 0.05 ? "var(--bad)" : son < -0.05 ? "var(--ok)" : "#fff"}" stroke-width="3" vector-effect="non-scaling-stroke" points="${
+        sparkNok.map((v, i) => (i / (sparkNok.length - 1) * 200).toFixed(1) + "," + y(v)).join(" ")}"/>`;
+  } else $("bSpark").innerHTML = "";
+  // Sıradaki viraj
+  yaz("bVNo", metin("svNo")); yaz("bVM", metin("svMesafe"));
+  const bip = [...$("bipler").querySelectorAll("i")];
+  [...$("bBip").querySelectorAll("i")].forEach((e, i) => e.className = bip[i] ? bip[i].className : "");
+  yaz("bBipYazi", metin("bipYazi"));
+  const s = c.siradaki;
+  const k = s && s.kayip !== null && s.kayip !== undefined ? s.kayip : null;
+  yaz("bGecen", k === null ? "—" : farkYazi(k));
+  $("bGecen").className = "b-h" + (k === null ? "" : k > 0.02 ? " kotu" : k < -0.02 ? " iyi" : "");
+  yaz("bIpucu", s && s.ipucu ? s.ipucu.charAt(0).toUpperCase() + s.ipucu.slice(1) + "." : (s ? (s.fren ? "" : "Gazı kesmeden geç.") : ""));
+  // Turlar
+  yaz("bTur", metin("tur")); yaz("bSon", metin("sonTur")); yaz("bEnIyi", metin("enIyi")); yaz("bHedef", metin("hedefSure"));
+  // Araç
+  for (let i = 0; i < 4; i++){
+    const t = $("teker" + i), h = $("bLastik").querySelectorAll("span")[i];
+    h.style.setProperty("--c", t.style.getPropertyValue("--c")); h.textContent = t.querySelector("b").textContent;
+  }
+  const L = c.lastik;
+  if (L && L.every(v => v > 0)){
+    const sicak = L.map((v, i) => v > 100 ? LASTIK_ADI[i] : null).filter(Boolean), ort = L.reduce((a, b) => a + b, 0) / 4;
+    yaz("bLastikDurum", sicak.length ? (sicak.length > 2 ? "Lastikler çok sıcak." : sicak.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(", ") + " çok sıcak.")
+      : ort < 60 ? "Lastikler soğuk." : ort < 70 ? "Lastikler ısınıyor." : "Lastikler ideal aralıkta.");
+  } else yaz("bLastikDurum", "—");
+  yaz("bYakit", metin("mYakit")); yaz("bYakitTur", metin("mYakitTur")); $("bYakitTur").className = $("mYakitTur").className;
+  // Sürüş
+  yaz("bHiz", metin("hiz")); yaz("bVites", metin("vites"));
+  const led = [...$("devirIsigi").children];
+  [...$("bDevir").children].forEach((e, i) => e.className = led[i] ? led[i].className : "");
+  $("bGaz").style.width = $("gaz").style.width; $("bFren").style.width = $("fren").style.width;
+  // Son yorum
+  yaz("bBandEt", metin("bandEtiket")); yaz("bBandYazi", metin("anlik")); $("bBand").className = $("band").className;
+}
+function basitTurlar(liste){
+  const kutu = $("bTurlar"); kutu.innerHTML = "";
+  for (const t of (liste || []).slice(0, 4)){
+    const d = el("div"); d.append(el("i", "", t.rekor ? "★" : String(t.no)), el("span", "", t.sure || ""));
+    const f = el("span", "", t.ref_disi ? "ref. dışı" : t.fark === null ? "ilk" : eksi((t.fark > 0 ? "+" : "") + t.fark.toFixed(2)));
+    f.style.color = t.rekor ? "var(--mor)" : t.ref_disi || t.fark === null ? "var(--dim)" : t.fark > 0 ? "var(--bad)" : "var(--ok)";
+    if (t.rekor) d.firstChild.style.color = "var(--mor)";
+    d.append(f); kutu.append(d);
+  }
+}
+
+gorunumUygula();
+
+// Telefon görünümü: koç ekranındaki değerleri büyük kutulara kopyalar
+function telGuncelle(){
+  if (!TELEFON.matches) return;
+  const metin = id => $(id).textContent;
+  yaz("telPist", metin("pistAd")); yaz("telDur", metin("baglantiYazi"));
+  $("telNokta").className = $("baglantiNokta").className;
+  yaz("telFark", metin("fark")); yaz("telFarkYazi", metin("farkYazi"));
+  yaz("telFarkBaslik", metin("farkBaslik"));
+  const fk = $("farkKutu").classList;
+  $("telFarkKutu").className = "tel-fark" + (fk.contains("on") ? " on" : fk.contains("geri") ? " geri" : "");
+  yaz("telVNo", metin("svNo")); yaz("telVM", metin("svMesafe"));
+  const bip = [...$("bipler").querySelectorAll("i")];
+  [...$("telBip").children].forEach((e, i) => e.className = bip[i] ? bip[i].className : "");
+  yaz("telTur", metin("tur")); yaz("telSon", metin("sonTur")); yaz("telEnIyi", metin("enIyi"));
+  yaz("telHiz", metin("hiz")); yaz("telVites", metin("vites"));
+  const led = [...$("devirIsigi").children];
+  [...$("telDevir").children].forEach((e, i) => e.className = led[i] ? led[i].className : "");
+  yaz("telBandEt", metin("bandEtiket")); yaz("telBandYazi", metin("anlik"));
+  $("telBand").className = "tel-band " + $("band").className.replace("band", "").trim();
+}
+function telSesYaz(){ yaz("telSesDugme", "Bu telefonda ses: " + (telSesAcik() ? "açık" : "kapalı")); }
+document.body.dataset.tel = "canli";
+$("telSek").onclick = e => {
+  const b = e.target.closest("button[data-tel]"); if (!b) return;
+  document.body.dataset.tel = b.dataset.tel;
+  [...$("telSek").children].forEach(x => x.classList.toggle("s", x === b));
+  window.scrollTo(0, 0);
+};
+const telMenuKapat = () => { $("telMenu").hidden = true; $("telMenuAc").setAttribute("aria-expanded", "false"); };
+$("telMenuAc").onclick = () => { const ac = $("telMenu").hidden; $("telMenu").hidden = !ac; $("telMenuAc").setAttribute("aria-expanded", String(ac)); telSesYaz(); };
+$("telSesDugme").onclick = () => { localStorage.setItem("telSes", telSesAcik() ? "kapali" : "acik"); if (!telSesAcik()) sesSus(); telSesYaz(); };
+$("telPistDegistir").onclick = () => { telMenuKapat(); secimAc(false); };
+$("telAyar").onclick = () => { telMenuKapat(); $("ayarAc").click(); };
+$("telBitir").onclick = () => { telMenuKapat(); bitir(); };
+document.addEventListener("click", e => { if (!$("telMenu").hidden && !e.target.closest("#telMenu,#telMenuAc")) telMenuKapat(); });
+telSesYaz();
+
 async function durum(){
   let d;
   try { d = await (await fetch("/api/durum?son=" + sonMesaj)).json(); }
@@ -2599,7 +2953,8 @@ async function durum(){
   const c = d.canli || {};
   const bagli = !!c.connected;
   $("baglantiNokta").className = "nokta " + (d.hata ? "kotu" : bagli ? "ok" : "bekle");
-  yaz("baglantiYazi", d.hata ? "Hata" : bagli ? "Bağlı · " + (c.target || "PS5") : "PS5 bekleniyor");
+  if (!bagli) yaz("baglantiYazi", d.hata ? "Hata" : "PS5 bekleniyor");
+  $("baglantiNokta").title = bagli ? "PS5 bağlı: " + (c.target || "") : "";
   $("bagNokta2").className = $("baglantiNokta").className;
   yaz("bagDurum2", d.hata ? d.hata : bagli ? "Bağlı: " + (c.target || "PS5") + (c.c_bicimi === false ? " (kısa veri biçimi)" : "")
     : "PS5 bekleniyor. PS5 açık, GT7 çalışıyor ve aynı ev ağında olmalı; koç kendisi de arıyor.");
@@ -2623,14 +2978,14 @@ async function durum(){
     }
     yaz("sonTur", c.son_tur && !c.son_tur.startsWith("-") ? c.son_tur : "—");
     yaz("enIyi", c.en_iyi && !c.en_iyi.startsWith("-") ? c.en_iyi : "—");
-    yaz("kayitDurum", c.paused ? "Oyun duraklatıldı" : c.recording ? "● Kayıt"
-      : "Başlangıç çizgisini geç");
+    yaz("baglantiYazi", c.paused ? "Duraklatıldı" : c.recording ? "Kayıt" : "Başlangıç çizgisini geç");
     siradakiGoster(c);
   } else {
-    yaz("kayitDurum", "Veri bekleniyor");
   }
   aracGoster(c);
   if (bagli) aracBilgi(c);
+  telGuncelle();
+  basitGuncelle(c);
   if (d.inceleme_surum && d.inceleme_surum !== incelemeSurum){ incelemeSurum = d.inceleme_surum; incelemeYenile(); }
   if (d.ayar){
     window.sonAyar = d.ayar;

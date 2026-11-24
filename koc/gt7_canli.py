@@ -372,7 +372,8 @@ class CanliKoc:
     def __init__(self):
         self.ready = False
         self.tracker = None
-        self.siradaki = None   # arayüz: {"no", "m", "fren", "kayip"}
+        self.siradaki = None   # arayüz: {"no", "m", "fren", "kayip", "ipucu"}
+        self.ipucu = {}        # viraj → bu tur için tavsiye ("frene biraz daha geç bas"), arayüz için
         self.odak = None       # odak virajı: çıkış yorumu sadece o virajda
         self.fren_kayma = {}   # viraj no -> fren noktası kaç m öne alındı (rekor turunda güvenlik payı / fren gücü)
         self.yuzde = HASSASIYET["ileri"]
@@ -488,6 +489,7 @@ class CanliKoc:
 
         def sure_n(n):
             return konusma_suresi(f"Viraj {n}: {aday[n]['parca']}.")
+        self.ipucu = {n: a["parca"] for n, a in aday.items()}
         zorunlu = sorted((n for n in aday if n in hatirlat), key=lambda n: -aday[n]["skor"])
         for n in zorunlu:
             aday[n]["etiket"] = "hatirlat"
@@ -734,12 +736,13 @@ class CanliKoc:
             if w.apex > s:
                 self.siradaki = {"no": w.n, "m": round(max(0.0, nokta - s)),
                                  "fren": bool(m and m.brake_on is not None),
-                                 "kayip": self.kayip_by.get(w.n)}
+                                 "kayip": self.kayip_by.get(w.n), "ipucu": self.ipucu.get(w.n)}
                 break
         if self.siradaki is None and self.wins:   # son virajdan sonra: sıradaki turun ilk virajı
             w = self.wins[0]
             m = self.ref_m.get(w.n)
             nokta = m.brake_on - self.fren_kayma.get(w.n, 0.0) if m and m.brake_on is not None else w.entry
             self.siradaki = {"no": w.n, "m": round(max(0.0, self.length - s + nokta)),
-                             "fren": bool(m and m.brake_on is not None), "kayip": self.kayip_by.get(w.n)}
+                             "fren": bool(m and m.brake_on is not None), "kayip": self.kayip_by.get(w.n),
+                             "ipucu": self.ipucu.get(w.n)}
         return uyari, self.fark, s

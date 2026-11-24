@@ -28,7 +28,7 @@ from gt7_kopru import (LINE_MIN_M, compare, corner_table, de, faz_ozeti, fren_ka
 from gt7_canli import CanliKoc, ayar_oku, esikler, gecmise_ekle, onemli_virajlar, vites_turu_tahmin
 from gt7_konusma import acik_yaz
 from gt7_yorum import ses_ozeti
-from gt7_ayar import AyarKocu, tur_desenleri
+from gt7_ayar import AyarKocu, tur_desenleri, yardim_satirlari
 from gt7_cekis import ADLAR as CEKIS_ADLARI, dagilim_yazi, ogren as cekis_ogren, cekis_turu
 from gt7_fren_sesi import FREN_PAYI_M, Beeper, BrakeCountdown, brake_points, kendi_kaymalari
 from gt7_kalibrasyon import ReactionTest, load_delay, save_delay
@@ -46,9 +46,11 @@ import gt7_hedef
 import gt7_karsilastir
 import gt7_rapor
 from gt7_viraj_adlari import adlandir, eslestir
-from gt7_tur_kurallari import (LapClock, drop_partial, lap_change_ok, note_packet,
-                               off_track_count, race_start, records, span_limit,
-                               tasmalar, time_problem)
+from gt7_tur_kurallari import (ISINMA_C, LapClock, cizgide_basladi, drop_partial, isinma_turu,
+                               lap_change_ok, lastik_ort, note_packet, off_track_count,
+                               onceki_son, pit_turu,
+                               race_start, records, span_limit, tam_tur, tasmalar,
+                               time_problem)
 
 from gt7_yol import USER_DIR as BASE
 LAP_DIR = os.path.join(BASE, "turlar")
@@ -229,11 +231,15 @@ HARITA_W, HARITA_H = 1000, 600   # arayüz haritasının çizim alanı (SVG biri
 # Haritadaki daire ve etiket boyları
 DAIRE_R = 14                      # viraj dairesi yarıçapı (eskiden 20)
 HAP_W, HAP_H = 58, 26             # fark etiketi ("hap") boyu (eskiden 80 × 36)
+_DAIRE_R, _HAP_W, _HAP_H = DAIRE_R, HAP_W, HAP_H
+BUYUK_OLCEK = 1.6                 # basit görünüm haritasında etiket ve daire çarpanı
 
 
-def etiket_yerlestir(noktalar, cizgi, W, H):
+def etiket_yerlestir(noktalar, cizgi, W, H, olcek=1.0):
     """Viraj farkı etiketleri: pist merkezinden dışa doğru, pistin, dairelerin, kenarın ve
-    birbirinin üstüne binmeyecek ilk yere. noktalar: [(x, y)], cizgi: pist noktaları."""
+    birbirinin üstüne binmeyecek ilk yere. noktalar: [(x, y)], cizgi: pist noktaları.
+    olcek: etiket ve daire boyu çarpanı (basit görünümde büyük)."""
+    HAP_W, HAP_H, DAIRE_R = _HAP_W * olcek, _HAP_H * olcek, _DAIRE_R * olcek
     cx0 = sum(p[0] for p in cizgi) / len(cizgi)
     cy0 = sum(p[1] for p in cizgi) / len(cizgi)
     seyrek = cizgi[::2]
@@ -251,7 +257,7 @@ def etiket_yerlestir(noktalar, cizgi, W, H):
     for px, py in noktalar:
         taban = math.atan2(py - cy0, px - cx0)
         yer = None
-        for r in (40, 48, 58, 70, 84, 100, 118):
+        for r in [k * olcek for k in (40, 48, 58, 70, 84, 100, 118, 140, 165)]:
             for da in (0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180):
                 a = taban + math.radians(da)
                 lx, ly = px + math.cos(a) * r, py + math.sin(a) * r
@@ -260,7 +266,7 @@ def etiket_yerlestir(noktalar, cizgi, W, H):
                     break
             if yer:
                 break
-        konan.append(yer or (px, max(HAP_H / 2 + 4, py - 40)))
+        konan.append(yer or (px, max(HAP_H / 2 + 4, py - 40 * olcek)))
     return konan
 
 
@@ -295,12 +301,14 @@ def bolum_yollari(pts, daireler, oranlar=None):
     return out
 
 
-def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
+def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None, olcek=1.0):
     """Arayüz haritası: gri pist, numaralı viraj daireleri, renkli fark etiketleri, araç noktası.
     cizgi_xz: [(x, z)] pist çizgisi; corners: [{"no", "x", "z"}]; deltas: {no: saniye};
-    sinirlar: {no: (başlangıç, bitiş) tur oranı} (compare'in bölümleri; yoksa iki virajın ortası)."""
+    sinirlar: {no: (başlangıç, bitiş) tur oranı} (compare'in bölümleri; yoksa iki virajın ortası);
+    olcek: etiket ve daire boyu çarpanı (basit görünümde büyük, kenar payı da büyür)."""
     deltas = deltas or {}
-    W, H, PAD = HARITA_W, HARITA_H, 70
+    HAP_W, HAP_H, DAIRE_R = _HAP_W * olcek, _HAP_H * olcek, _DAIRE_R * olcek
+    W, H, PAD = HARITA_W, HARITA_H, 70 * olcek
     xs = [p[0] for p in cizgi_xz]
     zs = [p[1] for p in cizgi_xz]
     minx, maxx, minz, maxz = min(xs), max(xs), min(zs), max(zs)
@@ -315,7 +323,7 @@ def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
     pts = [P(x, z) for x, z in cizgi_xz[::adim]]
     yol = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
     daireler = [P(c["x"], c["z"]) for c in corners]
-    etiketler = etiket_yerlestir(daireler, pts, W, H)
+    etiketler = etiket_yerlestir(daireler, pts, W, H, olcek)
     sx, sy = pts[0]
     out = [f'<path d="{yol}" class="pist-dis"/><path d="{yol}" class="pist-ic"/>',
            ]
@@ -334,13 +342,14 @@ def harita_svg(cizgi_xz, corners, deltas=None, sinirlar=None):
         if dl is not None:
             out.append(f'<line x1="{px:.0f}" y1="{py:.0f}" x2="{lx:.0f}" y2="{ly:.0f}" stroke="{renk}" '
                        f'stroke-width="1.5" opacity=".6" class="h-cizgi"/>')
-        out.append(f'<circle cx="{px:.0f}" cy="{py:.0f}" r="{DAIRE_R}" fill="#0d0f13" stroke="{renk}" stroke-width="3" class="h-daire"/>'
-                   f'<text x="{px:.0f}" y="{py + 5:.0f}" class="vno">{c["no"]}</text>')
+        out.append(f'<circle cx="{px:.0f}" cy="{py:.0f}" r="{DAIRE_R:.0f}" fill="#0d0f13" stroke="{renk}" stroke-width="3" class="h-daire"/>'
+                   f'<text x="{px:.0f}" y="{py + 5 * olcek:.0f}" class="vno">{c["no"]}</text>')
         if dl is not None:
-            out.append(f'<rect x="{lx - HAP_W / 2:.0f}" y="{ly - HAP_H / 2:.0f}" width="{HAP_W}" height="{HAP_H}" '
+            out.append(f'<rect x="{lx - HAP_W / 2:.0f}" y="{ly - HAP_H / 2:.0f}" width="{HAP_W:.0f}" height="{HAP_H:.0f}" '
                        f'rx="{HAP_H / 2:.0f}" fill="{renk}" stroke="#0a0c10" stroke-width="2" class="h-hap"/>'
-                       f'<text x="{lx:.0f}" y="{ly + 5:.0f}" class="vfark">{isaretli(dl).replace("-", "−")}</text>')
-    return (f'<svg viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" data-minx="{minx:.3f}" '
+                       f'<text x="{lx:.0f}" y="{ly + 5 * olcek:.0f}" class="vfark">{isaretli(dl).replace("-", "−")}</text>')
+    sinif = ' class="buyuk"' if olcek > 1 else ""
+    return (f'<svg{sinif} viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" data-minx="{minx:.3f}" '
             f'data-minz="{minz:.3f}" data-sc="{sc:.6f}" data-ox="{ox:.2f}" data-oz="{oz:.2f}">'
             + "".join(out) + '<circle class="arac" r="9" fill="#ff6a3d" stroke="#fff" stroke-width="2.5" '
             'cx="-50" cy="-50"/></svg>')
@@ -472,7 +481,8 @@ def new_lap():
                             "brake", "gear", "rpm", "suggested_gear",
                             "slip_fl", "slip_fr", "slip_rl", "slip_rr",
                             "sus_fl", "sus_fr", "sus_rl", "sus_rr", "fuel",
-                            "revlim", "tt_f", "tt_r", "slip_body", "yaw", "wheel_angle", "body_h")}
+                            "revlim", "tt_f", "tt_r", "slip_body", "yaw", "wheel_angle", "body_h",
+                            "tcs", "asm")}
 
 
 def save_lap_csv(lap, lap_ms, car):
@@ -495,7 +505,14 @@ SLOW_START_KMH = 40  # başlangıç hızı en iyi turdan bu kadar düşükse tur
 CSV_ONLY = ("slip_fl", "slip_fr", "slip_rl", "slip_rr",
             "sus_fl", "sus_fr", "sus_rl", "sus_rr", "fuel",
             "revlim", "tt_f", "tt_r", "slip_body", "yaw", "loose",
-            "body_h")  # referans dosyasına yazılmaz
+            "body_h", "tcs", "asm")  # referans dosyasına yazılmaz
+
+
+def yakit_kac_tur(yakit, tur_basi):
+    """Depodaki yakıt şu anki tempoyla kaç tur yeter (bilinmiyorsa None)."""
+    if yakit is None or not tur_basi or tur_basi <= 0:
+        return None
+    return round(max(0.0, yakit) / tur_basi, 1)
 
 
 def check_lap(lap):
@@ -731,9 +748,17 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     problem = check_lap(lap) or time_problem(lap, lap_ms)
     if not problem and race_start(lap):
         problem = "yarışın ilk turu (ızgaradan kalkış, çizgiden değil)"
+    if not problem:
+        problem = pit_turu(lap)
+    if not problem and isinma_turu(lap):
+        problem = "ısınma turu (lastikler soğuktu)"
     limit = span_limit(spans)
     if not problem and limit and lap["dist"][-1] < limit:
         problem = "tur eksik kaydedildi (son turlardan belirgin kısa)"
+    if not problem and not cizgide_basladi(lap):
+        problem = "tur başlangıç çizgisinden başlamadı (kayıt eksik)"
+    if not problem and not tam_tur(lap):
+        problem = "tur başladığı yere dönmedi (kayıt eksik)"
     if not problem and off_track_count(lap):
         problem = "pist dışına çıktın (3+ teker çim, kum ya da toprakta)"
     if not problem and selected and tr["path"] and ters_yon(tr["path"], lap):
@@ -856,7 +881,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         ak = state.setdefault("ayar_kocu", AyarKocu())
         ayar_satir, ayar_ses = ak.tur_ekle(tur_desenleri(lap, corners), cekis,
                                            dagilim if cekis == "4x4" else None)
-        out += ayar_satir
+        out += yardim_satirlari(lap, corners) + ayar_satir
         state["oneriler"] = ak.liste()
     except Exception as e:  # öneri hatası tur analizini durdurmasın
         print(f"(Ayar önerisi hesaplanamadı: {e!r})")
@@ -882,6 +907,8 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         fuel_laps = state.setdefault("fuel_laps", [])
         fuel_laps.insert(0, lap_fuel(len(fuel_laps) + 1, lap_ms, lap["fuel"][0] - lap["fuel"][-1], car))
         yakit_tur = fuel_laps_left(fuel_laps, lap["fuel"][-1], car)
+        # Sürerken "yakıt kaç tur yeter" kutusu için tur başına ortalama tüketim (L)
+        state["yakit_tur_basi"] = lap["fuel"][-1] / yakit_tur if yakit_tur else None
         kalan = opts.get("kalan_tur")
         if yakit_tur is not None and kalan:
             # Yarışta: pit / yakıt stratejisi (kaç pit, hangi tur, kaç litre)
@@ -890,7 +917,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
             if sp:
                 state["strateji"] = sp
                 out.append(gt7_strateji.satir(sp, pit_sn))
-                strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}))
+                strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}), pit_sn)
         elif yakit_tur is not None:
             out.append(f"Yakıt: bu tempoyla yaklaşık {yakit_tur:.1f} tur daha yeter.")
 
@@ -1034,7 +1061,11 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     # Yeni arayüz: harita SVG'si, viraj tablosu, viraj şeridi, tur listesi
     deltas = {r["no"]: r["delta"] for r in (cmp_res or [])}
     sinirlar = {r["no"]: r["bolum"] for r in (cmp_res or []) if r.get("bolum")}
+    en_cok = sorted(((no, d) for no, d in deltas.items() if d >= 0.05), key=lambda x: -x[1])[:2]
     state["harita"] = {"svg": harita_svg(list(zip(best_lap["x"], best_lap["z"])), corners, deltas, sinirlar),
+                       "svg_buyuk": harita_svg(list(zip(best_lap["x"], best_lap["z"])), corners, deltas, sinirlar,
+                                               BUYUK_OLCEK),
+                       "en_cok": [[no, round(d, 2)] for no, d in en_cok],
                        "tablo": viraj_tablosu(best_lap, corners, cmp_res),
                        "serit": viraj_seridi(corners, gecmis),
                        "en_iyi": sure(best_lap["lap_ms"]),
@@ -1077,6 +1108,7 @@ class Koc:
         self.sel = sel
         self.catalog = catalog if catalog is not None else load_catalog()
         self.pending = None             # arayüzden gelen (ya da otomatik bulunan) yeni pist
+        self.isinma = False             # bu tur soğuk lastiklerle başladı (viraj tavsiyesi yok)
         try:                            # pist seçilmediyse ya da yanlışsa konumdan bulur
             self.tanima = PistTanima(self.catalog)
         except Exception:
@@ -1740,7 +1772,10 @@ class Koc:
                         notify("Tur analizinde hata oldu, kayıt devam ediyor.", [repr(e)], kind="uyari")
                 # yeni tur başlıyor
                 self.canli.reset()
+                onceki = onceki_son(lap) if recording and lap_no == cur_lap_no + 1 else None
                 lap = new_lap()
+                if onceki:
+                    lap["onceki_son"] = onceki
                 recording = records(lap_no, d["toplam_tur"])
                 last_pos = None
                 cur_lap_no = lap_no
@@ -1771,6 +1806,8 @@ class Koc:
                 lap["fuel"].append(pkt.fuel_level)
                 note_packet(lap, pkt)
                 lap["revlim"].append(1 if flags & 0x20 else 0)
+                lap["asm"].append(1 if flags & 0x400 else 0)     # kayma önleyici devrede
+                lap["tcs"].append(1 if flags & 0x800 else 0)     # çekiş kontrolü devrede
                 lap["tt_f"].append((pkt.tire_temp_fl + pkt.tire_temp_fr) / 2)
                 lap["tt_r"].append((pkt.tire_temp_rl + pkt.tire_temp_rr) / 2)
                 # Önden / arkadan kayma için: gövde kayması, dönme hızı, teker açısı (sadece C biçimi)
@@ -1784,6 +1821,12 @@ class Koc:
                 vs = vites_sayisi(pkt)
                 if vs:
                     lap["vites_sayisi"] = vs
+                if len(lap["t"]) == 1:      # turun ilk paketi: lastikler soğuksa ısınma turu
+                    ort = lastik_ort(lap["tt_f"][-1], lap["tt_r"][-1])
+                    self.isinma = ort is not None and ort < ISINMA_C
+                    if self.isinma and on_track:
+                        notify("Isınma turu. Lastikleri ısıt, bu turu saymayacağım.", kind="muhendis")
+                        self.muhendis.son_soylenen["lastik_soguk"] = clock_t   # aynı uyarı iki kez okunmasın
 
             # Henüz temiz tur yoksa: pist çizgisinden kaba viraj bilgisi (ekranda, sesli değil)
             lw = state.get("lib_warner")
@@ -1805,6 +1848,8 @@ class Koc:
                 islak = state.get("islak")   # ıslak pist şüphesi: kuru tura göre uyarılar susar
                 if d["toplam_tur"] > 0 and self.ayar.get("yaris_tavsiye") != "acik":
                     uyari = self.canli.cikis = None   # yarışta viraj tavsiyesi yok (ayar yaris_tavsiye)
+                if self.isinma:
+                    uyari = self.canli.cikis = None   # ısınma turunda viraj tavsiyesi yok
                 if uyari and not islak:
                     notify(uyari, kind="anlik", ses=uyari)
                 cikis, self.canli.cikis = self.canli.cikis, None
@@ -1894,5 +1939,6 @@ class Koc:
                 "pist_dogru": bool(self.pist_dogru and sel), "pist_secili": bool(sel),
                 "cekis": cekis_turu(d["araba"]) if d["araba"] else None,
                 "strateji": gt7_strateji.kisa(state.get("strateji")) if d["toplam_tur"] > 0 else None,
+                "yakit_tur": yakit_kac_tur(pkt.fuel_level, state.get("yakit_tur_basi")),
                 **ek,
             }

@@ -11,6 +11,11 @@ import math
 
 YEDEK_TUR = 0.3        # her stintin sonunda depoda kalsın istenen pay (tur)
 TASARRUF_EN_COK = 0.10  # pitsiz bitirmek için bundan az tasarruf gerekiyorsa seçenek olarak söylenir
+# Yakıt haritası (yarış içi menü): her kademe tüketimi yaklaşık %10 azaltır, turu ~0,25 sn yavaşlatır (tahmini)
+HARITA_TUKETIM = 0.90
+HARITA_YAVAS_S = 0.25
+HARITA_EN_COK = 4       # en fazla bu kadar kademe önerilir
+PIT_VARSAYILAN_S = 25   # pistin pit kaybı bilinmiyorsa
 
 
 def plan(yakit, kapasite, tur_basi, kalan_tur, simdiki_tur):
@@ -56,6 +61,26 @@ def plan(yakit, kapasite, tur_basi, kalan_tur, simdiki_tur):
     return p
 
 
+def harita(p, pit_sn=None):
+    """Pitsiz bitirmek için yakıt haritası kaç kademe düşürülmeli ve pite göre kazançlı mı?
+    Döner: {"kademe", "kayip" (toplam sn), "pit_sn", "kazanc" (sn)} ya da (uygun değilse) None."""
+    if not p or not p.get("pit") or p.get("acil") or p.get("pit_sayisi") != 1:
+        return None
+    t = p.get("tasarruf") or 0
+    if t <= 0 or t >= 1:
+        return None
+    kademe = 1
+    while 1 - HARITA_TUKETIM ** kademe < t:
+        kademe += 1
+        if kademe > HARITA_EN_COK:
+            return None
+    kayip = kademe * HARITA_YAVAS_S * p["kalan_tur"]
+    pit = pit_sn or PIT_VARSAYILAN_S
+    if kayip >= pit:
+        return None
+    return {"kademe": kademe, "kayip": kayip, "pit_sn": pit, "kazanc": pit - kayip}
+
+
 def _tur(n):
     return f"{n}. tur"
 
@@ -77,7 +102,12 @@ def satir(p, pit_sn=None):
     s += (f", en az {p['alinacak']} L al." if p.get("alinacak") else ", depoyu doldur.")
     if pit_sn:
         s += f" Pit ~{pit_sn:.0f} sn kaybettirir."
-    if p["pit_sayisi"] == 1 and p["tasarruf"] <= TASARRUF_EN_COK:
+    h = harita(p, pit_sn)
+    if h:
+        s += (f" Daha hızlısı: yakıt haritasını {h['kademe']} kademe düşür, pitsiz bitirirsin "
+              f"(tur başına ~{h['kademe'] * HARITA_YAVAS_S:.2f} sn yavaşlarsın, toplam ~{h['kayip']:.0f} sn; "
+              f"pitten ~{h['kazanc']:.0f} sn kazançlı).")
+    elif p["pit_sayisi"] == 1 and p["tasarruf"] <= TASARRUF_EN_COK:
         s += (f" Ya da tur başına %{math.ceil(p['tasarruf'] * 100)} az yakarak pitsiz bitirebilirsin "
               "(daha tasarruflu yakıt haritası, erken vites, düzlük sonunda gazı biraz erken bırakma).")
     return s
@@ -94,7 +124,7 @@ def kisa(p):
     return f"pit en geç {p['en_gec']}. tur"
 
 
-def sesli(p, durum):
+def sesli(p, durum, pit_sn=None):
     """Sesli söylenecek cümle (ya da None). durum: seans boyunca saklanan sözlük (neyin söylendiği).
     Sadece durum değişince konuşur: pit ilk kez gerektiğinde, pit turunda, pitten sonra "artık yeter"."""
     if not p:
@@ -113,5 +143,9 @@ def sesli(p, durum):
         durum["pit_turu_dedi"] = p["en_gec"]
         return f"Bu tur sonunda pite gir. {al}"
     if not onceki:
+        h = harita(p, pit_sn)
+        if h:
+            return (f"Yakıt bitişe yetmeyecek. Yakıt haritasını {h['kademe']} kademe düşür, pite girmeden "
+                    f"bitirirsin. Pitten yaklaşık {h['kazanc']:.0f} saniye kazançlı.")
         return f"Yakıt bitişe yetmeyecek. En geç {p['en_gec']}. turda pite gir."
     return None
