@@ -16,9 +16,9 @@ jobs:
   exe:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -91,7 +91,7 @@ jobs:
           Write-Host "Deneme tamam: $($pist.Count) Tokyo düzeni bulundu, koç başladı, pencere açıldı."
           Stop-Process -Id $p.Id -Force
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: GT7-Koc
           path: dist/GT7-Koc.exe
