@@ -11,6 +11,7 @@ import queue
 import struct
 import sys
 import threading
+import time
 import wave
 
 from gt7_kalibrasyon import BEEP_GAP, BRAKE_ON, DEFAULT_DELAY, clamp, median
@@ -44,6 +45,9 @@ KAYMA_EN_COK_M = 40.0         # fren noktası en fazla bu kadar öne / geri kaya
 FREN_PAYI_M = {"yok": 0, "az": 10, "orta": 20, "cok": 30}
 KENDI_EN_COK_M = 60.0
 KENDI_MIN_FREN_M = 15.0       # fren bölgesi bundan kısaysa (hafif dokunuş) ölçülmez
+# Ekrandaki 3. ışık (FREN!): 3. bipten sonra en az bu kadar yanık kalır. Fren noktası 3. bipten
+# "tepki payı" kadar sonra geçilir; pay küçükken (kalibrasyonsuz 0,15 sn) ışık ekranda görünmüyordu.
+UCUNCU_GOSTER_S = 0.8
 
 
 # ---------------- Ses ----------------
@@ -269,7 +273,13 @@ class BrakeCountdown:
             return
         v = speed_kmh / 3.6
         half = self.length / 2
-        self.bip_durum = None   # arayüz için: geri sayımı süren viraj ve çalan bip sayısı
+        simdi = time.monotonic()
+        # Arayüz için: geri sayımı süren viraj ve çalan bip sayısı. Az önce 3. bipi çalan viraj bir süre gösterilir.
+        self.bip_durum = None
+        for p in self.points:
+            if p.get("t3") is not None and simdi - p["t3"] < UCUNCU_GOSTER_S:
+                self.bip_durum = {"no": p["no"], "bip": 3}
+                break
         for p in self.points:
             if p["done"] == 0 and not p["armed"]:
                 p["kayma"] = self.kayma(p, speed_kmh)   # ilk bipe kadar güncellenir, sonra sabit
@@ -296,6 +306,8 @@ class BrakeCountdown:
                 p["done"] += 1
                 if p["done"] == 1:
                     p["armed"] = True  # ilk bipten itibaren frene basış izlenir
+                elif p["done"] == 3:
+                    p["t3"] = simdi
             if rem < half and self.bip_durum is None:
                 self.bip_durum = {"no": p["no"], "bip": p["done"]}
 

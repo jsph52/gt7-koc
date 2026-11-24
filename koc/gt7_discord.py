@@ -75,7 +75,7 @@ def okunacak(kind, baslik, ses, ayar):
     acik = lambda ad: ayar.get(ad, "acik") == "acik"   # noqa: E731
     if kind in ("anlik", "sonra"):
         return (ses or baslik, kind == "anlik") if acik("ses_viraj") else None
-    if kind == "tur":
+    if kind in ("tur", "koc"):       # koc: antrenman başında kısa bilgi ("Tur başladı, seni izliyorum.")
         return (ses, False) if acik("ses_tur") and ses else None
     if kind in ("uyari", "muhendis"):
         return (baslik, False) if acik("ses_muhendis") else None

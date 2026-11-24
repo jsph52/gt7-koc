@@ -65,6 +65,32 @@ def gecmis_yaz(kayit):
             pass
 
 
+def gecmis_sil(kimlikler, koru=None):
+    """Geçmiş antrenman kayıtlarını siler (kimlikler: liste; None = hepsi). Kaydın raporu da silinir,
+    başka bir kayıt aynı raporu kullanmıyorsa. Pist hafızası (en iyi turlar, rekor turları) silinmez.
+    koru: süren antrenmanın kaydı (silinmez). Döner: silinen kayıt sayısı."""
+    with _gecmis_kilit:
+        g = gecmis_oku()
+        sil = [x for x in g if (kimlikler is None or x.get("id") in kimlikler) and x.get("id") != koru]
+        if not sil:
+            return 0
+        kalan = [x for x in g if x not in sil]
+        try:
+            with open(GECMIS_DOSYA, "w", encoding="utf-8") as f:
+                json.dump(kalan, f, ensure_ascii=False)
+        except OSError:
+            return 0
+    kullanilan = {x.get("rapor") for x in kalan}
+    for x in sil:
+        ad = os.path.basename(x.get("rapor") or "")
+        if ad.startswith("seans_") and ad.endswith(".html") and ad not in kullanilan:
+            try:
+                os.remove(os.path.join(gt7_rapor.RAPOR_DIR, ad))
+            except OSError:
+                pass
+    return len(sil)
+
+
 class App:
     def __init__(self):
         self.catalog = load_catalog()
@@ -106,6 +132,10 @@ class App:
                 self.choose(hedef_pist, sessiz=True)
         else:
             self.koc_baslat()
+        # Yeni antrenman temiz ekranla başlar: önceki antrenmanın turları, notları ve haritası kalmaz
+        # (pist değiştiyse koç zaten yeni seans açar; pist hafızası her durumda kalır)
+        if self.koc and self.koc.state.get("turlar"):
+            self.koc.yeni_seans()
         with self.lock:
             self.antrenman = {"mod": mod, "etkinlik": e["id"] if e else None, "bas_t": time.time(),
                               "otomatik": otomatik, "kayit": None, "state_id": None, "duyuruldu": False}
@@ -157,6 +187,26 @@ class App:
                 ad = gt7_tt.HEDEF_ADLARI.get(th.get("etiket"), "").lower()
                 self.on_message(f"{e['pist']} Time Trial, hedef {ad} {gt7_koc.sure(th['ms'])}.", [], "tur",
                                 ses=f"Time Trial, hedef {ad}.")
+        self._ilk_tur_haberi(a, live, pistte)
+
+    def _ilk_tur_haberi(self, a, live, pistte):
+        """Koç ilk turda tavsiye vermez (önce sürüşü izler). Sessiz kalıp "çalışmıyor" sanılmasın diye
+        antrenmanın başında iki kısa cümle: piste çıkınca ve ilk ölçülen tur başlayınca. Yarışta söylenmez."""
+        if not pistte or live.get("yaris") or a.get("tur_dedi"):
+            return
+        kayit = bool(live.get("recording"))
+        if not a.get("hazir_dedi"):
+            a["hazir_dedi"] = True
+            if not kayit:
+                self.on_message("Koç hazır. Çizgiyi geçince turu ölçmeye başlarım.",
+                                ["Koç ilk turda sürüşünü izler, tavsiyeler sonraki turlarda gelir."], "koc",
+                                ses="Koç hazır. Çizgiyi geçince başlıyoruz.")
+                return
+        if kayit:
+            a["tur_dedi"] = True
+            self.on_message("Tur başladı, seni izliyorum.",
+                            ["Koç ilk turda sürüşünü izler, tavsiyeler sonraki turlarda gelir."], "koc",
+                            ses="Tur başladı, seni izliyorum.")
 
     def _kaydi_guncelle(self, a, son=False):
         """Bu antrenmanın geçmiş kaydı (antrenmanlar.json): pist, araba, tur sayısı, en iyi tur, hedef, rapor.
@@ -187,6 +237,11 @@ class App:
             a["_yazilan"] = dict(kayit)
             gecmis_yaz(kayit)
 
+    def suren_kayit(self):
+        """Süren antrenmanın geçmiş kaydının kimliği (yoksa None)."""
+        a = self.antrenman
+        return (a.get("kayit") or {}).get("id") if a else None
+
     def antrenman_bilgi(self):
         """Arayüz için: süren antrenman (ya da None)."""
         a = self.antrenman
@@ -194,7 +249,7 @@ class App:
             return None
         k = self.koc
         live = k.live if k else {}
-        out = {"mod": a["mod"], "etkinlik": a["etkinlik"], "otomatik": a["otomatik"]}
+        out = {"id": a["bas_t"], "mod": a["mod"], "etkinlik": a["etkinlik"], "otomatik": a["otomatik"]}
         if a["mod"] == "tt":
             e = gt7_tt.bul(self.catalog, a["etkinlik"]) or {}
             th = gt7_koc.tt_hedefi(k.state.get("track")) if k else None
@@ -467,8 +522,10 @@ def make_handler(app):
                            "secili": app.ayar().get("ses_cihazi", "")})
             elif u.path == "/api/gecmis":
                 g = gecmis_oku()
+                suren = app.suren_kayit()
                 for x in g:
                     x["cizgi"] = app.pist_cizgi(x.get("pist_id"), 40)
+                    x["suruyor"] = x.get("id") == suren
                 self.json(g)
             elif u.path == "/api/tt_hazirlik":
                 try:
@@ -624,6 +681,15 @@ def make_handler(app):
                     app.antrenman_baslat("tt" if body.get("basla") == "tt" else "serbest",
                                          body.get("etkinlik"), body.get("pist_id"))
                 self.json({"antrenman": app.antrenman_bilgi()})
+            elif u.path == "/api/gecmis_sil":
+                # Geçmiş antrenmanı sil: {"id": kimlik} ya da {"hepsi": true}; süren antrenman silinmez
+                if body.get("hepsi") is True:
+                    n = gecmis_sil(None, app.suren_kayit())
+                elif isinstance(body.get("id"), str) and body["id"]:
+                    n = gecmis_sil([body["id"]], app.suren_kayit())
+                else:
+                    n = 0
+                self.json({"tamam": n > 0, "silinen": n})
             elif u.path == "/api/odak":
                 # Koç ekranı: odak virajı ({"no": 5} ya da {"no": null})
                 no = body.get("no")

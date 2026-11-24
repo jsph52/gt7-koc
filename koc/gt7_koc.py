@@ -1121,6 +1121,7 @@ class Koc:
         self.sel = sel
         self.catalog = catalog if catalog is not None else load_catalog()
         self.pending = None             # arayüzden gelen (ya da otomatik bulunan) yeni pist
+        self.seans_istek = False        # yeni antrenman: bu seansın turları ve notları sıfırlanır
         try:                            # pist seçilmediyse ya da yanlışsa konumdan bulur
             self.tanima = PistTanima(self.catalog)
         except Exception:
@@ -1326,6 +1327,12 @@ class Koc:
     def set_track(self, sel):
         with self.lock:
             self.pending = ("track", sel)
+
+    def yeni_seans(self):
+        """Yeni antrenman: bu seansın turları, notları, haritası ve önerileri sıfırlanır; pist hafızası
+        (referans turlar, rekor turları, hedefler) kalır. Program yeniden açılmış gibi."""
+        with self.lock:
+            self.seans_istek = True
 
     def set_ip(self, ip):
         with self.lock:
@@ -1642,6 +1649,7 @@ class Koc:
                 hedef_istek, self.hedef_istek = self.hedef_istek, None
                 hedef_tur_istek, self.hedef_tur_istek = self.hedef_tur_istek, None
                 fren_ayar_istek, self.fren_ayar_istek = self.fren_ayar_istek, None
+                seans_istek, self.seans_istek = self.seans_istek, False
             if rekor_sil:
                 tr = self.state.get("track")
                 if tr and tr.get("rekor", {}).pop(str(self.car), None) is not None:
@@ -1679,6 +1687,14 @@ class Koc:
                 else:
                     notify("Pist: " + (self.sel["name"] if self.sel else "seçilmedi (otomatik tanıma)"))
                 self.pist_ozeti()
+            elif seans_istek:
+                eski = self.state
+                self.state = self.new_state(self.sel)
+                if not self.sel and eski.get("track"):    # pist konumdan / tur uzunluğundan bulunmuştu
+                    self.state["track"] = eski["track"]
+                self.odak = None
+                self.son_cmp = None
+                self.hazirla_gerek = True
             if hedef_tur_istek:
                 try:
                     self.hedef_tur_uygula(hedef_tur_istek[0])
