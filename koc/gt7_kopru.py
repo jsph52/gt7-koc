@@ -52,10 +52,10 @@ def section_time(s, a, b):
     return _interp(s["dist"], s["t"], b) - _interp(s["dist"], s["t"], a)
 
 
-# ---- Viraj bölümleri: çıkıştaki düzlük o virajın sayılır (14 Kasım 2026) ----
-# Eskiden bölüm sınırı iki virajın tam ortasıydı: Viraj 3'ten yavaş çıkınca düzlüğün ikinci
-# yarısında kaybedilen süre Viraj 4'ün hanesine yazılıyor, koç Viraj 4 için tavsiye veriyordu.
-# Şimdi sınır sonraki virajın fren noktasından biraz önce: düzlük, kendisine yavaş çıkılan virajın.
+# ---- Viraj bölümleri: çıkıştaki düzlük o virajın sayılır ----
+# Bölüm sınırı iki virajın tam ortası olsaydı, Viraj 3'ten yavaş çıkınca düzlüğün ikinci yarısında
+# kaybedilen süre Viraj 4'ün hanesine yazılırdı. Bu yüzden sınır sonraki virajın fren noktasından biraz
+# önce: düzlük, kendisine yavaş çıkılan virajın.
 DUZLUK_PAY_M = 30.0     # sonraki virajın (bu tur ve referanstaki) en erken fren noktasından bu kadar önce
 DUZLUK_MIN_M = 20.0     # orta noktayla sınır arası bundan kısaysa ayrıca "düzlük kaybı" yazılmaz
 
@@ -82,6 +82,12 @@ TASMA_PAKET = 6          # 1+ teker gevşek zeminde bu kadar paket (~0,1 sn) = t
 KAZA_HIZ_ORAN = 0.6      # en düşük hız referansın bu oranının altına indiyse: döndün ya da neredeyse durdun
 KAZA_S = 1.0             # bölümde en az bu kadar ...
 KAZA_ORAN = 0.15         # ... ve referans bölüm süresinin bu oranından fazla kayıp = anormal
+# Spin: arabanın kendi ekseni etrafında dönme hızı (0x2C açısal hız, dikey eksen) bu kadar rad/sn'yi
+# SPIN_PAKET paket (~0,1 sn) üst üste geçti, 25 km/s üstünde. Normal virajda (saç tokası, 60 km/s) ~1 rad/sn.
+# Sesli söylenmez: sadece o virajda tavsiye verilmez. Gerçek oyunda denenmedi.
+SPIN_YAW = 2.5
+SPIN_PAKET = 6
+SPIN_HIZ = 25
 
 
 def kaza_mi(s, ref, a, b, rs=None, delta=None):
@@ -94,6 +100,11 @@ def kaza_mi(s, ref, a, b, rs=None, delta=None):
         run = run + 1 if v is not None and v >= 1 else 0
         if run >= TASMA_PAKET:
             return "pistten çıktın (teker çime / kuma taştı)"
+    run = 0
+    for y, v in zip((s.get("yaw") or [])[i0:i1], (s.get("speed") or [])[i0:i1]):
+        run = run + 1 if y is not None and v is not None and abs(y) >= SPIN_YAW and v >= SPIN_HIZ else 0
+        if run >= SPIN_PAKET:
+            return "araba döndü (spin)"
     hizlar = [v for v in (s.get("speed") or [])[i0:i1] if v is not None]
     if hizlar and rs is not None and rs.min_speed and rs.min_speed > 30 \
             and min(hizlar) < KAZA_HIZ_ORAN * rs.min_speed:
@@ -300,7 +311,7 @@ def fazlar(me, rs, exit_diff, g_me=None, g_rs=None, sureler=None):
          "gaz_m": gz, "cikis_fark": exit_diff,
          "kotu": (gz is not None and gz > 15) or (exit_diff is not None and exit_diff < -EXIT_MIN_KMH)},
     ]
-    # Her aşamada kaç saniye kaybedildi (14 Kasım 2026): 0,1 sn'den fazla kayıp da "kötü" sayılır
+    # Her aşamada kaç saniye kaybedildi: 0,1 sn'den fazla kayıp da "kötü" sayılır
     for f, sn in zip(out, sureler or []):
         f["kayip"] = round(sn, 3)
         f["kotu"] = f["kotu"] or sn >= FAZ_KOTU_S
@@ -512,8 +523,8 @@ def kilit_ekle(cmp_res, olaylar):
 
 def ideal_ms(pool, corners):
     """Teorik ideal tur: en iyi tur − her virajda o virajın en iyi geçişine göre kaybı.
-    (9 Kasım 2026: eskiden kayıtlı örneklerin bölüm sürelerinin toplamıydı; kaydın başı/sonu oyunun tur
-    saatinden birkaç yüz ms farklı olabildiği için ideal, hiç gelişme yokken bile en iyiden hızlı çıkabiliyordu.)"""
+    (Bölüm sürelerinin toplamı kullanılmaz: kaydın başı/sonu oyunun tur saatinden birkaç yüz ms farklı
+    olabildiği için ideal, hiç gelişme yokken bile en iyiden hızlı çıkabiliyordu.)"""
     best = min(pool, key=lambda L: L["lap_ms"])
     return int(round(best["lap_ms"] - 1000 * sum(viraj_kazanclari(pool, corners).values())))
 

@@ -15,6 +15,7 @@ import socket
 import struct
 import threading
 import time
+import traceback
 
 from gt7_paket import (decrypt_packet, parse, sure, vites_yazi, send_heartbeat,
                       RECV_PORT, IP_FILE)
@@ -36,7 +37,7 @@ from gt7_tahmin import library_warner, track_summary
 from gt7_telemetri import CanliOlcer, vites_sayisi
 from gt7_muhendis import Muhendis
 from gt7_bul import Tarayici
-from gt7_analiz import (KURU_YAKIN, fren_aliskanligi, islak_tur, teker_tekrari, tempo, ters_yon,
+from gt7_analiz import (fren_aliskanligi, teker_tekrari, tempo, ters_yon,
                         tur_ozeti, tur_ozeti_satiri, tutarlilik)
 from gt7_veri import araba_adi, pist_bilgi
 from gt7_rekor import rekor_dili, rekor_ekle, rekor_karsilastir, rekor_turu
@@ -46,7 +47,7 @@ import gt7_hedef
 import gt7_karsilastir
 import gt7_rapor
 from gt7_viraj_adlari import adlandir, eslestir
-from gt7_tur_kurallari import (LapClock, cizgide_basladi, drop_partial,
+from gt7_tur_kurallari import (LapClock, LastikTakip, YenidenBaslama, yaris_mi, sureli_yaris, cizgide_basladi, drop_partial,
                                lap_change_ok, note_packet, off_track_count,
                                onceki_son, pit_turu,
                                race_start, records, span_limit, tam_tur, tasmalar,
@@ -273,8 +274,8 @@ def etiket_yerlestir(noktalar, cizgi, W, H, olcek=1.0):
 def bolum_yollari(pts, daireler, oranlar=None):
     """Her virajın pist bölümü (süre farkının ölçüldüğü yer, gt7_kopru.section_bounds gibi):
     önceki virajla ortası → sonraki virajla ortası; ilk bölüm başlangıçtan, son bölüm bitişe.
-    oranlar: her viraj için (başlangıç, bitiş) tur oranı ya da None (14 Kasım 2026: virajdan sonraki
-    düzlük o virajın sayılıyor, gt7_kopru.bolum_sinirlari).
+    oranlar: her viraj için (başlangıç, bitiş) tur oranı ya da None (virajdan sonraki
+    düzlük o virajın sayılır, gt7_kopru.bolum_sinirlari).
     pts: pist çizgisi (piksel), daireler: viraj noktaları. Dönüş: her viraj için [(x, y)] ya da
     sıra tutmazsa (viraj çizgiye oturmadı) None."""
     if len(pts) < 2 or not daireler:
@@ -465,7 +466,7 @@ def notify(title, lines=(), kind="bilgi", ses=None):
     "sonra" (viraj çıkışı yorumu), "tahmin" (ilk temiz turdan önce kaba viraj bilgisi, sesli okunmaz).
     ses: sesli okunacak kısa metin (yoksa okunmaz).
     Adı bilinen virajlar: ekranda "Spoon'da (V13)", seste sadece numara ("Viraj 13'te")."""
-    # Seste viraj adı yok, sadece numara (14 Kasım 2026: İngilizce adların okunuşu anlaşılmıyordu);
+    # Seste viraj adı yok, sadece numara (Türkçe ses İngilizce adları anlaşılır okuyamıyor);
     # kısaltmalar açılır (TCS -> çekiş kontrolü). Ekranda adlar durur.
     ses = acik_yaz(ses) if ses else ses
     if ADLAR:
@@ -685,7 +686,7 @@ def tt_hedefi(tr):
 
 def hedef_bul(tr, car):
     """Hedef süre: (ms, kaynak). Önce Time Trial hedefi (pist için, kaynak "tt"), sonra bu arabaya kendi
-    koyduğun hedef ("kendi"), yoksa rekor turu kaydedildiyse onun süresi ("rekor"; 14 Kasım 2026).
+    koyduğun hedef ("kendi"), yoksa rekor turu kaydedildiyse onun süresi ("rekor").
     Hiçbiri yoksa (None, None)."""
     ht = (tr or {}).get("hedef_tur") or {}
     if ht.get("tip") == "rekor":                   # seçilen hedef tur: rekor turu (hem hedef hem referans)
@@ -813,7 +814,8 @@ def lap_end(lap, lap_ms, car, state, opts=None):
                 for i in r["issues"]:
                     i["ekran"] = rekor_dili(i["ekran"])
             out.append(f"Koç rekor turuna göre konuşuyor (rekor {sure(rek['lap_ms'])}, "
-                       f"bu tur {(lap_ms - rek['lap_ms']) / 1000:+.3f} sn). Ayarlar › Koç'tan değiştirilebilir.")
+                       f"bu tur {(lap_ms - rek['lap_ms']) / 1000:+.3f} sn). Hedef turu Time Trial hazırlık ekranından "
+                       "değiştirebilirsin.")
             if state.get("fren_kayma"):   # güvenlik payı / kendi fren gücü: erken-geç fren kaymış noktaya göre
                 fren_kaymasi_uygula(cmp_res, state["fren_kayma"])
         if teker_olay:
@@ -880,7 +882,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         cekis, yeni = cekis_ogren(lap, car)
         if yeni:
             out.append(f"Çekiş türü bulundu: {CEKIS_ADLARI[cekis]}."
-                       + (" Güç dağıtıcı takılıysa ayarını Ayarlar'a yaz, öneriler ona göre gelir."
+                       + (" Güç dağıtıcı takılıysa ayarını Araç kartındaki 'Araba ayarları'na yaz, öneriler ona göre gelir."
                           if cekis == "4x4" and dagilim is None else ""))
     except Exception as e:
         print(f"(Çekiş türü ölçülemedi: {e!r})")
@@ -941,6 +943,11 @@ def lap_end(lap, lap_ms, car, state, opts=None):
                 strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}), pit_sn)
         elif yakit_tur is not None:
             out.append(f"Yakıt: bu tempoyla yaklaşık {yakit_tur:.1f} tur daha yeter.")
+    # Lastik yaşı (telemetride aşınma yok; kaç tur kullanıldığı biliniyor)
+    if lap.get("lastik_degisti"):
+        out.append("Lastikler bu turda değişti.")
+    elif opts.get("lastik_tur"):
+        out.append(f"Lastikler: bu takımla {opts['lastik_tur']} tur sürdün.")
 
     ozet = tur_ozeti(lap)
     if ozet:
@@ -954,25 +961,6 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     if lastik:
         out.append("Lastik sıcaklığı (tur ortalaması): "
                    + ", ".join(f"{'ön' if k == 'on' else 'arka'} {v:.0f}°C" for k, v in lastik.items()))
-    # Islak pist tahmini: her virajda kayıp + yavaş tur + soğuyan lastikler (ya da sürerken lastikler soğudu)
-    hava_ses = None
-    lastik_ort = sum(lastik.values()) / len(lastik) if lastik else None
-    # Islak tahmini sadece kendi en iyi geçişlerine göre (rekor turuna göre her virajda kayıp olur) ve
-    # tekerler çime/kuma taşmadıysa (14 Kasım 2026: 2 teker çime çıkınca "pist ıslak" denmişti)
-    islak_cmp = None
-    if not problem and not tasmalar(lap):
-        try:
-            islak_cmp = cmp_res if not rekor_ref else (compare(lap, pool, corners) if pool else None)
-        except Exception:
-            islak_cmp = None
-    islak_satir, hava_ses, islak = islak_tur(state, islak_cmp, lap_ms, best_ms, lastik_ort)
-    if islak_satir:
-        out.append(islak_satir)
-    if islak:
-        state["islak"] = True
-    elif state.get("islak") and not problem and best_ms and lap_ms <= KURU_YAKIN * best_ms:
-        state["islak"] = False
-        out.append("Tur en iyine yakın: pist kurumuş görünüyor, viraj uyarıları yeniden açık.")
     revlim_s = sum(1 for v in lap.get("revlim", []) if v) / 60.0
     if manuel and revlim_s > 0.5:
         out.append(f"Devir sınırında geçen süre: {revlim_s:.1f} sn.")
@@ -1041,7 +1029,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     state["onemli"] = onemli_virajlar(cmp_res, puan_gecmis, manuel) if cmp_res else []
     if cmp_res and not problem:
         gecmise_ekle(puan_gecmis, cmp_res, manuel)
-    odak_no = opts.get("odak")       # odak virajı (16 Kasım 2026): sesli tavsiye sadece o viraj için
+    odak_no = opts.get("odak")       # odak virajı: sesli tavsiye sadece o viraj için
     if odak_no:
         state["onemli"] = [o for o in state["onemli"] if o["no"] == odak_no]
         if fren_ses and not re.search(rf"Viraj {odak_no}\b", fren_ses):
@@ -1050,7 +1038,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     soylenen = []        # tur sonu sesinde tavsiye verilen virajlar: sonraki turda o viraja gelirken hatırlatılır
     ses = ses_ozeti(lap_ms, best_ms, problem, state.get("gecmis", []), cmp_res, manuel,
                     yakit_tur=None if state.get("strateji") else yakit_tur, kalan_tur=opts.get("kalan_tur"),
-                    lastik=lastik, strateji_ses=strateji_ses, hava_ses=hava_ses,
+                    lastik=lastik, strateji_ses=strateji_ses,
                     teker_tekrar=teker_tekrar, revlim_s=revlim_s, ayar_ses=ayar_ses,
                     duzeltilen=duzeltilen, sira=sira, tempo=tempo_ses, fren_ses=fren_ses,
                     pit_sn=pit_sn, onemli=state["onemli"], soylenen=soylenen, rekor=rekor_ref,
@@ -1157,6 +1145,8 @@ class Koc:
         self.muhendis = Muhendis()      # motor / lastik / sıra / son tur telsiz anonsları
         self.muhendis_dedi = False      # "Yarış mühendisi devrede." bir kez söylenir
         self.yaris_bitti = None         # yarış bittiyse toplam tur sayısı: koç yeni yarışa kadar susar
+        self.lastik = LastikTakip()     # pitte lastik değişimi (teker yarıçapından)
+        self.lastik_tur = 0             # şu anki lastiklerle kaç tur sürüldü
         self.ayar = ayar_oku()
         self.vites_oylari = []          # son turların manuel/otomatik tahmini
         self.car = None
@@ -1593,10 +1583,32 @@ class Koc:
             print("HATA: " + self.error)
             return
         sock.settimeout(1.0)
+        ilk = True
+        hata_say = 0
+        while True:
+            try:
+                self._dinle(sock, ilk)
+            except Exception as e:
+                # Beklenmedik bir hata koçu durdurmasın: günlüğe yazılır, dinleme baştan kurulur
+                # (yarım kalan tur kaydedilmez; pist hafızası ve ayarlar korunur).
+                hata_say += 1
+                try:
+                    traceback.print_exc()      # koc_gunluk.txt
+                except Exception:
+                    pass
+                if hata_say <= 3:
+                    notify("Koçta beklenmedik bir hata oldu, koç çalışmaya devam ediyor.", [repr(e)])
+                time.sleep(1.0 if hata_say <= 3 else 5.0)
+            ilk = False
 
+    def _dinle(self, sock, ilk):
+        """PS5'ten gelen paketleri dinler ve işler. ilk: koç yeni açıldı (False: bir hatadan sonra yeniden kuruldu)."""
         target = "255.255.255.255"
-        if os.path.exists(IP_FILE):
-            target = open(IP_FILE, encoding="utf-8").read().strip() or target
+        try:
+            with open(IP_FILE, encoding="utf-8") as f:
+                target = f.read().strip() or target
+        except OSError:
+            pass
 
         last_path_check = 0
         tt_kontrol = 0
@@ -1605,16 +1617,18 @@ class Koc:
         lap = new_lap()
         cur_lap_no = None
         clock = LapClock()              # tur saati: paket numarasından, duraklatma eklenmez
+        yeniden = YenidenBaslama()      # oyunda "yeniden dene": yarım tur atılır
         clock_t = 0.0                   # aynı saatle sürekli zaman (G hesabı için)
         recording = False
         last_pos = None
         last_hb = 0
-        connected = False
+        connected = not ilk and bool(self.live.get("connected"))   # hata sonrası: "bağlandı" yeniden söylenmez
         # En zengin veri biçimini ("C") dene; cevap gelmezse "A" ile dönüşümlü dene
         hb_fmt = "C"
         yakin_say = 0                   # seçilen pistin çizgisine yakın geçen saniye (pist doğrulama)
         hb_switch = time.time() + 5
-        self.pist_ozeti()
+        if ilk:
+            self.pist_ozeti()
 
         while True:
             with self.lock:
@@ -1718,7 +1732,7 @@ class Koc:
                 continue
             yonlendir_port = self.ayar.get("yonlendir_port")
             if yonlendir_port:
-                # Veri yönlendirme (16 Kasım 2026): PS5'ten gelen paket olduğu gibi bu bilgisayarda başka bir porta
+                # Veri yönlendirme: PS5'ten gelen paket olduğu gibi bu bilgisayarda başka bir porta
                 # da kopyalanır; SimHub gibi bir program o portu dinleyerek koçla aynı anda çalışabilir.
                 try:
                     sock.sendto(data, ("127.0.0.1", int(yonlendir_port)))
@@ -1758,6 +1772,7 @@ class Koc:
 
             if d["araba"] != self.car:
                 self.car = d["araba"]
+                self.lastik_tur = 0
                 notify(f"Araba: {araba_adi(self.car)}")
                 self.son_cmp = None
                 self.hazirla_gerek = True
@@ -1765,6 +1780,19 @@ class Koc:
                 cur_lap_no = lap_no
             dt = clock.step(pid)
             clock_t += dt
+            # Turlu ya da süreli yarış (süreli yarışta toplam tur 0, yarış sırası var)
+            yaris = yaris_mi(d["toplam_tur"], pkt.race_position, pkt.total_positions)
+            # Yeniden başlatma (oyun içi saat geri gitti): yarım tur kaydedilmez, lastikler yeni, koç baştan
+            if yeniden.guncelle(pkt.day_progression_ms):
+                if lap["t"]:
+                    notify("Yeniden başlatıldı.", ["Yarım kalan tur kaydedilmedi."])
+                lap = new_lap()
+                last_pos = None
+                cur_lap_no = lap_no
+                recording = records(lap_no, d["toplam_tur"])
+                self.canli.reset()
+                self.lastik_tur = 0
+                self.yaris_bitti = None
             # Yarış bitti mi: tur sayacı toplam turu geçti (bitiş çizgisi). Yeni yarışa / yeniden başlamaya kadar
             # koç susar (canlı koç, fren uyarısı, mühendis); tur sayacı 1..toplam arasına dönünce yeniden konuşur.
             if self.yaris_bitti and (d["toplam_tur"] != self.yaris_bitti or 1 <= lap_no <= d["toplam_tur"]):
@@ -1775,6 +1803,11 @@ class Koc:
                 self.yaris_bitti = d["toplam_tur"]
                 bitis = bitis_cumlesi(pkt.race_position, pkt.total_positions)
             if lap_no != cur_lap_no and lap_change_ok(lap_no, cur_lap_no, kayit_acik, paused):
+                # Lastik yaşı: biten her tur bir tur; tur sayacı geri dönünce (yeni yarış / yeniden başlama) yeni lastik
+                if lap_no == cur_lap_no + 1 and cur_lap_no >= 1:
+                    self.lastik_tur += 1
+                elif lap_no < cur_lap_no:
+                    self.lastik_tur = 0
                 if recording and lap_no == cur_lap_no + 1 and rekor_modu:
                     try:
                         if self.rekor_kaydet(lap, d["son_tur"], d["araba"]):
@@ -1794,14 +1827,15 @@ class Koc:
                                                 "dagilim": self.ayar.get("guc_dagilimi", {}).get(str(d["araba"])),
                                                 "duzeltilen": list(self.canli.duzeltilen),
                                                 "kapasite": pkt.fuel_capacity, "tur_no": lap_no,
+                                                "lastik_tur": self.lastik_tur,
                                                 "fren_sesi": self.fren is not None,
                                                 "rekor_tur": self.rekor_ref(), "odak": self.odak,
-                                                "yaris_sessiz": d["toplam_tur"] > 0
+                                                "yaris_sessiz": yaris
                                                 and self.ayar.get("yaris_tavsiye") != "acik",
                                                 "tt": self.tt_hedef(state, d["araba"]), "bitis": bitis,
                                                 "sira": (pkt.race_position, pkt.total_positions,
                                                          self.muhendis.sira_degisimi(pkt.race_position))
-                                                if d["toplam_tur"] > 0 and pkt.total_positions >= 2 else None})
+                                                if yaris and pkt.total_positions >= 2 else None})
                         self.hazirla_gerek = True
                         bitis = None        # tur sonu mesajı bitişi söyledi
                     except Exception as e:  # analiz hatası koçu durdurmasın
@@ -1843,6 +1877,11 @@ class Koc:
                 lap["sus_rr"].append(pkt.suspension_rr)
                 lap["fuel"].append(pkt.fuel_level)
                 note_packet(lap, pkt)
+                if self.lastik.guncelle(d["hiz"], (pkt.tire_radius_fl, pkt.tire_radius_fr,
+                                                   pkt.tire_radius_rl, pkt.tire_radius_rr)):
+                    lap["lastik_degisti"] = True
+                    self.lastik_tur = 0
+                    notify("Lastikler değişti.", ["Lastik yaşı sıfırlandı; bu tur referans alınmaz (pit turu)."])
                 lap["revlim"].append(1 if flags & 0x20 else 0)
                 lap["asm"].append(1 if flags & 0x400 else 0)     # kayma önleyici devrede
                 lap["tcs"].append(1 if flags & 0x800 else 0)     # çekiş kontrolü devrede
@@ -1876,27 +1915,21 @@ class Koc:
             if recording and on_track and not paused and lap["t"] and not self.yaris_bitti:
                 uyari, fark, _ = self.canli.adim(lap["x"][-1], lap["z"][-1], lap["dist"][-1], lap["t"][-1],
                                                  d["hiz"], d["fren"], d["gaz"],
-                                                 lap["loose"][-1] if lap.get("loose") else None)
-                islak = state.get("islak")   # ıslak pist şüphesi: kuru tura göre uyarılar susar
-                if d["toplam_tur"] > 0 and self.ayar.get("yaris_tavsiye") != "acik":
+                                                 lap["loose"][-1] if lap.get("loose") else None,
+                                                 abs(pkt.angular_velocity_y or 0.0))
+                if yaris and self.ayar.get("yaris_tavsiye") != "acik":
                     uyari = self.canli.cikis = None   # yarışta viraj tavsiyesi yok (ayar yaris_tavsiye)
-                if uyari and not islak:
-                    notify(uyari, kind="anlik", ses=uyari)
+                # Ekranda viraj numarası durur, seste yok ("Frene biraz daha geç bas.")
+                if uyari:
+                    notify(uyari, kind="anlik", ses=self.canli.uyari_ses or uyari)
                 cikis, self.canli.cikis = self.canli.cikis, None
-                if cikis and not islak and self.ayar.get("cikis_yorumu") != "kapali":
-                    notify(cikis, kind="sonra", ses=cikis)
+                if cikis and self.ayar.get("cikis_yorumu") != "kapali":
+                    notify(cikis, kind="sonra", ses=self.canli.cikis_ses or cikis)
             # Yarış mühendisi: motor, lastik, sıra, son tur (kısa telsiz anonsları)
             try:
                 for metin, kritik in self.muhendis.guncelle(clock_t, pkt, on_track and not self.yaris_bitti,
                                                             paused):
                     notify(metin, kind="uyari" if kritik else "muhendis")
-                if self.muhendis.islak_olay:
-                    self.muhendis.islak_olay = False
-                    if not state.get("islak"):
-                        state["islak"] = True
-                        notify("Islak pist şüphesi: viraj uyarıları susuyor.",
-                               ["Viraj öncesi uyarılar ve çıkış yorumları kuru turlarına göre; pist kuruyana kadar "
-                                "(en iyi turuna %2 yaklaşınca) susarlar. Mühendis anonsları sürer."])
             except Exception:
                 pass
 
@@ -1956,11 +1989,12 @@ class Koc:
                 "hiz": d["hiz"], "vites": vites_yazi(d["vites"]),
                 "onerilen": vites_yazi(d["onerilen_vites"]) if d["onerilen_vites"] not in (0, 15) else "",
                 "devir": d["devir"], "gaz": d["gaz"], "fren": d["fren"],
-                "tur": lap_no, "toplam_tur": d["toplam_tur"],
+                "tur": lap_no, "toplam_tur": d["toplam_tur"], "yaris": yaris, "lastik_tur": self.lastik_tur,
+                "sureli": sureli_yaris(d["toplam_tur"], pkt.race_position, pkt.total_positions),
                 "son_tur": sure(d["son_tur"]), "en_iyi": sure(d["en_iyi"]),
                 "araba": d["araba"], "araba_adi": araba_adi(d["araba"]), "yakit": pkt.fuel_level, "x": d["konum"][0], "z": d["konum"][2],
                 "fark": fark, "vites_turu": self.vites_turu[0], "vites_algilandi": self.vites_turu[1],
-                "canli_hazir": self.canli.ready, "islak": bool(state.get("islak")),
+                "canli_hazir": self.canli.ready,
                 "c_bicimi": pkt.wheel_steering_rad is not None,
                 "siradaki": self.canli.siradaki if self.canli.ready and recording else None,
                 "bip": getattr(self.fren, "bip_durum", None) if self.fren else None,

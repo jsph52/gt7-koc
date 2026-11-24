@@ -16,9 +16,9 @@ jobs:
   exe:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -27,7 +27,7 @@ jobs:
         # (Windows'un WebView2'si), tarayıcı açılmaz. discord.py + PyNaCl + davey (Discord sesi, uçtan uca
         # şifreleme) ve miniaudio (MP3 çözme): koçun sesi Discord'dan PS5 kulaklığına. Hepsi EXE'nin içine gömülür.
         # davey 0.1.7'de KALSIN: davey 0.2 + discord.py 2.7.1 birlikte ses göndermiyor (şifreli oturum hiç hazır olmuyor,
-        # bot kanalda görünür ama sesi gelmez; 14 Kasım 2026'da kullanıcıda yaşandı). discord.py bunu düzeltince yükseltilir.
+        # bot kanalda görünür ama sesi gelmez). discord.py bunu düzeltince yükseltilir.
         run: pip install pyinstaller==6.11.1 edge-tts==7.3.1 pywebview==6.2.1 discord.py==2.7.1 pynacl==1.5.0 davey==0.1.7 miniaudio==1.73
 
       - name: EXE olustur
@@ -91,7 +91,7 @@ jobs:
           Write-Host "Deneme tamam: $($pist.Count) Tokyo düzeni bulundu, koç başladı, pencere açıldı."
           Stop-Process -Id $p.Id -Force
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: GT7-Koc
           path: dist/GT7-Koc.exe
@@ -106,8 +106,13 @@ jobs:
           gh release create son-surum dist/GT7-Koc.exe \
             --target "$GITHUB_SHA" \
             --title "GT7 Türkçe Koç - son sürüm" \
-            --notes "Kurulum gerekmez. GT7-Koc.exe dosyasını indir, çift tıkla.
-          Kayıtlar (turlar, ayarlar, raporlar) Belgeler\GT7 Koc klasörüne yazılır. EXE'yi istediğin yere koyabilirsin.
-          Windows uyarısı çıkarsa: Ek bilgi > Yine de çalıştır. Güvenlik duvarı sorarsa: İzin ver.
+            --notes "**Kurulum gerekmez.** Aşağıdaki GT7-Koc.exe dosyasını indir ve çift tıkla.
 
-          Kaynak commit: $GITHUB_SHA ($GITHUB_REF_NAME)"
+          - PS5 ile bilgisayar aynı ev ağında olmalı. GT7'de piste çıkman yeterli: koç PS5'i, pisti ve arabayı kendisi bulur.
+          - Turların, ayarların ve raporların Belgeler\GT7 Koc klasörüne kaydedilir. Yeni sürümü indirip eskisinin yerine koyduğunda hiçbiri kaybolmaz.
+          - Windows uyarı verirse: Ek bilgi > Yine de çalıştır. Güvenlik duvarı sorarsa: İzin ver.
+          - Gereksinimler: Windows 10 / 11, koçun sesi için internet bağlantısı.
+
+          Özelliklerin tamamı ve sorun giderme: https://github.com/jsph52/gt7-koc#readme
+
+          Kaynak commit: $GITHUB_SHA"

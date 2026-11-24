@@ -134,7 +134,7 @@ def dagilim_cumlesi(on, yon):
     ne = "arkaya" if yon == "arkaya" else "öne"
     if on is None:
         return (f"Güç dağıtıcı takılıysa gücü biraz {ne} kaydır "
-                "(mevcut ayarını Ayarlar'a yazarsan somut değer söylerim).")
+                "(mevcut ayarını Araç kartındaki 'Araba ayarları'na yazarsan somut değer söylerim).")
     yeni = dagilim_oneri(on, yon)
     if yeni is None:
         return f"Güç dağılımı zaten en {'arkada' if yon == 'arkaya' else 'önde'} ({dagilim_yazi(on)})."

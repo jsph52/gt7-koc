@@ -497,7 +497,7 @@ html[data-tema="yayin"] .tt-alt a{font-size:15px}
 html[data-tema="yayin"] .tt-hedef small{font-size:14px;letter-spacing:0}
 html[data-tema="yayin"] .tt-hedef button{font-size:16px;padding:4px 10px;text-transform:uppercase;font-style:italic}
 html[data-tema="yayin"] .tt-hedef button.secili{background:#fff;color:#000;opacity:1}
-/* ---------- Ana ekran, geçmiş, Time Trial hazırlık, inceleme (16 Kasım 2026) ---------- */
+/* ---------- Ana ekran, geçmiş, Time Trial hazırlık, inceleme ---------- */
 .kabuk{display:flex;height:100vh;height:100dvh;min-height:0}
 .kabuk[hidden],.inceleme-ekran[hidden],.app[hidden]{display:none!important}
 .kabuk .menu{width:250px;flex:0 0 auto;background:#000;display:flex;flex-direction:column;border-right:4px solid var(--accent)}
@@ -640,7 +640,7 @@ select.cihaz{max-width:330px;background:#1d1f23;color:#fff;border:1px solid var(
 .inceleme-ekran .harita-i svg{width:100%;max-height:300px}
 @media (max-width:1100px){.kabuk .iki,.kabuk .iki2,.inceleme-ekran .inc{grid-template-columns:1fr}.kabuk .menu{width:200px}}
 
-/* 16 Kasım 2026: hedef tur listesi, onay penceresi, araba ayarları */
+/* Hedef tur listesi, onay penceresi, araba ayarları */
 .kabuk .ht-satir{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;background:#1d1f23;border:0;border-left:5px solid #3a3d44;color:#fff;font-size:17px;text-transform:none;font-style:normal;font-weight:500}
 .kabuk .ht-satir b{font-style:italic;font-weight:800;font-size:22px;min-width:98px}
 .kabuk .ht-satir.secili{background:#fff;color:#000;border-left-color:var(--accent)}
@@ -708,6 +708,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   #band{grid-area:band}
   .serit{grid-area:serit}
   .lastik{width:180px}
+  /* Araç kartı yarım genişlikte: 4 sütunlu motor kutularında değer ("0.60 bar") kesilmesin */
+  html[data-tema="yayin"] .motor.cok b{font-size:20px}
+  .motor.cok div{padding:3px 6px}
   /* Ana ekran: soldaki menü üstte yatay çubuk olur, sayfa tam genişlik kullanır */
   .kabuk{flex-direction:column}
   .kabuk .menu{width:auto;flex-direction:row;align-items:stretch;border-right:0;border-bottom:4px solid var(--accent)}
@@ -918,7 +921,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
 </style>
 </head>
 <body>
-<!-- Ana ekran, geçmiş antrenmanlar, Time Trial hazırlık (16 Kasım 2026) -->
+<!-- Ana ekran, geçmiş antrenmanlar, Time Trial hazırlık -->
 <div class="kabuk" id="kabuk">
   <aside class="menu">
     <div class="menu-logo">GT7 <b>KOÇ</b></div>
@@ -976,7 +979,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
   </main>
 </div>
 
-<!-- İnceleme: GT7 duraklatılınca (16 Kasım 2026) -->
+<!-- İnceleme: GT7 duraklatılınca -->
 <div class="inceleme-ekran" id="incEkran" hidden>
   <div class="dur-ust"><div><div class="buyuk2">Duraklatıldı</div><span class="k" id="incAlt"></span></div><div class="olcu" id="incOlcu"></div></div>
   <div class="secenek"><label><input type="checkbox" id="incGecersiz"> Geçersiz turları dahil et</label>
@@ -2366,7 +2369,7 @@ function siradakiGoster(c){
     const parca = [];
     if (s.kayip !== null && s.kayip !== undefined && Math.abs(s.kayip) >= 0.01) parca.push("geçen tur " + farkYazi(s.kayip));
     parca.push(s.fren ? (c.fren_notu && c.fren_notu.startsWith("Fren sesi hazır") ? "fren uyarısı hazır" : "frenli viraj") : "gazı kesmeden");
-    yaz("svNot", c.islak ? "Islak pist şüphesi: uyarılar susuyor" : parca.join(" · "));
+    yaz("svNot", parca.join(" · "));
   }
   const kac = b && s && b.no === s.no ? b.bip : 0;
   [...$("bipler").querySelectorAll("i")].forEach((e, i) => e.className = i < kac ? "on" : "");
@@ -2429,7 +2432,7 @@ async function incelemeYenile(){
   }
 }
 
-// ---------- Ana ekran, geçmiş antrenmanlar, Time Trial hazırlık, inceleme (16 Kasım 2026) ----------
+// ---------- Ana ekran, geçmiş antrenmanlar, Time Trial hazırlık, inceleme ----------
 // Uygulama ana ekranla açılır. "Serbest antrenman" ya da bir Time Trial başlayınca koç ekranı
 // açılır; ana ekrandayken piste çıkılırsa serbest antrenman kendiliğinden başlar (sunucu karar verir).
 async function postJson(yol, veri){
@@ -2480,7 +2483,7 @@ async function bitir(){
 $("bitirBtn").onclick = bitir; $("ttBitirBtn").onclick = bitir;
 $("ttKocBtn").onclick = () => { ttHazirlik = false; };
 
-let incAcik = false, incKapatildi = false, sonDurak = false;
+let incAcik = false, incKapatildi = false, sonDurak = false, sonEkran = null;
 function gorunum(d){
   const a = d.antrenman, c = d.canli || {};
   sonAntrenman = a; yerelSes = !!d.yerel_ses;
@@ -2493,8 +2496,11 @@ function gorunum(d){
   let ekran = "kabuk";
   if (a) ekran = durak && incAcik && !incKapatildi ? "inceleme" : (a.mod === "tt" && ttHazirlik ? "kabuk" : "koc");
   $("kabuk").hidden = ekran !== "kabuk"; $("kocEkrani").hidden = ekran !== "koc"; $("incEkran").hidden = ekran !== "inceleme";
+  const kabugaDondu = ekran === "kabuk" && sonEkran !== "kabuk";
+  sonEkran = ekran;
   if (ekran === "kabuk" && a && a.mod === "tt" && sayfa !== "tt") sayfaGoster("tt");
-  if (ekran === "kabuk" && !a && sayfa === "tt") sayfaGoster("ana");
+  else if (ekran === "kabuk" && !a && sayfa === "tt") sayfaGoster("ana");
+  else if (kabugaDondu) sayfaGoster(sayfa);     // koç ekranından dönünce sayfa hemen tazelenir (eski bilgi kalmasın)
   yaz("sMod", !a ? "Koç" : a.mod === "tt" ? "Time Trial" : "Serbest antrenman");
   haplarGoster($("haplar"), a, true);
   if (sayfa === "tt") haplarGoster($("ttHaplar"), a, false);
@@ -2511,7 +2517,7 @@ function gorunum(d){
   const ek = $("haplar");
   if (a && d.odak){ const h = el("span", "h-odak tikla", "Odak: Viraj " + d.odak + " ✕"); h.title = "Odak virajını kaldır";
     h.onclick = () => postJson("/api/odak", {no: null}); ek.append(h); }
-  if (a && c.toplam_tur > 0){ const acik = ay.yaris_tavsiye === "acik";
+  if (a && (c.toplam_tur > 0 || c.yaris)){ const acik = ay.yaris_tavsiye === "acik";
     const h = el("span", "h-yaris tikla" + (acik ? " acik" : ""), acik ? "Yarışta tavsiye açık" : "Yarışta tavsiye kapalı");
     h.title = "Yarışta viraj tavsiyesi verilsin mi? Tıkla."; h.onclick = () => ayarGonder("yaris_tavsiye", acik ? "kapali" : "acik"); ek.append(h); }
   odakSecGuncelle(d);
@@ -2687,7 +2693,7 @@ $("rekorSil").onclick = async () => {
   await postJson("/api/rekor", {sil: true}); setTimeout(ttYukle, 1500);
 };
 
-// ---------- Odak virajı (16 Kasım 2026): koç sadece seçilen viraj hakkında konuşur ----------
+// ---------- Odak virajı: koç sadece seçilen viraj hakkında konuşur ----------
 let odakImza = "";
 function odakSecGuncelle(d){
   const v = d.virajlar || [], imza = v.join(",");

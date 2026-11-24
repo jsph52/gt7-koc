@@ -50,8 +50,7 @@ def egilim(gecmis):
     return None
 
 
-def kritikler(yakit_tur, kalan_tur, lastik, teker_tekrar, revlim_s, manuel, pit_sn=None, strateji_ses=None,
-              hava_ses=None):
+def kritikler(yakit_tur, kalan_tur, lastik, teker_tekrar, revlim_s, manuel, pit_sn=None, strateji_ses=None):
     """Duruma göre öne çıkan uyarılar (en önemliden başlayarak).
     strateji_ses: yarışta pit planı cümlesi (gt7_strateji.sesli); varsa yakıt uyarısının yerine geçer."""
     out = []
@@ -66,8 +65,6 @@ def kritikler(yakit_tur, kalan_tur, lastik, teker_tekrar, revlim_s, manuel, pit_
             cumle += f" Yakıt yetmeyecek, {kalan_tur - yakit_tur:.1f} tur eksik." + (
                 f" Pit yaklaşık {pit_sn:.0f} saniye kaybettirir." if pit_sn else "")
         out.append(cumle)
-    if hava_ses:            # ıslak pist şüphesi (gt7_analiz.islak_tur)
-        out.append(hava_ses)
     if lastik:
         on, arka = lastik.get("on"), lastik.get("arka")
         if on and on >= LASTIK_SICAK and (not arka or on >= arka):
@@ -143,7 +140,7 @@ def sira_cumlesi(sira, fark):
 def ses_ozeti(lap_ms, best_before, problem, gecmis, cmp_res, manuel,
               yakit_tur=None, kalan_tur=None, lastik=None, teker_tekrar=(), revlim_s=None, ayar_ses=None,
               duzeltilen=(), sira=None, tempo=None, fren_ses=None, pit_sn=None, strateji_ses=None,
-              hava_ses=None, onemli=None, soylenen=None, rekor=False, tavsiye=True):
+              onemli=None, soylenen=None, rekor=False, tavsiye=True):
     """Tur sonunda sesli okunacak metin: süre + (varsa tek önemli uyarı) + tavsiye.
     Tavsiye her zaman vardır (Notlar'daki analiz sesli de söylenir):
     fren alışkanlığı ya da en çok kaybettiren viraj, sebebi ve ne yapmalı.
@@ -154,8 +151,7 @@ def ses_ozeti(lap_ms, best_before, problem, gecmis, cmp_res, manuel,
     parcalar = [sure_yorumu(lap_ms, best_before, problem)]
     if sira and len(sira) > 2 and sira[2]:
         parcalar.insert(0, sira_cumlesi(sira[0], sira[2]))
-    krit = kritikler(yakit_tur, kalan_tur, lastik, list(teker_tekrar), revlim_s, manuel, pit_sn, strateji_ses,
-                     hava_ses)
+    krit = kritikler(yakit_tur, kalan_tur, lastik, list(teker_tekrar), revlim_s, manuel, pit_sn, strateji_ses)
     yaris_kritik = bool(krit and (krit[0].startswith("Yakıt") or krit[0] == strateji_ses))
     ek = None
     if ayar_ses and not yaris_kritik:

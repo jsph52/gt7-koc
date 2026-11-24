@@ -17,7 +17,7 @@ KAYMA_DERECE = 6.0    # gövde kayması (burun viraja doğru) bunu geçerse "ark
 KAYMA_ORNEK = 12      # ... en az bu kadar örnek (0,2 sn) sürmeli
 ONDEN_ORAN = 0.85     # viraj, aracın bu turdaki normal dönüşünün (viraj oranlarının ortancası) bu kadarının
                       # altında dönüyorsa "önden kayma" (sadece C biçimi). Mutlak oran gerçek veride her virajda
-                      # 0,8'in altında çıktı (4 Kasım 2026, yanlış alarm), bu yüzden araç kendisiyle karşılaştırılır.
+                      # 0,8'in altında çıktı (yanlış alarm), bu yüzden araç kendisiyle karşılaştırılır.
 ONDEN_MIN_HIZ = 60    # km/s
 EVENT_CORNER_M = 150
 SON_VITES_SINIR_S = 1.0   # son viteste devir sınırında bu kadar saniyeden fazla = son vites kısa

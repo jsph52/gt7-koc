@@ -191,7 +191,7 @@ def durum():
 
 def hedef(catalog, pist_id, araba_kodu=None):
     """Sürdüğün pistte süren bir time trial varsa o etkinlik, yoksa None. Araba bakılmaz: sınıflı
-    etkinliklerde (Gr.3 vb.) her araba serbest ve raporda sınıf bilgisi yok (16 Kasım 2026)."""
+    etkinliklerde (Gr.3 vb.) her araba serbest ve raporda sınıf bilgisi yok."""
     if not pist_id:
         return None
     for e in etkinlikler(catalog):
