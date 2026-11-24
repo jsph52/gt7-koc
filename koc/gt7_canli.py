@@ -15,7 +15,7 @@ from gt7_kopru import (COAST_MIN_M, EXIT_MIN_KMH, LINE_MIN_M, TRAIL_MIN_M, brake
                        coast_m, kaza_mi, min_speed_delta, section_bounds, section_time, side_offset)
 from gt7_kopru import (buyuk_harf, de, ReferencePath, _interp, measure, LapTrace, place_corners,
                        to_samples)
-from gt7_konusma import BIP_TAVSIYE, DUZELDI, HATIRLATMA, IYI, OVGU, YINE, hata_ve_tavsiye, kod_tavsiye, sec, tavsiye
+from gt7_konusma import BIP_TAVSIYE, DUZELDI, HATIRLATMA, HATIRLATMA_SES, IYI, OVGU, YINE, hata_ve_tavsiye, kod_tavsiye, sec, tavsiye
 from app.processing.alignment import PathTracker
 
 AYAR_FILE = os.path.join(USER_DIR, "ayarlar.json")
@@ -188,11 +188,12 @@ FREN_KODLARI = ("fren_erken", "fren_gec")
 # sabit "turda N viraj" ya da "N saniyede bir" yok. Koç cümlenin kaç saniye süreceğini tahmin eder; cümle
 # sıradaki fren noktasına kadar sakin bir boşluğa SIĞIYORSA söyler, sığmıyorsa hiç söylemez (yarım cümle yok).
 # İki mesaj arasında kısa bir nefes payı bırakılır; art arda virajlarda ikincisi bu yüzden söylenmeyebilir.
-NEFES_S = 3.0         # bir mesaj bittikten sonra bir sonrakine kadar en az bu kadar sessizlik
+NEFES_S = 8.0         # bir mesaj bittikten sonra bir sonrakine kadar en az bu kadar sessizlik
+TEKRAR_EN_AZ = 2      # viraj öncesi tavsiye: aynı hata son 3 turun en az bu kadarında olmalı (bir kerelik hata
+                      # tur sonu notlarında kalır); ya da kayıp eşiğin TEK_SEFER_KAT katı kadar büyük olmalı
+TEK_SEFER_KAT = 3
 HARF_SN = 14.0        # Türkçe ses yaklaşık bu kadar harf / saniye okur (Ahmet, normal hız; tahmini)
 TEKRAR_SINIRI = 2     # aynı virajda aynı tavsiye üst üste bu kadar tur söylendiyse bir tur dinlenir
-BUYUK_KAT = 3         # tavsiye verilmemiş virajda çıkış yorumu ancak çıkış eşiğinin bu kadar katı farkta
-ILK_TUR_KAT = 3       # ilk tur (henüz karşılaştırma yok): sadece en belirgin hatalar, eşiğin 3 katı
 # Sakin an: koç viraj içinde / frende konuşmaz, düzlükte gaz açıkken konuşur.
 SAKIN_GAZ = 80        # çıkış yorumu için: gaz en az bu kadar açık, fren yok
 UYARI_GAZ = 50        # viraj öncesi tavsiye: frende ya da gaz bunun altındayken söylenmez, sakin an beklenir
@@ -278,28 +279,30 @@ def cikis_sebepleri(me, rs, line_m, exit_diff, kayip, kayma=0.0):
     return out
 
 
-def kayip_cumlesi(no, sebepler):
+# Seste viraj numarası yok: cümle zaten o virajda / hemen çıkışında söyleniyor. Ekrandaki mesajda numara durur. ses=True numarasız hâl.
+def kayip_cumlesi(no, sebepler, ses=False):
     """"Viraj 3'te frene erken bastın, bir dahakine daha geç bas." Sebep bilinmiyorsa None
     (tavsiyesiz 'zaman kaybettin' demek sürücüye bir şey kazandırmıyor)."""
     for kod, yan in sebepler:
         ne, yap = hata_ve_tavsiye(kod, "tepe", yan)
         if ne:
-            return f"Viraj {de(no)} {ne}" + (f", {yap}." if yap else ".")
+            son = f", {yap}." if yap else "."
+            return buyuk_harf(ne) + son if ses else f"Viraj {de(no)} {ne}" + son
     return None
 
 
-def kazanc_cumlesi(no, sebepler, n=0):
+def kazanc_cumlesi(no, sebepler, n=0, ses=False):
     """"Viraj 3'te çıkışın çok iyiydi, böyle devam et." """
     for kod, _ in sebepler:
         if kod in IYI:
-            return f"Viraj {de(no)} {IYI[kod]}, {sec(OVGU, n)}."
-    return f"Viraj {no} çok iyiydi, {sec(OVGU, n)}."
+            return (buyuk_harf(IYI[kod]) if ses else f"Viraj {de(no)} {IYI[kod]}") + f", {sec(OVGU, n)}."
+    return ("Bu viraj" if ses else f"Viraj {no}") + f" çok iyiydi, {sec(OVGU, n)}."
 
 
-def takip_cumlesi(no, onceki, sebepler, delta, esik, n=0):
+def takip_cumlesi(no, onceki, sebepler, delta, esik, n=0, ses=False):
     """Geçen sefer söylenen sorunla bu geçişi karşılaştırır.
     onceki: {"kod", "delta"} (geçen geçişin en iyiye göre kaybı); sebepler: bu geçişte görülen
-    sorunlar [(kod, yan)]. Döner: (metin, düzeldi mi) ya da (None, False)."""
+    sorunlar [(kod, yan)]. Döner: (metin, düzeldi mi) ya da (None, False). ses=True: numarasız."""
     if not onceki:
         return None, False
     kazanc = onceki["delta"] - delta
@@ -309,14 +312,17 @@ def takip_cumlesi(no, onceki, sebepler, delta, esik, n=0):
     olculur = kod in YINE   # vites gibi sorunlar viraj çıkışında ölçülmez
     if olculur and not hala and kazanc >= esik:
         ne = DUZELDI.get(kod, "düzelttin")
+        if ses:
+            return (f"Güzel, {ne}." if n % 2 == 0 else f"{buyuk_harf(ne)}, {sec(OVGU, n)}."), True
         return (f"Güzel, Viraj {de(no)} {ne}." if n % 2 == 0
                 else f"Viraj {de(no)} {ne}, {sec(OVGU, n)}."), True
     if olculur and hala and delta >= esik:
         yan = next((y for k, y in sebepler if k == kod), None)
         yap = hata_ve_tavsiye(kod, "tepe", yan)[1]
-        return f"Viraj {de(no)} {sec(YINE[kod], n)}" + (f", {yap}." if yap else "."), False
+        son = f", {yap}." if yap else "."
+        return (buyuk_harf(sec(YINE[kod], n)) if ses else f"Viraj {de(no)} {sec(YINE[kod], n)}") + son, False
     if -kazanc >= esik:           # başka bir şey bozuldu: sebebi biliniyorsa onu söyle
-        return kayip_cumlesi(no, sebepler), False
+        return kayip_cumlesi(no, sebepler, ses), False
     return None, False
 
 
@@ -461,6 +467,10 @@ class CanliKoc:
         for o in onemli:
             if o["no"] not in {w.n for w in wins} or (o["delta"] < self.esik(o["no"]) and o["no"] not in hatirlat):
                 continue
+            # Bir kerelik hata için konuşulmaz: aynı hata son turlarda tekrar etmeli ya da kayıp çok büyük olmalı
+            if (o["no"] not in hatirlat and o.get("tekrar", 1) < TEKRAR_EN_AZ
+                    and o["delta"] < TEK_SEFER_KAT * self.esik(o["no"])):
+                continue
             sorun = o["sorun"]
             parca = tavsiye(sorun, self.tur_say + o["no"])
             if fren_bipi and sorun["kod"] in FREN_KODLARI:
@@ -493,7 +503,7 @@ class CanliKoc:
         tur_s = ref["t"][-1] if ref["t"] else 0.0
 
         def sure_n(n):
-            return konusma_suresi(f"Viraj {n}: {aday[n]['parca']}.")
+            return konusma_suresi(f"{aday[n]['parca']}.")
         self.ipucu = {n: a["parca"] for n, a in aday.items()}
         zorunlu = sorted((n for n in aday if n in hatirlat), key=lambda n: -aday[n]["skor"])
         for n in zorunlu:
@@ -548,20 +558,33 @@ class CanliKoc:
             else:
                 birlesik.append(t)
         def cumle(no, parca, kalip):
-            # Kısa ve tavsiye: "Viraj 7: frene biraz daha geç bas."
-            # Tur sonunda söylenen viraj: daha doğal hatırlatma ("Viraj 5 geliyor, frene biraz daha geç bas.")
+            # Ekranda: "Viraj 7: frene biraz daha geç bas." / tur sonunda söylenen viraj: "Viraj 5 geliyor, …"
             return " ".join((k.replace("{no}'de", de(n)).format(no=n, t=p) if k else f"Viraj {n}: {p}.")
                             for n, p, k in zip(no, parca, kalip))
+
+        def ses_cumle(no, parca, kalip):
+            # Seste numara yok: "Frene biraz daha geç bas." İkinci viraj "Hemen ardından, …" ile ayrılır.
+            out = []
+            for i, (n, p) in enumerate(zip(no, parca)):
+                if i:
+                    out.append(f"Hemen ardından, {p}.")
+                elif kalip[0]:
+                    out.append(sec(HATIRLATMA_SES, self.tur_say + n).format(t=p, T=buyuk_harf(p)))
+                else:
+                    out.append(f"{buyuk_harf(p)}.")
+            return " ".join(out)
 
         for t in birlesik:
             no, parca, kalip = t["no"][:2], t["parca"][:2], t["kalip"][:2]   # en fazla 2 viraj tek uyarıda
             t["kisa"] = cumle(no, parca, kalip)
+            t["ses_kisa"] = ses_cumle(no, parca, kalip)
             # Aynı virajın ikinci sorunu da tek cümlede ("frene biraz erken bas, çıkışta gazı erken aç");
             # sadece tek virajlık uyarıda. Sığmazsa adim() kısa hâlini söyler.
             if len(no) == 1 and t["ek"][0]:
                 t["metin"] = cumle(no, [f"{parca[0]}, {t['ek'][0]}"], kalip)
+                t["ses"] = ses_cumle(no, [f"{parca[0]}, {t['ek'][0]}"], kalip)
             else:
-                t["metin"] = t["kisa"]
+                t["metin"], t["ses"] = t["kisa"], t["ses_kisa"]
         self.tetikler = birlesik
         # Fren noktaları (frensiz virajda giriş): "sakin an" hesabı için
         self.noktalar = sorted((ms[w.n].brake_on - self.fren_kayma.get(w.n, 0.0)
@@ -579,9 +602,11 @@ class CanliKoc:
         self.son_s = None
         self.fark = None
         self.cidx = 0          # sıradaki çıkış değerlendirmesi yapılacak viraj
-        self.buf = {k: [] for k in ("dist", "t", "speed", "brake", "throttle", "x", "z", "loose")}
+        self.buf = {k: [] for k in ("dist", "t", "speed", "brake", "throttle", "x", "z", "loose", "yaw")}
         self.kaza = []         # bu turda kaza / pistten çıkma yüzünden yorum yapılmayan virajlar
-        self.cikis = None      # çıkış yorumu (alınınca None olur)
+        self.cikis = None      # çıkış yorumu (alınınca None olur); ekranda numaralı, seste self.cikis_ses
+        self.cikis_ses = None
+        self.uyari_ses = None  # adim()'in döndürdüğü uyarının sesli (numarasız) hâli
         self.bek_cikis = None  # sakin an bekleyen çıkış yorumu {"metin", "son"}
         self.bek_uyari = None  # sakin an bekleyen viraj öncesi tavsiye (tetik)
         self.t = 0.0           # tur saati (sn)
@@ -621,24 +646,19 @@ class CanliKoc:
             except Exception:
                 continue
             n = self.tur_say + w.n
-            takip, duzeldi = takip_cumlesi(w.n, onceki, tum, delta, self.esik(w.n, True), n)
+            esk = self.esik(w.n, True)
+            takip, duzeldi = takip_cumlesi(w.n, onceki, tum, delta, esk, n)
             if duzeldi:
                 self.duzeltilen.append(w.n)
             if onceki and onceki.get("sessiz") and not duzeldi:
                 continue          # bu tur dinlenen viraj: sadece düzelirse övülür
-            if takip is None:
-                # Tavsiye verilmemiş viraj: sadece belirgin kazanç/kayıpta konuş (çok konuşmasın)
-                kat = ILK_TUR_KAT * self.esik(w.n) if self.ilk_tur else BUYUK_KAT * self.esik(w.n, True)
-                if abs(delta) < kat:
-                    continue
-                takip = kayip_cumlesi(w.n, sebepler) if delta > 0 else kazanc_cumlesi(w.n, sebepler, n)
-                ek = True
-            else:
-                ek = False
+            # Çıkış yorumu sadece tavsiye verilen virajda (az konuşsun): tavsiye verilmemiş virajda
+            # çıkışta konuşulmaz, tur sonu notlarında var
             if takip is None:
                 continue
+            ses = takip_cumlesi(w.n, onceki, tum, delta, esk, n, ses=True)[0] or takip
             # Hemen söylenmez: sakin an beklenir (düzlük, gaz açık); sıradaki fren noktasına kadar gelmezse düşer
-            self.bek_cikis = {"metin": takip, "son": self._siradaki_nokta(e), "ek": ek}
+            self.bek_cikis = {"metin": takip, "ses": ses, "son": self._siradaki_nokta(e), "ek": False}
 
     def _siradaki_nokta(self, s):
         """s'den sonraki ilk fren noktası (tur sonundaysa sıradaki turun ilki)."""
@@ -671,14 +691,15 @@ class CanliKoc:
             return
         if self.idx < len(self.tetikler):
             kalan = min(kalan, (self.tetikler[self.idx]["d"] - s) / v)
-        if not self._sigar(b["metin"], kalan - NEFES_S):
-            if konusma_suresi(b["metin"]) + NEFES_S > (b["son"] - s) / v:
+        ses = b.get("ses") or b["metin"]
+        if not self._sigar(ses, kalan - NEFES_S):
+            if konusma_suresi(ses) + NEFES_S > (b["son"] - s) / v:
                 self.bek_cikis = None   # artık hiç sığmaz: söylenmez (yarım cümle yok)
             return
-        self.cikis, self.bek_cikis = b["metin"], None
-        self._soyledi(self.cikis)
+        self.cikis, self.cikis_ses, self.bek_cikis = b["metin"], ses, None
+        self._soyledi(ses)
 
-    def adim(self, x, z, own_dist, t, speed=None, brake=None, throttle=None, zemin=None):
+    def adim(self, x, z, own_dist, t, speed=None, brake=None, throttle=None, zemin=None, yaw=None):
         """Her pakette: (uyarı metni ya da None, canlı fark sn ya da None, referans mesafesi).
         Viraj çıkış yorumu oluşursa self.cikis'e yazılır. zemin: gevşek zemindeki (çim/kum) teker sayısı."""
         if not self.ready:
@@ -699,7 +720,7 @@ class CanliKoc:
             b = self.buf
             if not b["dist"] or s > b["dist"][-1]:
                 for k, val in (("dist", s), ("t", t), ("speed", speed), ("brake", brake),
-                               ("throttle", throttle), ("x", x), ("z", z), ("loose", zemin)):
+                               ("throttle", throttle), ("x", x), ("z", z), ("loose", zemin), ("yaw", yaw)):
                     b[k].append(val)
             self._cikis_degerlendir(s, speed / 3.6)
             self._sakin_cikis(s, speed / 3.6, brake, throttle)
@@ -724,13 +745,14 @@ class CanliKoc:
             bu = self.bek_uyari
             rem = (bu["nokta"] - s) % self.length      # tur başını geçen virajlar için
             kalan = rem / max(speed / 3.6 if speed else 10.0, 10.0)
-            if rem > self.length / 2 or konusma_suresi(bu["kisa"]) > kalan:
+            if rem > self.length / 2 or konusma_suresi(bu.get("ses_kisa") or bu["kisa"]) > kalan:
                 self.bek_uyari = None
             elif not (brake or 0) > 0 and (throttle is None or throttle >= UYARI_GAZ):
-                for m in (bu["metin"], bu["kisa"]):
-                    if self._sigar(m, kalan):
-                        uyari, self.bek_uyari = m, None
-                        self._soyledi(m)
+                for m, ses in ((bu["metin"], bu.get("ses")), (bu["kisa"], bu.get("ses_kisa"))):
+                    ses = ses or m
+                    if self._sigar(ses, kalan):
+                        uyari, self.uyari_ses, self.bek_uyari = m, ses, None
+                        self._soyledi(ses)
                         break
         self.son_s = s
         # Arayüz için sıradaki viraj: fren noktasına (frensizse girişe) kalan mesafe

@@ -151,21 +151,24 @@ class Muhendis:
     # ---------------- Yarış ----------------
     def _yaris(self, t, pkt, out):
         toplam, tur = pkt.total_laps, pkt.current_lap
-        if toplam <= 0:
-            if self.toplam:
+        sira, arac = pkt.race_position, pkt.total_positions
+        # Süreli yarış: toplam tur 0, sıra var. "Son tur" / "yarısı geride" bilinmez, sıra anonsları sürer
+        sureli = toplam <= 0 and arac >= 2 and 1 <= sira <= arac
+        if toplam <= 0 and not sureli:
+            if self.toplam is not None:
                 self._yaris_sifirla(None)
             return
+        toplam = max(toplam, 0)
         if toplam != self.toplam or tur < self.onceki_tur:   # yeni yarış
             self._yaris_sifirla(toplam)
         self.onceki_tur = tur
-        if tur >= 1:
+        if tur >= 1 and toplam > 0:
             if toplam >= 2 and tur == toplam and not self.son_tur_dedi:
                 self.son_tur_dedi = True
                 out.append(("Son tur!", False))
             elif toplam >= 4 and tur < toplam and (tur - 1) * 2 >= toplam and not self.yari_dedi:
                 self.yari_dedi = True
                 out.append(("Yarışın yarısı geride kaldı.", False))
-        sira, arac = pkt.race_position, pkt.total_positions
         if arac < 2 or sira < 1:
             return
         if self.sira_duyurulan is None:

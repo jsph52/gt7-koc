@@ -33,11 +33,45 @@ class LapClock:
         return (d if 1 <= d <= MAX_STEP else 1) / FPS
 
 
+GERI_SARMA_MS = 10_000      # oyun içi saat bu kadar geri gittiyse yeniden başlatıldı
+GUN_MS = 86_400_000
+
+
+class YenidenBaslama:
+    """Oyunda "yeniden dene" (Retry) / yeniden başlatma: oyun içi günün saati (0x80) geri gider.
+    Tur sayacı aynı kalsa da (ör. 1. turda yeniden başlatma) yarım tur atılmalı.
+    Gerçek oyunda denenmedi."""
+
+    def __init__(self):
+        self.son = None
+
+    def guncelle(self, gun_ms):
+        if not gun_ms or gun_ms <= 0:
+            return False
+        onceki, self.son = self.son, gun_ms
+        if onceki is None:
+            return False
+        geri = onceki - gun_ms
+        return GERI_SARMA_MS <= geri < GUN_MS - GERI_SARMA_MS   # gece yarısı dönüşü (24 sa -> 0) sayılmaz
+
+
 def lap_change_ok(new, cur, on_track, paused):
     """Tur sayacındaki değişiklik gerçek mi? Menü, pit ya da duraklatmadaki
     oynamalar (örn. 6 -> 0 -> 6) turu bölmesin. +1 adımı duraklatılmamışsa her zaman
     geçerli: yarışın bitiş paketinde 'pistte' bayrağı kapanmış olabilir."""
     return (on_track and not paused) or (new == cur + 1 and not paused)
+
+
+def yaris_mi(total_laps, pos, total_pos):
+    """Yarışta mıyız? Turlu yarışta toplam tur > 0. Süreli yarışta (ör. 30 dakika) oyun toplam turu 0
+    gönderir; o zaman yarış sırası (1..araç sayısı) gelmesinden anlaşılır. Time Trial / serbest
+    sürüşte sıra -1 gelir (topluluk belgeleri; gerçek oyunda süreli yarışta denenmedi)."""
+    return (total_laps or 0) > 0 or ((total_pos or 0) >= 2 and 1 <= (pos or 0) <= total_pos)
+
+
+def sureli_yaris(total_laps, pos, total_pos):
+    """Süreli yarış: sıra var ama toplam tur yok (yarışın ne zaman biteceği telemetride yok)."""
+    return (total_laps or 0) <= 0 and yaris_mi(total_laps, pos, total_pos)
 
 
 def records(lap_no, total_laps):
@@ -51,7 +85,7 @@ def note_packet(lap, pkt):
     lap.setdefault("loose", []).append(sum(c in LOOSE for c in s) if s else -1)
     lap["lap_no"] = pkt.current_lap
     lap["total_laps"] = pkt.total_laps
-    if pkt.total_laps > 0 and pkt.race_position >= 1 and pkt.total_positions >= 2:
+    if pkt.race_position >= 1 and pkt.total_positions >= 2:    # turlu ya da süreli yarış
         lap["race"] = True
 
 
@@ -166,8 +200,47 @@ def tam_tur(lap):
     return math.hypot(x[-1] - x[0], z[-1] - z[0]) <= max(TAM_TUR_M, TAM_TUR_ORAN * d[-1])
 
 
+# Lastik değişimi teker yarıçapından (0xB4): aşınmış lastik küçülür, yenisi takılınca yarıçap büyür.
+# Araba dururken (pitte) en az 2 tekerin yarıçapı duruşun başına göre %1,5 büyüdüyse lastikler değişmiştir.
+# Gerçek oyunda denenmedi.
+LASTIK_BUYUME = 0.015
+LASTIK_TEKER = 2
+LASTIK_ILK_PKT = 30        # duruşun ilk ~0,5 sn'si: "önceki" yarıçap
+
+
+class LastikTakip:
+    """Duruşlarda lastik değişimini yakalar. guncelle() değişimi bir kez True döndürür."""
+
+    def __init__(self):
+        self.bas = None        # duruşun başındaki yarıçaplar (ortalama)
+        self.ilk = []          # duruşun ilk paketleri
+        self.dedi = False      # bu duruşta değişim bildirildi
+
+    def guncelle(self, hiz_kmh, yaricaplar):
+        r = [v for v in (yaricaplar or ()) if v]
+        if len(r) != 4 or hiz_kmh is None:
+            return False
+        if hiz_kmh >= PIT_DUR_KMS:
+            self.bas, self.ilk, self.dedi = None, [], False
+            return False
+        if self.bas is None:
+            self.ilk.append(r)
+            if len(self.ilk) >= LASTIK_ILK_PKT:
+                self.bas = [sum(p[i] for p in self.ilk) / len(self.ilk) for i in range(4)]
+            return False
+        if self.dedi:
+            return False
+        buyuyen = sum(1 for a, b in zip(self.bas, r) if a > 0 and b >= a * (1 + LASTIK_BUYUME))
+        if buyuyen >= LASTIK_TEKER:
+            self.dedi = True
+            return True
+        return False
+
+
 def pit_turu(lap):
     """Turda pite girildi mi? Yakıt arttı ya da lastikler bir anda değişti. Sebebi ya da None."""
+    if lap.get("lastik_degisti"):
+        return "pite girdin (lastikler değişti)"
     en_az = None
     for f in lap.get("fuel", []):
         if f is None:

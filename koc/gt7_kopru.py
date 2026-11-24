@@ -82,6 +82,12 @@ TASMA_PAKET = 6          # 1+ teker gevşek zeminde bu kadar paket (~0,1 sn) = t
 KAZA_HIZ_ORAN = 0.6      # en düşük hız referansın bu oranının altına indiyse: döndün ya da neredeyse durdun
 KAZA_S = 1.0             # bölümde en az bu kadar ...
 KAZA_ORAN = 0.15         # ... ve referans bölüm süresinin bu oranından fazla kayıp = anormal
+# Spin: arabanın kendi ekseni etrafında dönme hızı (0x2C açısal hız, dikey eksen) bu kadar rad/sn'yi
+# SPIN_PAKET paket (~0,1 sn) üst üste geçti, 25 km/s üstünde. Normal virajda (saç tokası, 60 km/s) ~1 rad/sn.
+# Sesli söylenmez: sadece o virajda tavsiye verilmez. Gerçek oyunda denenmedi.
+SPIN_YAW = 2.5
+SPIN_PAKET = 6
+SPIN_HIZ = 25
 
 
 def kaza_mi(s, ref, a, b, rs=None, delta=None):
@@ -94,6 +100,11 @@ def kaza_mi(s, ref, a, b, rs=None, delta=None):
         run = run + 1 if v is not None and v >= 1 else 0
         if run >= TASMA_PAKET:
             return "pistten çıktın (teker çime / kuma taştı)"
+    run = 0
+    for y, v in zip((s.get("yaw") or [])[i0:i1], (s.get("speed") or [])[i0:i1]):
+        run = run + 1 if y is not None and v is not None and abs(y) >= SPIN_YAW and v >= SPIN_HIZ else 0
+        if run >= SPIN_PAKET:
+            return "araba döndü (spin)"
     hizlar = [v for v in (s.get("speed") or [])[i0:i1] if v is not None]
     if hizlar and rs is not None and rs.min_speed and rs.min_speed > 30 \
             and min(hizlar) < KAZA_HIZ_ORAN * rs.min_speed:

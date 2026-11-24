@@ -43,6 +43,14 @@ HATIRLATMA = (
     "Sıra Viraj {no}'de, {t}.",
     "Viraj {no} için konuşmuştuk, {t}.",
 )
+# Seste virajdan önce numara söylenmez: cümle zaten o viraja yaklaşırken söyleniyor. HATIRLATMA'nın sesli hâli
+# ({T}: büyük harfle başlayan tavsiye). Ekranda numaralı hâli durur.
+HATIRLATMA_SES = (
+    "{T}.",
+    "Konuştuğumuz gibi, {t}.",
+    "Bu virajda {t}.",
+    "Şimdi, {t}.",
+)
 # Virajdan SONRA: ne yaptın (geçmiş zaman, kısa) + bir dahaki sefer ne yap
 HATA = {
     "fren_erken": "frene erken bastın", "fren_gec": "frene geç kaldın",
