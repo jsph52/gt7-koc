@@ -123,6 +123,16 @@ python koc/gt7_arayuz.py
 İsteğe bağlı paketler: `edge-tts`, `pywebview`, `discord.py`, `PyNaCl`, `davey`, `miniaudio`. Windows EXE'si
 `main` dalındaki her güncellemede GitHub Actions ile üretilir (`.github/workflows/exe.yml`).
 
+## Lisans
+
+Telif hakkı © 2026 jsph52. GT7 Türkçe Koç, [GNU Genel Kamu Lisansı sürüm 3](LICENSE) (GPL-3.0) ile dağıtılır.
+
+- **Serbest:** Kodu kullanabilir, inceleyebilir, değiştirebilir ve paylaşabilirsin.
+- **Şart:** Değiştirilmiş bir sürümü dağıtırsan kaynak kodunu da aynı lisansla açman gerekir.
+- **Garanti:** Program olduğu gibi sunulur, hiçbir garanti verilmez.
+
+Aşağıdaki parçalar kendi lisanslarıyla gelir.
+
 ## Kaynaklar ve lisanslar
 
 - **Telemetri:** [gt7-datalogger](https://github.com/jbhoorasingh/gt7-datalogger) (MIT, `koc/alinan/`).
