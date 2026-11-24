@@ -2366,7 +2366,7 @@ function siradakiGoster(c){
     const parca = [];
     if (s.kayip !== null && s.kayip !== undefined && Math.abs(s.kayip) >= 0.01) parca.push("geçen tur " + farkYazi(s.kayip));
     parca.push(s.fren ? (c.fren_notu && c.fren_notu.startsWith("Fren sesi hazır") ? "fren uyarısı hazır" : "frenli viraj") : "gazı kesmeden");
-    yaz("svNot", c.islak ? "Islak pist şüphesi: uyarılar susuyor" : parca.join(" · "));
+    yaz("svNot", parca.join(" · "));
   }
   const kac = b && s && b.no === s.no ? b.bip : 0;
   [...$("bipler").querySelectorAll("i")].forEach((e, i) => e.className = i < kac ? "on" : "");

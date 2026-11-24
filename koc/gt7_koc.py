@@ -36,7 +36,7 @@ from gt7_tahmin import library_warner, track_summary
 from gt7_telemetri import CanliOlcer, vites_sayisi
 from gt7_muhendis import Muhendis
 from gt7_bul import Tarayici
-from gt7_analiz import (KURU_YAKIN, fren_aliskanligi, islak_tur, teker_tekrari, tempo, ters_yon,
+from gt7_analiz import (fren_aliskanligi, teker_tekrari, tempo, ters_yon,
                         tur_ozeti, tur_ozeti_satiri, tutarlilik)
 from gt7_veri import araba_adi, pist_bilgi
 from gt7_rekor import rekor_dili, rekor_ekle, rekor_karsilastir, rekor_turu
@@ -954,25 +954,6 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     if lastik:
         out.append("Lastik sıcaklığı (tur ortalaması): "
                    + ", ".join(f"{'ön' if k == 'on' else 'arka'} {v:.0f}°C" for k, v in lastik.items()))
-    # Islak pist tahmini: her virajda kayıp + yavaş tur + soğuyan lastikler (ya da sürerken lastikler soğudu)
-    hava_ses = None
-    lastik_ort = sum(lastik.values()) / len(lastik) if lastik else None
-    # Islak tahmini sadece kendi en iyi geçişlerine göre (rekor turuna göre her virajda kayıp olur) ve
-    # tekerler çime/kuma taşmadıysa (14 Kasım 2026: 2 teker çime çıkınca "pist ıslak" denmişti)
-    islak_cmp = None
-    if not problem and not tasmalar(lap):
-        try:
-            islak_cmp = cmp_res if not rekor_ref else (compare(lap, pool, corners) if pool else None)
-        except Exception:
-            islak_cmp = None
-    islak_satir, hava_ses, islak = islak_tur(state, islak_cmp, lap_ms, best_ms, lastik_ort)
-    if islak_satir:
-        out.append(islak_satir)
-    if islak:
-        state["islak"] = True
-    elif state.get("islak") and not problem and best_ms and lap_ms <= KURU_YAKIN * best_ms:
-        state["islak"] = False
-        out.append("Tur en iyine yakın: pist kurumuş görünüyor, viraj uyarıları yeniden açık.")
     revlim_s = sum(1 for v in lap.get("revlim", []) if v) / 60.0
     if manuel and revlim_s > 0.5:
         out.append(f"Devir sınırında geçen süre: {revlim_s:.1f} sn.")
@@ -1050,7 +1031,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     soylenen = []        # tur sonu sesinde tavsiye verilen virajlar: sonraki turda o viraja gelirken hatırlatılır
     ses = ses_ozeti(lap_ms, best_ms, problem, state.get("gecmis", []), cmp_res, manuel,
                     yakit_tur=None if state.get("strateji") else yakit_tur, kalan_tur=opts.get("kalan_tur"),
-                    lastik=lastik, strateji_ses=strateji_ses, hava_ses=hava_ses,
+                    lastik=lastik, strateji_ses=strateji_ses,
                     teker_tekrar=teker_tekrar, revlim_s=revlim_s, ayar_ses=ayar_ses,
                     duzeltilen=duzeltilen, sira=sira, tempo=tempo_ses, fren_ses=fren_ses,
                     pit_sn=pit_sn, onemli=state["onemli"], soylenen=soylenen, rekor=rekor_ref,
@@ -1877,26 +1858,18 @@ class Koc:
                 uyari, fark, _ = self.canli.adim(lap["x"][-1], lap["z"][-1], lap["dist"][-1], lap["t"][-1],
                                                  d["hiz"], d["fren"], d["gaz"],
                                                  lap["loose"][-1] if lap.get("loose") else None)
-                islak = state.get("islak")   # ıslak pist şüphesi: kuru tura göre uyarılar susar
                 if d["toplam_tur"] > 0 and self.ayar.get("yaris_tavsiye") != "acik":
                     uyari = self.canli.cikis = None   # yarışta viraj tavsiyesi yok (ayar yaris_tavsiye)
-                if uyari and not islak:
+                if uyari:
                     notify(uyari, kind="anlik", ses=uyari)
                 cikis, self.canli.cikis = self.canli.cikis, None
-                if cikis and not islak and self.ayar.get("cikis_yorumu") != "kapali":
+                if cikis and self.ayar.get("cikis_yorumu") != "kapali":
                     notify(cikis, kind="sonra", ses=cikis)
             # Yarış mühendisi: motor, lastik, sıra, son tur (kısa telsiz anonsları)
             try:
                 for metin, kritik in self.muhendis.guncelle(clock_t, pkt, on_track and not self.yaris_bitti,
                                                             paused):
                     notify(metin, kind="uyari" if kritik else "muhendis")
-                if self.muhendis.islak_olay:
-                    self.muhendis.islak_olay = False
-                    if not state.get("islak"):
-                        state["islak"] = True
-                        notify("Islak pist şüphesi: viraj uyarıları susuyor.",
-                               ["Viraj öncesi uyarılar ve çıkış yorumları kuru turlarına göre; pist kuruyana kadar "
-                                "(en iyi turuna %2 yaklaşınca) susarlar. Mühendis anonsları sürer."])
             except Exception:
                 pass
 
@@ -1960,7 +1933,7 @@ class Koc:
                 "son_tur": sure(d["son_tur"]), "en_iyi": sure(d["en_iyi"]),
                 "araba": d["araba"], "araba_adi": araba_adi(d["araba"]), "yakit": pkt.fuel_level, "x": d["konum"][0], "z": d["konum"][2],
                 "fark": fark, "vites_turu": self.vites_turu[0], "vites_algilandi": self.vites_turu[1],
-                "canli_hazir": self.canli.ready, "islak": bool(state.get("islak")),
+                "canli_hazir": self.canli.ready,
                 "c_bicimi": pkt.wheel_steering_rad is not None,
                 "siradaki": self.canli.siradaki if self.canli.ready and recording else None,
                 "bip": getattr(self.fren, "bip_durum", None) if self.fren else None,
