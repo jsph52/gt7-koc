@@ -106,13 +106,13 @@ jobs:
           gh release create son-surum dist/GT7-Koc.exe \
             --target "$GITHUB_SHA" \
             --title "GT7 Türkçe Koç - son sürüm" \
-            --notes "**Kurulum gerekmez.** Aşağıdaki GT7-Koc.exe dosyasını indir ve çift tıkla.
+            --notes "**Kurulum:** Gerekmez. GT7-Koc.exe dosyasını indirip çalıştır.
 
-          - PS5 ile bilgisayar aynı ev ağında olmalı. GT7'de piste çıkman yeterli: koç PS5'i, pisti ve arabayı kendisi bulur.
-          - Turların, ayarların ve raporların Belgeler\GT7 Koc klasörüne kaydedilir. Yeni sürümü indirip eskisinin yerine koyduğunda hiçbiri kaybolmaz.
-          - Windows uyarı verirse: Ek bilgi > Yine de çalıştır. Güvenlik duvarı sorarsa: İzin ver.
-          - Gereksinimler: Windows 10 / 11, koçun sesi için internet bağlantısı.
+          - **Bağlantı:** PS5 ve bilgisayar aynı ev ağında olmalı. PS5, pist ve araba otomatik algılanır.
+          - **Kayıtlar:** Belgeler\GT7 Koc klasöründe tutulur; yeni sürümde korunur.
+          - **Windows uyarısı:** Ek bilgi > Yine de çalıştır. Güvenlik duvarı: İzin ver.
+          - **Gereksinimler:** Windows 10 / 11, ses için internet bağlantısı.
 
-          Özelliklerin tamamı ve sorun giderme: https://github.com/jsph52/gt7-koc#readme
+          Ayrıntılar: https://github.com/jsph52/gt7-koc#readme
 
           Kaynak commit: $GITHUB_SHA"

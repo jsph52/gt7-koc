@@ -540,6 +540,8 @@ html[data-tema="yayin"] .tt-hedef button.secili{background:#fff;color:#000;opaci
 .kabuk .satir-k button{white-space:nowrap}
 .kabuk .en b{font-style:italic;font-weight:800;font-size:22px}
 .kabuk .ok-i{color:var(--dim);font-size:24px}
+.kabuk .sil-d{background:transparent;color:var(--muted);border-color:var(--line);font-size:14px}
+.kabuk .sil-d:hover{color:#fff;background:var(--bad);border-color:var(--bad)}
 .kabuk .hepsi{padding:10px 0;color:var(--muted);font-weight:700;text-transform:uppercase;cursor:pointer;background:transparent;border:0}
 .mor{color:var(--mor)!important}.altin-r{color:#e2b23c}.kirmizi{color:var(--bad)}.yesil{color:var(--ok)}.sari{color:var(--warn)}.mavi{color:#22d3ee}
 .kabuk .ust-cubuk{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -829,6 +831,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
   .kabuk #gecmisListe .satir-k>.k{order:5;font-size:14px}
   .kabuk #gecmisListe .satir-k>.k+.k{margin-right:auto}
   .kabuk #gecmisListe .ok-i{display:none}
+  .kabuk #gecmisListe .sil-d,.kabuk #gecmisListe .y-rozet{order:6}
   /* Time Trial hazırlık */
   .kabuk .ust-cubuk{gap:8px}
   .kabuk .ust-cubuk>div:last-child{width:100%}
@@ -945,7 +948,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
     <section class="kart liste-k" id="ttListe"><div class="bos">Yükleniyor…</div></section>
   </main>
   <main class="sayfa" id="sayfaGecmis" hidden>
-    <h1>Geçmiş antrenmanlar</h1>
+    <div class="kart-ust"><h1>Geçmiş antrenmanlar</h1><button class="sil-d" id="gecmisHepsiSil" hidden>Hepsini sil</button></div>
     <p class="k">Raporu görmek için bir antrenmana tıkla.</p>
     <section class="kart liste-k" id="gecmisListe"><div class="bos">Henüz antrenman yok.</div></section>
   </main>
@@ -1836,6 +1839,7 @@ function bandYaz(metin, tur){
   else if (tur === "muhendis"){ etiket = "MÜHENDİS"; }
   else if (tur === "tahmin"){ etiket = "PİST BİLGİSİ"; }
   else if (tur === "tur"){ etiket = "TUR SONU"; }
+  else if (tur === "koc"){ etiket = "KOÇ"; }
   $("band").className = "band " + sinif; yaz("bandEtiket", etiket);
 }
 function mesajEkle(m){
@@ -1850,6 +1854,7 @@ function mesajEkle(m){
   tumMesajlar.unshift(m); tumMesajlar.length = Math.min(tumMesajlar.length, 200);
   if ($("notlarPerde").classList.contains("acik") && !secilenTur) mesajlarGoster(null);
   if (m.tur === "tur") bandYaz(m.ses || m.baslik, "tur");
+  else if (m.tur === "koc") bandYaz(m.baslik, "koc");
   else if (m.tur === "uyari" || m.tur === "muhendis") bandYaz(m.baslik, m.tur);
   if (!ilkDurum && m.oku) soyle(m.oku[0], m.oku[1]);
 }
@@ -1879,7 +1884,8 @@ let turListesi = [];
 function turlarGoster(list){
   turListesi = list || [];
   const kutu = $("turlar");
-  if (!turListesi.length) return;
+  if (!turListesi.length){      // yeni antrenman: önceki turlar kalmasın
+    kutu.innerHTML = '<div class="bos">Tur bitince burada listelenir. Tıklayınca koçun o tur için notları açılır.</div>'; return; }
   kutu.innerHTML = "";
   for (const t of turListesi){
     const d = document.createElement("div");
@@ -1917,8 +1923,9 @@ function oneriGoster(list, c){
   const imza = JSON.stringify(list);
   if (imza === oneriImza) return;
   oneriImza = imza;
-  if (!list.length) return;
-  const kutu = $("oneriler"); kutu.innerHTML = "";
+  const kutu = $("oneriler");
+  if (!list.length){ kutu.innerHTML = '<div class="bos">Birkaç turda tekrar eden kilitlenme, patinaj ya da kayma olursa ayar önerileri burada birikir.</div>'; return; }
+  kutu.innerHTML = "";
   for (const o of list){
     const d = document.createElement("div"); d.className = "oneri";
     const ek = (sinif, metin) => { if (!metin) return; const e = document.createElement(sinif); e.textContent = metin; d.appendChild(e); };
@@ -2195,6 +2202,10 @@ async function haritaYenile(){
   if (h){
     $("virajTablosu").innerHTML = h.tablo;
     seritVeri = h.serit; seritCiz();
+  } else {      // yeni antrenman / pist: önceki antrenmanın tabloları kalmasın
+    $("virajTablosu").innerHTML = '<div class="bos">İlk turdan sonra gelir.</div>';
+    seritVeri = null;
+    $("serit").innerHTML = '<div class="bos" style="padding:10px 0">İki temiz turdan sonra her virajın turdan tura farkı burada renkli tabloda birikir.</div>';
   }
   virajAdlari = r.adlar || {};
   enAdEkle(...Object.values(virajAdlari));
@@ -2593,13 +2604,28 @@ function gecmisSatirlari(kutu, liste, hepsi){
     const r = el("div", "satir-k"), ad = el("div", "y-ad");
     ad.append(el("b", "", g.pist), el("span", "", (g.mod === "tt" ? "⏱ Time Trial · " : "Serbest antrenman · ") + (g.araba || "")));
     const en = el("div", "en"); en.append(el("b", "mor", g.en_iyi || "—"));
-    r.append(pistCizimi(g.cizgi, 70, 40, 2), ad, el("span", "k", g.tarih), el("span", "k", g.tur + " tur"), en, el("span", "ok-i", "›"));
+    r.append(pistCizimi(g.cizgi, 70, 40, 2), ad, el("span", "k", g.tarih), el("span", "k", g.tur + " tur"), en);
+    if (g.suruyor) r.append(el("span", "y-rozet", "Sürüyor"));
+    else {
+      const sil = el("button", "sil-d", "Sil"); sil.title = "Bu antrenmanı geçmişten sil";
+      sil.onclick = async ev => { ev.stopPropagation();
+        if (!await onayla("Antrenmanı sil", g.pist + " · " + g.tarih + ". Bu antrenmanın kaydı ve raporu silinir. "
+          + "Pistteki en iyi turların ve koçun bu pist hakkındaki hafızası kalır.", "Sil", true)) return;
+        await postJson("/api/gecmis_sil", {id: g.id}); gecmisYukle(); };
+      r.append(sil);
+    }
+    r.append(el("span", "ok-i", "›"));
     r.title = "Bu antrenmanın raporunu aç";
     r.onclick = () => raporDosyaAc(g);
     kutu.append(r);
   }
   if (hepsi){ const h = el("button", "hepsi", "Hepsini gör ›"); h.onclick = () => sayfaGoster("gecmis"); kutu.append(h); }
 }
+$("gecmisHepsiSil").onclick = async () => {
+  if (!await onayla("Bütün geçmişi sil", "Bütün antrenman kayıtları ve raporları silinir. Pistlerdeki en iyi turların, "
+    + "rekor turların ve koçun hafızası kalır.", "Hepsini sil", true)) return;
+  await postJson("/api/gecmis_sil", {hepsi: true}); gecmisYukle();
+};
 function raporDosyaAc(g){
   yaz("raporNot", g.pist + " · " + g.tarih);
   $("raporCerceve").src = "/rapor?dosya=" + encodeURIComponent(g.rapor || "");
@@ -2608,6 +2634,7 @@ function raporDosyaAc(g){
 async function gecmisYukle(){
   let g; try { g = await (await fetch("/api/gecmis")).json(); } catch(e){ return; }
   gecmisSatirlari($("gecmisListe"), g, false);
+  $("gecmisHepsiSil").hidden = !g.some(x => !x.suruyor);
 }
 
 // ---------- Time Trial hazırlık ----------
@@ -2709,6 +2736,15 @@ $("odakSec").onchange = () => postJson("/api/odak", {no: $("odakSec").value ? Nu
 
 // ---------- Koç mesajları (sürüş ekranı, sağ sütun) ----------
 const kocMsj = [];
+let sonAntId = null;
+function seansTemizle(){
+  kocMsj.length = 0; tumMesajlar.length = 0;
+  $("kocMesajlar").innerHTML = '<div class="bos">Koçun sürerken söyledikleri burada birikir.</div>';
+  if ($("notlarPerde").classList.contains("acik") && !secilenTur) mesajlarGoster(null);
+  bandYaz("Koçun son söylediği burada görünür.", ""); yaz("bandEtiket", "SON YORUM");
+  sparkTur = null; sparkNok = []; $("bSpark").innerHTML = "";
+  haritaSurum = null;
+}
 function kocMesajEkle(m){
   const t = m.tur;
   let etiket, renk;
@@ -2717,6 +2753,7 @@ function kocMesajEkle(m){
     renk = /kazandın|düzelt|aferin|iyi/i.test(m.baslik) ? "yesil" : /kaybettin|yine|geriledin|hâlâ/i.test(m.baslik) ? "kirmizi" : "gri"; }
   else if (t === "tur"){ etiket = "Tur sonu"; renk = "beyaz"; }
   else if (t === "muhendis"){ etiket = "Mühendis"; renk = "gri"; }
+  else if (t === "koc"){ etiket = "Koç"; renk = "beyaz"; }
   else if (t === "uyari"){ etiket = "Uyarı"; renk = "kirmizi"; }
   else return;
   kocMsj.unshift({etiket, renk, metin: t === "tur" ? (m.ses || m.baslik) : m.baslik, saat: m.saat});
@@ -3015,6 +3052,10 @@ async function durum(){
     $("baglantiNokta").className = "nokta kotu"; yaz("baglantiYazi", "Koç programı kapalı");
     setTimeout(durum, 1500); return;
   }
+  // Yeni antrenman: önceki antrenmanın mesajları ve son yorumu ekrandan kalkar (koç da turları sıfırlar)
+  const antId = d.antrenman ? d.antrenman.id : null;
+  if (antId && antId !== sonAntId && !ilkDurum) seansTemizle();
+  sonAntId = antId;
   for (const m of d.mesajlar){ mesajEkle(m); sonMesaj = m.id; }
   ilkDurum = false;
 
