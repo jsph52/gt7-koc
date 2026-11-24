@@ -12,7 +12,7 @@ import math
 YEDEK_TUR = 0.3        # her stintin sonunda depoda kalsın istenen pay (tur)
 ARTIS_ORANI = 1.10      # son tur ortalamadan bu kadar fazla yaktıysa "tüketim arttı" (harita değişti)
 TASARRUF_EN_COK = 0.10  # pitsiz bitirmek için bundan az tasarruf gerekiyorsa seçenek olarak söylenir
-# Yakıt haritası (yarış içi menü, 1 = en güçlü, 6 = en tasarruflu): numarayı her bir artırmak tüketimi yaklaşık %10
+# Yakıt ayarı / yakıt haritası (yarış içi menü, 1 = en güçlü, 6 = en tasarruflu); seste "yakıt ayarı" denir. Numarayı her bir artırmak tüketimi yaklaşık %10
 # azaltır, turu ~0,25 sn yavaşlatır (tahmini). Oyun şu anki haritayı göndermez: koç sadece kaç numara artırılacağını söyler.
 HARITA_TUKETIM = 0.90
 HARITA_YAVAS_S = 0.25
@@ -130,12 +130,12 @@ def satir(p, pit_sn=None):
         s += f" Pit ~{pit_sn:.0f} sn kaybettirir."
     h = harita(p, pit_sn)
     if h:
-        s += (f" Daha hızlısı: yakıt haritasının numarasını {h['kademe']} artır (daha tasarruflu), pitsiz bitirirsin "
+        s += (f" Daha hızlısı: yakıt ayarını {h['kademe']} kademe artır (daha tasarruflu), pitsiz bitirirsin "
               f"(tur başına ~{h['kademe'] * HARITA_YAVAS_S:.2f} sn yavaşlarsın, toplam ~{h['kayip']:.0f} sn; "
               f"pitten ~{h['kazanc']:.0f} sn kazançlı).")
     elif p["pit_sayisi"] == 1 and p["tasarruf"] <= TASARRUF_EN_COK:
         s += (f" Ya da tur başına %{math.ceil(p['tasarruf'] * 100)} az yakarak pitsiz bitirebilirsin "
-              "(daha tasarruflu yakıt haritası, erken vites, düzlük sonunda gazı biraz erken bırakma).")
+              "(daha tasarruflu yakıt ayarı, erken vites, düzlük sonunda gazı biraz erken bırakma).")
     return s
 
 
@@ -163,10 +163,10 @@ def sesli(p, durum, pit_sn=None):
         if onceki:          # pite girildi ya da harita değişti, yakıt artık yetiyor
             durum.pop("pit_turu_dedi", None)
             if p.get("guclu_yeter"):
-                return "Yakıt artık bitişe yeter. İstersen yakıt haritasını en güçlüsüne çevirebilirsin."
+                return "Yakıt artık bitişe yeter. İstersen yakıt ayarını 1'e çevirebilirsin."
             if p.get("guclu_yeter") is False:
                 # Şu anki (tasarruflu) tüketimle yetiyor ama yarışın en çok yakan turlarıyla yetmez
-                return "Yakıt artık bitişe yeter. Yakıt haritasını değiştirme, daha güçlüsü yetmez."
+                return "Yakıt artık bitişe yeter. Yakıt ayarını değiştirme, daha güçlüsü yetmez."
             return "Yakıt artık bitişe yeter."
         return None
     # "al." cümle sonunda ses motorunca harf harf okunuyordu: "almalısın" denir
@@ -178,7 +178,7 @@ def sesli(p, durum, pit_sn=None):
     if not onceki:
         h = harita(p, pit_sn)
         if h:
-            return (f"{arti}Yakıt bitişe yetmeyecek. Yakıt haritasının numarasını {h['kademe']} artır, pite girmeden "
+            return (f"{arti}Yakıt bitişe yetmeyecek. Yakıt ayarını {h['kademe']} kademe artır, pite girmeden "
                     f"bitirirsin. Pitten yaklaşık {h['kazanc']:.0f} saniye kazançlı.")
         return f"{arti}Yakıt bitişe yetmeyecek. En geç {p['en_gec']}. turda pite gir."
     return None

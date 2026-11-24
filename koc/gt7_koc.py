@@ -1794,7 +1794,8 @@ class Koc:
                                                 "yaris_sessiz": d["toplam_tur"] > 0
                                                 and self.ayar.get("yaris_tavsiye") != "acik",
                                                 "tt": self.tt_hedef(state, d["araba"]), "bitis": bitis,
-                                                "sira": (pkt.race_position, pkt.total_positions)
+                                                "sira": (pkt.race_position, pkt.total_positions,
+                                                         self.muhendis.sira_degisimi(pkt.race_position))
                                                 if d["toplam_tur"] > 0 and pkt.total_positions >= 2 else None})
                         self.hazirla_gerek = True
                         bitis = None        # tur sonu mesajı bitişi söyledi
