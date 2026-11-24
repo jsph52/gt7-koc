@@ -9,20 +9,51 @@ PS5'in gönderdiği ama koçun önceden kullanmadığı veriler:
 - Yerden yükseklik, yarış sırası, hibrit enerji, teker zemini (C biçimi)
 Ek paket gerekmez.
 """
+import json
 import math
+import os
 from collections import deque
 
+from gt7_yol import USER_DIR
+
 G = 9.80665
-LASTIK_SOGUK = 60     # °C altı soğuk (mavi)  — tahmini aralık, lastik türüne göre değişir
+LASTIK_SOGUK = 60     # çalışma sıcaklığı henüz bilinmiyorsa genel aralık: °C altı soğuk (mavi)
 LASTIK_IDEAL = (70, 95)  # ideal (yeşil)
 LASTIK_SICAK = 100    # °C üstü çok sıcak (kırmızı), gt7_yorum.LASTIK_SICAK ile aynı
+# Arabaya göre çalışma sıcaklığı: lastik ortalaması (40 km/s üstünde, 8 sn yumuşatılmış) 30 sn boyunca
+# 1,5 °C'den az değişince o arabanın lastiklerinin oturduğu sıcaklık sayılır. Renkler buna göre (ideal R-8..R+10).
+LASTIK_DOSYA = os.path.join(USER_DIR, "lastik.json")
+CALISMA_TAU = 8.0
+CALISMA_PENCERE_S = 30.0
+CALISMA_SABIT = 1.5
+CALISMA_EN_AZ = 40.0
+CALISMA_OGRENME = 0.2     # her sabitlenmede kayıtlı değere bu oranla yaklaşılır
+SOGUK_ALT, IDEAL_ALT, IDEAL_UST, SICAK_UST = 15, 8, 10, 20   # çalışma sıcaklığına göre °C
 G_PENCERE_S = 0.25    # G hesabı için bakılan süre
 ZEMIN = {"T": "asfalt", "K": "kerb", "G": "çim", "S": "kum", "D": "toprak", "s": "kar", "I": "buz"}
 
 
-def lastik_durumu(c):
+def _calisma_oku():
+    try:
+        with open(LASTIK_DOSYA, encoding="utf-8") as f:
+            d = json.load(f)
+        return {str(k): float(v) for k, v in d.items()}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def lastik_durumu(c, ref=None):
+    """ref: arabanın çalışma sıcaklığı (bilinmiyorsa genel aralık)."""
     if c is None:
         return "yok"
+    if ref:
+        if c < ref - SOGUK_ALT:
+            return "soguk"
+        if c > max(LASTIK_SICAK, ref + SICAK_UST):
+            return "sicak"
+        if ref - IDEAL_ALT <= c <= ref + IDEAL_UST:
+            return "ideal"
+        return "ilik" if c < ref else "isindi"
     if c < LASTIK_SOGUK:
         return "soguk"
     if c > LASTIK_SICAK:
@@ -42,6 +73,44 @@ class CanliOlcer:
         self.tepe_turbo = 0.0
         self.tepe_devir = 0.0     # bu arabada görülen en yüksek devir
         self.devir_araba = None
+        self.calisma = _calisma_oku()   # araba kodu -> lastiklerin oturduğu sıcaklık (°C)
+        self.l_araba = None
+        self.l_ema = self.l_t = None
+        self.l_iz = deque()             # (t, yumuşatılmış ortalama)
+        self.l_son_kayit = -1e9
+
+    def lastik_ogren(self, t, araba, ort, kmh):
+        """Lastik ortalaması sabitlenince bu arabanın çalışma sıcaklığını öğrenir (araba başına saklanır)."""
+        if araba != self.l_araba:
+            self.l_araba, self.l_ema, self.l_t = araba, None, None
+            self.l_iz.clear()
+        if araba is None or not ort or ort <= 0 or kmh < 40:
+            self.l_t = None
+            return
+        if self.l_ema is None:
+            self.l_ema, self.l_t = ort, t
+            return
+        dt = 0.0 if self.l_t is None else max(0.0, min(0.5, t - self.l_t))
+        self.l_t = t
+        self.l_ema += (ort - self.l_ema) * min(1.0, dt / CALISMA_TAU)
+        iz = self.l_iz
+        iz.append((t, self.l_ema))
+        while iz and t - iz[0][0] > CALISMA_PENCERE_S:
+            iz.popleft()
+        if t - iz[0][0] < CALISMA_PENCERE_S - 1 or self.l_ema < CALISMA_EN_AZ:
+            return
+        if max(v for _, v in iz) - min(v for _, v in iz) < CALISMA_SABIT and t - self.l_son_kayit >= CALISMA_PENCERE_S:
+            k = str(araba)
+            eski = self.calisma.get(k)
+            self.calisma[k] = round(self.l_ema if eski is None else eski + (self.l_ema - eski) * CALISMA_OGRENME, 1)
+            self.l_son_kayit = t
+            try:
+                tmp = LASTIK_DOSYA + ".tmp"
+                with open(tmp, "w", encoding="utf-8") as f:
+                    json.dump(self.calisma, f)
+                os.replace(tmp, LASTIK_DOSYA)
+            except OSError:
+                pass
 
     def update(self, t, x, z, v_kmh, pkt, flags):
         v = v_kmh / 3.6
@@ -77,7 +146,11 @@ class CanliOlcer:
         uyari = round(lo / tavan, 2) if gecerli else None
         boost = pkt.boost if pkt.boost and pkt.boost > 0.01 else 0.0
         self.tepe_turbo = max(self.tepe_turbo, boost)
+        lastikler = (pkt.tire_temp_fl, pkt.tire_temp_fr, pkt.tire_temp_rl, pkt.tire_temp_rr)
+        if min(lastikler) > 0:
+            self.lastik_ogren(t, araba, sum(lastikler) / 4, v_kmh)
         out = {
+            "lastik_ref": self.calisma.get(str(araba)) if araba is not None else None,
             "lastik": [round(pkt.tire_temp_fl, 1), round(pkt.tire_temp_fr, 1),
                        round(pkt.tire_temp_rl, 1), round(pkt.tire_temp_rr, 1)],
             "g": [round(self.g_yan, 2), round(self.g_ileri, 2)],

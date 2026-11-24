@@ -1360,7 +1360,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
     <div class="k">Ön ortalama <b id="lastikOn">—</b> · Arka ortalama <b id="lastikArka">—</b> · Sol / sağ <b id="lastikYan">—</b></div>
     <svg id="lastikGrafik" viewBox="0 0 400 140" preserveAspectRatio="none" aria-label="Son 2 dakikanın lastik sıcaklığı"></svg>
     <div class="renk-cizgi"><span style="--c:#ff8a65">ön sol</span><span style="--c:#ffd54f">ön sağ</span><span style="--c:#4fc3f7">arka sol</span><span style="--c:#ba68c8">arka sağ</span></div>
-    <div class="renk-cizgi"><span style="--c:#3b82f6">soğuk &lt;60°</span><span style="--c:#26c281">ideal 70–95°</span><span style="--c:#ef5350">sıcak &gt;100°</span><span style="--c:transparent">Aralıklar tahmini; lastik türüne göre değişir.</span></div>
+    <div class="renk-cizgi" id="lastikAralik"><span style="--c:#3b82f6">soğuk &lt;60°</span><span style="--c:#26c281">ideal 70–95°</span><span style="--c:#ef5350">sıcak &gt;100°</span><span style="--c:transparent">Bu arabanın lastik sıcaklığı henüz öğrenilmedi; genel aralık gösteriliyor.</span></div>
   </div>
 </div></div>
 <div class="perde" id="secim"><div class="pencere">
@@ -2224,16 +2224,31 @@ function aracGoster(c){
 const LASTIK_ADI = ["ön sol", "ön sağ", "arka sol", "arka sağ"];
 const CIZGI_RENK = ["#ff8a65", "#ffd54f", "#4fc3f7", "#ba68c8"];
 function karistir(a, b, t){ return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
+// Lastik aralığı: arabanın çalışma sıcaklığı (R, koç öğrenir) biliniyorsa ona göre, yoksa genel aralık.
+let lastikRef = null;
+function lastikAralik(){
+  const R = lastikRef;
+  if (!R) return {soguk: 60, ideal: [70, 95], sicak: 100, cok: 110};
+  return {soguk: R - 15, ideal: [R - 8, R + 10], sicak: R + 15, cok: R + 25};
+}
+function cokSicak(c){ const R = lastikRef; return c > (R ? Math.max(100, R + 20) : 100); }
 function lastikRenk(c){
   if (c === null || c === undefined || c <= 0) return "#3a4049";
   const mavi = [59,130,246], yesil = [38,194,129], sari = [255,176,32], kirmizi = [239,83,80];
+  const a = lastikAralik();
   let r;
-  if (c < 60) r = mavi;
-  else if (c < 70) r = karistir(mavi, yesil, (c - 60) / 10);
-  else if (c <= 95) r = yesil;
-  else if (c <= 100) r = karistir(yesil, sari, (c - 95) / 5);
-  else r = karistir(sari, kirmizi, Math.min(1, (c - 100) / 10));
+  if (c < a.soguk) r = mavi;
+  else if (c < a.ideal[0]) r = karistir(mavi, yesil, (c - a.soguk) / (a.ideal[0] - a.soguk));
+  else if (c <= a.ideal[1]) r = yesil;
+  else if (c <= a.sicak) r = karistir(yesil, sari, (c - a.ideal[1]) / (a.sicak - a.ideal[1]));
+  else r = karistir(sari, kirmizi, Math.min(1, (c - a.sicak) / (a.cok - a.sicak)));
   return `rgb(${r.join(",")})`;
+}
+function lastikAciklama(){
+  const a = lastikAralik(), R = lastikRef, y = Math.round;
+  $("lastikAralik").innerHTML = `<span style="--c:#3b82f6">soğuk &lt;${y(a.soguk)}°</span><span style="--c:#26c281">ideal ${y(a.ideal[0])}–${y(a.ideal[1])}°</span>` +
+    `<span style="--c:#ef5350">sıcak &gt;${y(a.sicak)}°</span><span style="--c:transparent">` +
+    (R ? `Bu arabanın lastikleri ${y(R)} °C civarında oturuyor; aralık buna göre.` : "Bu arabanın lastik sıcaklığı henüz öğrenilmedi; genel aralık gösteriliyor.") + "</span>";
 }
 let lastikGecmis = [], sonLastikZaman = 0;   // [zaman, [4 sıcaklık]] son 2 dakika, saniyede 2 örnek
 function lastikGoster(L){
@@ -2246,7 +2261,7 @@ function lastikGoster(L){
   const on = (L[0] + L[1]) / 2, arka = (L[2] + L[3]) / 2, yan = (L[0] + L[2]) / 2 - (L[1] + L[3]) / 2;
   yaz("lastikOn", on.toFixed(0) + "°C"); yaz("lastikArka", arka.toFixed(0) + "°C");
   yaz("lastikYan", (Math.abs(yan) < 1 ? "dengeli" : `${Math.abs(yan).toFixed(0)}° ${yan > 0 ? "sol" : "sağ"} daha sıcak`));
-  const sicak = L.map((c, i) => c > 100 ? LASTIK_ADI[i] : null).filter(Boolean);
+  const sicak = L.map((c, i) => cokSicak(c) ? LASTIK_ADI[i] : null).filter(Boolean);
   $("lastikUyari").hidden = !sicak.length;
   if (sicak.length) yaz("lastikUyari", "Çok sıcak: " + sicak.join(", ") + ". " +
     (on >= arka ? "Frene ve direksiyona daha yumuşak davran." : "Çıkışlarda gazı daha yumuşak aç."));
@@ -2262,11 +2277,12 @@ function lastikGrafik(){
   const svg = $("lastikGrafik"), W = 400, H = 140, pad = 22;
   if (lastikGecmis.length < 2){ svg.innerHTML = '<text x="200" y="74" text-anchor="middle" fill="#8a93a3" font-size="13">Veri geldikçe çizilir</text>'; return; }
   const tum = lastikGecmis.flatMap(o => o[1]);
-  let lo = Math.min(...tum, 60) - 3, hi = Math.max(...tum, 100) + 3;
+  const a = lastikAralik();
+  let lo = Math.min(...tum, a.soguk) - 3, hi = Math.max(...tum, a.sicak) + 3;
   const t0 = lastikGecmis[lastikGecmis.length - 1][0] - 120000;
   const X = t => pad + (t - t0) / 120000 * (W - pad - 4), Y = c => H - 14 - (c - lo) / (hi - lo) * (H - 24);
-  let h = `<rect x="${pad}" y="${Y(95).toFixed(1)}" width="${W - pad - 4}" height="${(Y(70) - Y(95)).toFixed(1)}" fill="#26c281" fill-opacity=".08"/>`;
-  for (const c of [60, 80, 100]){
+  let h = `<rect x="${pad}" y="${Y(a.ideal[1]).toFixed(1)}" width="${W - pad - 4}" height="${(Y(a.ideal[0]) - Y(a.ideal[1])).toFixed(1)}" fill="#26c281" fill-opacity=".08"/>`;
+  for (const c of [a.soguk, (a.ideal[0] + a.ideal[1]) / 2, a.sicak].map(Math.round)){
     if (c < lo || c > hi) continue;
     h += `<line x1="${pad}" x2="${W - 4}" y1="${Y(c).toFixed(1)}" y2="${Y(c).toFixed(1)}" stroke="#2b313c" stroke-dasharray="3 4"/>` +
          `<text x="2" y="${(Y(c) + 4).toFixed(1)}" font-size="10" fill="#5d6575">${c}°</text>`;
@@ -2304,6 +2320,7 @@ function devirIsigi(oran, sinir, uyari, devir){
   yaz("devirSayi", devir == null ? "—" : String(devir));
 }
 function aracBilgi(c){
+  if ((c.lastik_ref || null) !== lastikRef){ lastikRef = c.lastik_ref || null; lastikAciklama(); }
   lastikGoster(c.lastik);
   gGoster(c.g);
   devirIsigi(c.devir_isigi, c.devir_sinir, c.devir_uyari, c.devir);
@@ -2922,7 +2939,7 @@ function basitGuncelle(c){
   }
   const L = c.lastik;
   if (L && L.every(v => v > 0)){
-    const sicak = L.map((v, i) => v > 100 ? LASTIK_ADI[i] : null).filter(Boolean), ort = L.reduce((a, b) => a + b, 0) / 4;
+    const sicak = L.map((v, i) => cokSicak(v) ? LASTIK_ADI[i] : null).filter(Boolean), ort = L.reduce((a, b) => a + b, 0) / 4;
     yaz("bLastikDurum", sicak.length ? (sicak.length > 2 ? "Lastikler çok sıcak." : sicak.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(", ") + " çok sıcak.")
       : "Ortalama " + Math.round(ort) + " °C.");   // soğuk / ısınıyor denmez: bazı arabalarda lastikler hiç ısınmaz
   } else yaz("bLastikDurum", "—");

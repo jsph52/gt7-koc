@@ -18,7 +18,7 @@ KLASOR_ADI = "GT7 Koc"
 # Koçun kayıt klasörüne yazdığı dosya ve klasörler (eski sürümden taşınacaklar).
 # EXE'nin yanındaki başka dosyalara dokunulmaz.
 KAYITLAR = (
-    "ayarlar.json", "antrenmanlar.json", "cekis.json", "kalibrasyon.json",
+    "ayarlar.json", "antrenmanlar.json", "cekis.json", "lastik.json", "kalibrasyon.json",
     "tt_rapor.json", "ps_ip.txt", "son_pist.txt", "discord_token.txt",
     "koc_gunluk.txt", "turlar", "referanslar", "raporlar", "pencere_verisi",
 )
