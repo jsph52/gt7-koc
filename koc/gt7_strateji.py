@@ -10,8 +10,10 @@ Lastik aşınması telemetride yok: strateji sadece yakıta göre. Eşikler tahm
 import math
 
 YEDEK_TUR = 0.3        # her stintin sonunda depoda kalsın istenen pay (tur)
+ARTIS_ORANI = 1.10      # son tur ortalamadan bu kadar fazla yaktıysa "tüketim arttı" (harita değişti)
 TASARRUF_EN_COK = 0.10  # pitsiz bitirmek için bundan az tasarruf gerekiyorsa seçenek olarak söylenir
-# Yakıt haritası (yarış içi menü): her kademe tüketimi yaklaşık %10 azaltır, turu ~0,25 sn yavaşlatır (tahmini)
+# Yakıt haritası (yarış içi menü, 1 = en güçlü, 6 = en tasarruflu): numarayı her bir artırmak tüketimi yaklaşık %10
+# azaltır, turu ~0,25 sn yavaşlatır (tahmini). Oyun şu anki haritayı göndermez: koç sadece kaç numara artırılacağını söyler.
 HARITA_TUKETIM = 0.90
 HARITA_YAVAS_S = 0.25
 HARITA_EN_COK = 4       # en fazla bu kadar kademe önerilir
@@ -61,6 +63,30 @@ def plan(yakit, kapasite, tur_basi, kalan_tur, simdiki_tur):
     return p
 
 
+def tuketim(turlar):
+    """Planın kullanacağı tur başı tüketim. turlar: bu yarıştaki tam turların tüketimi (L), en yenisi sonda.
+    Son 3 turun ortalaması; son tur ondan belirgin fazlaysa son tur (yakıt haritası güçlüye çevrildiyse
+    plan 3 tur gecikmesin). Döner: (L/tur, arttı mı) ya da (None, False)."""
+    if not turlar:
+        return None, False
+    son3 = turlar[-3:]
+    ort = sum(son3) / len(son3)
+    if len(turlar) >= 2 and turlar[-1] > ort * ARTIS_ORANI:
+        return turlar[-1], True
+    return ort, False
+
+
+def guclu_ek(p, turlar):
+    """Pitsiz bitiş planına, yarışın en çok yakan turuyla da yetip yetmeyeceğini ekler (p["guclu_yeter"]).
+    Sadece bu yarışta belirgin daha çok yakan bir tur görüldüyse (yani harita sonradan tasarrufluya çevrildiyse)."""
+    if not p or p["pit"] or not turlar:
+        return p
+    en_cok = max(turlar)
+    if en_cok > p["tur_basi"] * ARTIS_ORANI:
+        p["guclu_yeter"] = p["yakit"] >= en_cok * p["kalan_tur"]
+    return p
+
+
 def harita(p, pit_sn=None):
     """Pitsiz bitirmek için yakıt haritası kaç kademe düşürülmeli ve pite göre kazançlı mı?
     Döner: {"kademe", "kayip" (toplam sn), "pit_sn", "kazanc" (sn)} ya da (uygun değilse) None."""
@@ -104,7 +130,7 @@ def satir(p, pit_sn=None):
         s += f" Pit ~{pit_sn:.0f} sn kaybettirir."
     h = harita(p, pit_sn)
     if h:
-        s += (f" Daha hızlısı: yakıt haritasını {h['kademe']} kademe düşür, pitsiz bitirirsin "
+        s += (f" Daha hızlısı: yakıt haritasının numarasını {h['kademe']} artır (daha tasarruflu), pitsiz bitirirsin "
               f"(tur başına ~{h['kademe'] * HARITA_YAVAS_S:.2f} sn yavaşlarsın, toplam ~{h['kayip']:.0f} sn; "
               f"pitten ~{h['kazanc']:.0f} sn kazançlı).")
     elif p["pit_sayisi"] == 1 and p["tasarruf"] <= TASARRUF_EN_COK:
@@ -134,18 +160,25 @@ def sesli(p, durum, pit_sn=None):
     onceki = durum.get("pit")
     durum["pit"] = p["pit"]
     if not p["pit"]:
-        if onceki:          # pite girildi, yakıt artık yetiyor
+        if onceki:          # pite girildi ya da harita değişti, yakıt artık yetiyor
             durum.pop("pit_turu_dedi", None)
+            if p.get("guclu_yeter"):
+                return "Yakıt artık bitişe yeter. İstersen yakıt haritasını en güçlüsüne çevirebilirsin."
+            if p.get("guclu_yeter") is False:
+                # Şu anki (tasarruflu) tüketimle yetiyor ama yarışın en çok yakan turlarıyla yetmez
+                return "Yakıt artık bitişe yeter. Yakıt haritasını değiştirme, daha güçlüsü yetmez."
             return "Yakıt artık bitişe yeter."
         return None
-    al = f"En az {p['alinacak']} litre al." if p.get("alinacak") else "Depoyu doldur."
+    # "al." cümle sonunda ses motorunca harf harf okunuyordu: "almalısın" denir
+    arti = "Yakıt tüketimin arttı. " if p.get("artti") else ""
+    al = f"En az {p['alinacak']} litre yakıt almalısın." if p.get("alinacak") else "Depoyu doldur."
     if p["tur"] == p["en_gec"] and durum.get("pit_turu_dedi") != p["en_gec"]:
         durum["pit_turu_dedi"] = p["en_gec"]
         return f"Bu tur sonunda pite gir. {al}"
     if not onceki:
         h = harita(p, pit_sn)
         if h:
-            return (f"Yakıt bitişe yetmeyecek. Yakıt haritasını {h['kademe']} kademe düşür, pite girmeden "
+            return (f"{arti}Yakıt bitişe yetmeyecek. Yakıt haritasının numarasını {h['kademe']} artır, pite girmeden "
                     f"bitirirsin. Pitten yaklaşık {h['kazanc']:.0f} saniye kazançlı.")
-        return f"Yakıt bitişe yetmeyecek. En geç {p['en_gec']}. turda pite gir."
+        return f"{arti}Yakıt bitişe yetmeyecek. En geç {p['en_gec']}. turda pite gir."
     return None

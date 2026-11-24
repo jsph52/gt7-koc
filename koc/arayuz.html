@@ -790,6 +790,63 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
   .b-pd{grid-template-columns:auto 140px}
 }
 
+/* ---------- Telefon: ana ekran, geçmiş, Time Trial hazırlık, ayarlar (dikey, ≤760 px) ----------
+   Üstte ince logo çubuğu + bağlantı ışıkları, menü altta sekme çubuğu (koç ekranının telefon görünümü gibi). */
+@media (max-width:760px){
+  .kabuk{flex-direction:column;height:auto;min-height:100dvh}
+  .kabuk .menu{width:auto;flex-direction:row;align-items:stretch;border-right:0;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:40;height:42px}
+  .kabuk .menu-logo{font-size:20px;padding:0 18px 0 10px;margin-right:0;display:flex;align-items:center;gap:5px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+  .kabuk .menu-alt{margin:0 0 0 auto;padding:0 12px;flex-direction:row;align-items:center;gap:14px;font-size:13px}
+  .kabuk .menu-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;flex-direction:row;margin:0;background:#0b0c0e;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .kabuk .menu-nav button{flex:1;text-align:center;padding:16px 4px;font-size:16px;font-weight:700;text-transform:uppercase;color:#8a93a3;white-space:nowrap}
+  .kabuk .menu-nav button.secili{background:#17181b;color:#fff;box-shadow:inset 0 3px 0 var(--accent)}
+  .kabuk .m-uzun{display:none}
+  .kabuk .sayfa{padding:14px 12px calc(76px + env(safe-area-inset-bottom));overflow:visible}
+  .kabuk h1{font-size:30px}
+  .kabuk h2{margin:16px 0 6px}
+  .kabuk .baslat{flex-direction:column;align-items:stretch;gap:14px;padding:16px;border-left-width:6px}
+  .kabuk .buyuk{font-size:30px}
+  .kabuk .baslat p{font-size:17px}
+  .kabuk button.dev{margin-left:0;font-size:22px;padding:12px 20px}
+  .kabuk .kart.son{flex-wrap:wrap;gap:10px 22px;padding:12px}
+  .kabuk .kart.son .y-ad{flex:1 1 100%}
+  .kabuk .kart.son .cizim{display:none}
+  .kabuk .kart.son>button{flex:1 1 100%}
+  .kabuk .sayi{min-width:0}
+  .kabuk .sayi b{font-size:24px}
+  .kabuk .liste-k{padding:2px 12px}
+  /* Time Trial satırı: pist çizimi + ad / altın + en iyi turun / Başla */
+  .kabuk #ttListe .satir-k{flex-wrap:wrap;gap:8px 16px;cursor:default}
+  .kabuk #ttListe .y-ad{flex:1 1 calc(100% - 110px)}
+  .kabuk #ttListe .y-ad span{white-space:normal}
+  .kabuk #ttListe .satir-k>button{margin-left:auto}
+  /* Geçmiş satırı: çizim + ad (alt satırda tarih · tur), en iyi tur */
+  .kabuk #gecmisListe .satir-k{flex-wrap:wrap;gap:4px 12px}
+  .kabuk #gecmisListe .y-ad{flex:1 1 calc(100% - 180px)}
+  .kabuk #gecmisListe .satir-k>.k{order:5;font-size:14px}
+  .kabuk #gecmisListe .satir-k>.k+.k{margin-right:auto}
+  .kabuk #gecmisListe .ok-i{display:none}
+  /* Time Trial hazırlık */
+  .kabuk .ust-cubuk{gap:8px}
+  .kabuk .ust-cubuk>div:last-child{width:100%}
+  .kabuk .ust-cubuk>div:last-child button{flex:1}
+  .kabuk .tt-bas{flex-wrap:wrap;gap:12px;padding:12px 14px;border-left-width:6px}
+  .kabuk .sayilar{gap:12px 24px}
+  .kabuk .kontrol{grid-template-columns:1fr;gap:4px}
+  .kabuk .hedefler{grid-template-columns:repeat(2,1fr)}
+  .kabuk .ht-satir{flex-wrap:wrap;gap:4px 12px}
+  .kabuk .ht-satir .ht-etiket{margin-left:0}
+  .kabuk .bekle{margin-bottom:10px}
+  /* Ayarlar: tam ekran, bölümler 2×2 düğme */
+  .perde{z-index:100}
+  .perde:has(.ayar-p){padding:0}
+  .ayar-p{height:100dvh;max-height:none;width:100%;max-width:none;border-radius:0}
+  .ayar-nav{width:auto!important;display:grid;grid-template-columns:1fr 1fr;gap:4px;overflow:visible;padding:8px}
+  .ayar-nav button{padding:10px;font-size:16px!important}
+  /* İnceleme (duraklatınca) */
+  .inceleme-ekran{padding:12px}
+  .inceleme-ekran .dur-ust,.inceleme-ekran .secenek{flex-wrap:wrap;gap:8px}
+}
 /* ---------- Telefon görünümü ---------- */
 #tel{display:none}
 @media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse){
@@ -867,7 +924,7 @@ body.basit #basit{display:grid;min-height:0;gap:12px;
     <div class="menu-logo">GT7 <b>KOÇ</b></div>
     <nav class="menu-nav">
       <button data-sayfa="ana" class="secili">⌂ Ana sayfa</button>
-      <button data-sayfa="gecmis">◷ Geçmiş antrenmanlar</button>
+      <button data-sayfa="gecmis">◷ Geçmiş <span class="m-uzun">antrenmanlar</span></button>
       <button id="menuAyar">⚙ Ayarlar</button>
     </nav>
     <div class="menu-alt"><div><i class="nokta" id="menuNokta"></i> <b id="menuBag">PS5 bağlı değil</b></div>

@@ -162,6 +162,8 @@ _KISALTMA = (
     (r"\bTCS'(?:y[iı]|yi)", "çekiş kontrolünü"), (r"\bTCS\b", "çekiş kontrolü"),
     (r"\bLSD\b", "diferansiyel"), (r"\bASM\b", "denge kontrolü"), (r"\bABS\b", "a be se"),
     (r"°C", " derece"), (r"%(\d)", r"yüzde \1"), ("→", ","),
+    # Cümle sonundaki "al." ses motorunca harf harf okunuyordu (gerçek oyunda duyuldu)
+    (r"\bal([.!])", r"almalısın\1"),
 )
 
 
