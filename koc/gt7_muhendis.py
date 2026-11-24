@@ -6,7 +6,8 @@ belgesinden ("Sesli uyarı ilkeleri"): kalıcılık + histerezis + bekleme süre
 - Motor: su sıcaklığı (110/106, kritik 120/116 °C), yağ sıcaklığı (130/126, kritik 140/136 °C),
   yağ basıncı (< 2,0 bar, 2000 devir üstü, 1,5 sn; 2,4'te temizlenir)
 - Lastik: herhangi biri 110 °C (104'te temizlenir); ön/arka ya da sol/sağ farkı 15 °C (10'da temizlenir)
-- Lastik (9 Kasım 2026): lastikler ısındı (60 °C altında görüldükten sonra 70 °C'yi 5 sn geçince bir kez),
+- Lastik: lastikler ısındı (arabaya göre: ortalama sürüşün başından en az 5 °C yükseldi ve son 30 sn'de
+  1,5 °C'den az değişti, yani sabitlendi; bir kez, durunca / pitte baştan),
   lastikler hızla soğuyor = pist ıslanıyor olabilir (80 km/s üstünde son ~20 sn'nin ortalaması son ~3 dk'nınkinden
   10 °C düşük, 10 sn; 4'te temizlenir; 2 dk hızlı sürüş görülmeden ve lastikler 60 °C'yi bulmadan karar yok).
   Telemetride hava / yağmur bilgisi yok: bu bir tahmin. Eşikler tahmini, gerçek oyunda denenmedi.
@@ -28,9 +29,14 @@ YAG = [("yag_kritik", 140, 136, "kritik", "Yağ sıcaklığı kritik!"),
        ("yag_yuksek", 130, 126, "yuksek", "Yağ sıcaklığı yüksek.")]
 LASTIK_YUKSEK = (110, 104)
 # Lastikler ısındı: soğuk başlayan lastikler ısınınca bir kez söylenir
-ISINDI_SOGUK = 60              # ortalama bunun altında görüldüyse "soğuk başladı" sayılır (°C)
-ISINDI_SICAK = 70              # ...sonra bu kadarı (ideal aralığın altı) üst üste ISINDI_KALICI_S görülünce
-ISINDI_KALICI_S = 5.0
+# Lastikler ısındı: sabit sıcaklık yerine arabanın kendi çalışma sıcaklığına göre. Ortalama yumuşatılır
+# (ISINDI_TAU), başlangıçtan ISINDI_ARTIS kadar yükselmiş ve son ISINDI_PENCERE_S içinde ISINDI_SABIT'ten az
+# değişmişse lastikler o arabanın çalışma sıcaklığına gelmiş sayılır. Sıcak başlayan lastikte söylenmez.
+ISINDI_TAU = 8.0               # yumuşatma (sn): frende yükselip düzlükte düşen dalgalanma karışmasın
+ISINDI_ARTIS = 5.0             # başlangıca göre en az bu kadar ısınmış olmalı (°C)
+ISINDI_PENCERE_S = 30.0        # sabitlenme bu süreye bakılarak anlaşılır
+ISINDI_SABIT = 1.5             # pencerede bundan az değişim = sabitlendi (°C)
+ISINDI_EN_AZ = 40.0            # bunun altındaki ortalamada söylenmez (°C)
 SOGUK_MIN_KMH = 40
 ISLAK_FARK = (10, 4)           # uzun ortalama − kısa ortalama (°C): tetik, temizlenme
 ISLAK_KALICI_S = 10.0
@@ -86,8 +92,7 @@ class Muhendis:
         self.basinc_gecerli = False     # bazı arabalar basınç göndermiyor: önce normal değer görülmeli
         self.lastik = _Esik(*LASTIK_YUKSEK, SICAKLIK_KALICI_S)
         self.denge = {y: _Esik(*DENGE, DENGE_KALICI_S) for y in ("on", "arka", "sol", "sag")}
-        self.soguktu = False            # lastikler bu sürüşte soğuk görüldü (ısınınca bir kez söylenir)
-        self.isindi_bas = None
+        self._isinma_sifirla()
         self.islak = _Esik(*ISLAK_FARK, ISLAK_KALICI_S)
         self._ort_sifirla()
         self.yavas_bas = None
@@ -113,6 +118,36 @@ class Muhendis:
         self.son_soylenen[anahtar] = t
         out.append((metin, kritik))
         return True
+
+    def _isinma_sifirla(self):
+        self.isinma_bas = None          # sürüş başındaki (yumuşatılmış) ortalama
+        self.isinma_ort = None
+        self.isinma_t = None
+        self.isinma_iz = []             # [(t, yumuşatılmış ortalama)], son ISINDI_PENCERE_S
+        self.isindi_dedi = False
+
+    def _isinma(self, t, ort, out):
+        """Lastikler arabanın kendi çalışma sıcaklığına geldi mi (yükseldi ve sabitlendi)?"""
+        if self.isindi_dedi:
+            return
+        if self.isinma_ort is None:
+            self.isinma_bas = self.isinma_ort = ort
+            self.isinma_t = t
+            self.isinma_iz = [(t, ort)]
+            return
+        dt = max(0.0, min(0.5, t - self.isinma_t))
+        self.isinma_t = t
+        self.isinma_ort += (ort - self.isinma_ort) * min(1.0, dt / ISINDI_TAU)
+        self.isinma_iz.append((t, self.isinma_ort))
+        while self.isinma_iz and t - self.isinma_iz[0][0] > ISINDI_PENCERE_S:
+            self.isinma_iz.pop(0)
+        bas_t, eski = self.isinma_iz[0]
+        if t - bas_t < ISINDI_PENCERE_S - 1:
+            return
+        if (self.isinma_ort - self.isinma_bas >= ISINDI_ARTIS and self.isinma_ort >= ISINDI_EN_AZ
+                and abs(self.isinma_ort - eski) < ISINDI_SABIT):
+            self.isindi_dedi = True
+            self._soyle(out, t, "lastik_isindi", "Lastikler ısındı, artık araca güvenebilirsin.")
 
     def _ort_sifirla(self):
         self.ort_kisa = self.ort_uzun = self.ort_t = None
@@ -171,24 +206,17 @@ class Muhendis:
 
     def _soguk_islak(self, t, pkt, ort, out):
         kmh = (getattr(pkt, "speed_mps", 0) or 0) * 3.6
-        # Lastikler soğuk başladıysa ısınınca bir kez söylenir (soğuk lastik için ayrı uyarı yok: bazı arabalarda hiç ısınmaz)
+        # Lastikler ısınınca bir kez söylenir (soğuk lastik için ayrı uyarı yok: bazı arabalarda hiç ısınmaz)
         if kmh >= SOGUK_MIN_KMH:
-            if ort < ISINDI_SOGUK:
-                self.soguktu, self.isindi_bas = True, None
-            elif self.soguktu and ort >= ISINDI_SICAK:
-                if self.isindi_bas is None:
-                    self.isindi_bas = t
-                elif t - self.isindi_bas >= ISINDI_KALICI_S:
-                    self.soguktu, self.isindi_bas = False, None
-                    self._soyle(out, t, "lastik_isindi", "Lastikler ısındı, artık araca güvenebilirsin.")
-            else:
-                self.isindi_bas = None
+            self._isinma(t, ort, out)
         # Durunca (pit, savrulma) ortalamalar baştan: yeni lastik soğuk gelir, ıslak sanılmasın
         if kmh < DURMA_KMH:
             if self.yavas_bas is None:
                 self.yavas_bas = t
             elif t - self.yavas_bas >= DURMA_S:
                 self._ort_sifirla()
+                self._isinma_sifirla()        # pitte yeni lastik: yeniden ısınması beklenir
+                self.son_soylenen.pop("lastik_isindi", None)
         else:
             self.yavas_bas = None
         # Teker çime/kuma taştı (14 Kasım 2026: 2 teker çime çıkınca "pist ıslanıyor" denmişti): lastik
