@@ -6,7 +6,7 @@ belgesinden ("Sesli uyarı ilkeleri"): kalıcılık + histerezis + bekleme süre
 - Motor: su sıcaklığı (110/106, kritik 120/116 °C), yağ sıcaklığı (130/126, kritik 140/136 °C),
   yağ basıncı (< 2,0 bar, 2000 devir üstü, 1,5 sn; 2,4'te temizlenir)
 - Lastik: herhangi biri 110 °C (104'te temizlenir); ön/arka ya da sol/sağ farkı 15 °C (10'da temizlenir)
-- Lastik (9 Kasım 2026): soğuk lastik (ortalama ≤ 55 °C, 40 km/s üstünde 8 sn; 65'te temizlenir),
+- Lastik (9 Kasım 2026): lastikler ısındı (60 °C altında görüldükten sonra 70 °C'yi 5 sn geçince bir kez),
   lastikler hızla soğuyor = pist ıslanıyor olabilir (80 km/s üstünde son ~20 sn'nin ortalaması son ~3 dk'nınkinden
   10 °C düşük, 10 sn; 4'te temizlenir; 2 dk hızlı sürüş görülmeden ve lastikler 60 °C'yi bulmadan karar yok).
   Telemetride hava / yağmur bilgisi yok: bu bir tahmin. Eşikler tahmini, gerçek oyunda denenmedi.
@@ -27,8 +27,6 @@ SU = [("su_kritik", 120, 116, "kritik", "Su sıcaklığı kritik!"),
 YAG = [("yag_kritik", 140, 136, "kritik", "Yağ sıcaklığı kritik!"),
        ("yag_yuksek", 130, 126, "yuksek", "Yağ sıcaklığı yüksek.")]
 LASTIK_YUKSEK = (110, 104)
-LASTIK_SOGUK = (55, 65)        # 4 lastiğin ortalaması (°C): tetik, temizlenme
-SOGUK_KALICI_S = 8.0
 # Lastikler ısındı: soğuk başlayan lastikler ısınınca bir kez söylenir
 ISINDI_SOGUK = 60              # ortalama bunun altında görüldüyse "soğuk başladı" sayılır (°C)
 ISINDI_SICAK = 70              # ...sonra bu kadarı (ideal aralığın altı) üst üste ISINDI_KALICI_S görülünce
@@ -88,7 +86,6 @@ class Muhendis:
         self.basinc_gecerli = False     # bazı arabalar basınç göndermiyor: önce normal değer görülmeli
         self.lastik = _Esik(*LASTIK_YUKSEK, SICAKLIK_KALICI_S)
         self.denge = {y: _Esik(*DENGE, DENGE_KALICI_S) for y in ("on", "arka", "sol", "sag")}
-        self.soguk = _Esik(*LASTIK_SOGUK, SOGUK_KALICI_S, yukari=False)
         self.soguktu = False            # lastikler bu sürüşte soğuk görüldü (ısınınca bir kez söylenir)
         self.isindi_bas = None
         self.islak = _Esik(*ISLAK_FARK, ISLAK_KALICI_S)
@@ -174,10 +171,8 @@ class Muhendis:
 
     def _soguk_islak(self, t, pkt, ort, out):
         kmh = (getattr(pkt, "speed_mps", 0) or 0) * 3.6
-        # Soğuk lastik (seans başı, pitten çıkış)
+        # Lastikler soğuk başladıysa ısınınca bir kez söylenir (soğuk lastik için ayrı uyarı yok: bazı arabalarda hiç ısınmaz)
         if kmh >= SOGUK_MIN_KMH:
-            if self.soguk.guncelle(t, ort):
-                self._soyle(out, t, "lastik_soguk", "Lastikler soğuk. İlk virajlarda frene erken bas.")
             if ort < ISINDI_SOGUK:
                 self.soguktu, self.isindi_bas = True, None
             elif self.soguktu and ort >= ISINDI_SICAK:
@@ -188,8 +183,6 @@ class Muhendis:
                     self._soyle(out, t, "lastik_isindi", "Lastikler ısındı, artık araca güvenebilirsin.")
             else:
                 self.isindi_bas = None
-        elif not self.soguk.aktif:
-            self.soguk.bas = None
         # Durunca (pit, savrulma) ortalamalar baştan: yeni lastik soğuk gelir, ıslak sanılmasın
         if kmh < DURMA_KMH:
             if self.yavas_bas is None:
