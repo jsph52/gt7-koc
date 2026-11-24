@@ -91,7 +91,7 @@ jobs:
           Write-Host "Deneme tamam: $($pist.Count) Tokyo düzeni bulundu, koç başladı, pencere açıldı."
           Stop-Process -Id $p.Id -Force
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: GT7-Koc
           path: dist/GT7-Koc.exe
