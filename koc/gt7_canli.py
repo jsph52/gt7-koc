@@ -4,7 +4,7 @@ GT7 Türkçe Koç - Sürerken konuşan koç
 - Araç referans turun neresinde? (canlı konum ve canlı zaman farkı)
 - Virajlara yaklaşırken kısa sesli uyarı ("Viraj 6. Geçen tur frene erken bastın...")
 - Vites türünü (manuel/otomatik) sürüşten tahmin eder
-- Kullanıcı ayarları (ayarlar.json)
+- Koç ayarları (ayarlar.json)
 """
 import json
 import os
@@ -38,12 +38,12 @@ VARSAYILAN = {"uyari": "sorunlu",    # "hepsi" ya da "sorunlu"
               "ses_cikisi": "bilgisayar",  # "bilgisayar", "discord", "ikisi": ses ve bipler nereden çıkar
               "discord_kanal": "",     # Discord sesli kanal kimliği; boş = otomatik (insanların olduğu kanal)
               "referans": "rekor",     # koç neye göre konuşur: "rekor" (rekor turu varsa o) / "kendi" (kendi en iyin)
-              # Rekor turu referansken fren noktası (16 Kasım 2026): "rekor" birebir / "benim" kendi fren gücüme göre
+              # Rekor turu referansken fren noktası: "rekor" birebir / "benim" sürücünün kendi fren gücüne göre
               "fren_noktasi": "rekor",
-              "fren_payi": "yok",
-              "yaris_tavsiye": "kapali",  # yarışta viraj tavsiyesi (16 Kasım 2026): kapalı = sadece mühendis + tur süresi
+              "fren_payi": "yok",      # fren noktası önce: yok / az (10 m) / orta (20 m) / cok (30 m)
+              "yaris_tavsiye": "kapali",  # yarışta viraj tavsiyesi: kapalı = sadece mühendis + tur süresi
               "yonlendir_port": "",    # veri yönlendirme: PS5 paketleri bu porta da kopyalanır (boş = kapalı)
-              "ses_cihazi": "",        # koçun sesi ve fren uyarısı hangi ses cihazından (boş = Windows varsayılanı)      # rekor turunda fren noktası önce: yok / az (10 m) / orta (20 m) / cok (30 m)
+              "ses_cihazi": "",        # koçun sesi ve fren uyarısı hangi ses cihazından (boş = Windows varsayılanı)
               "surum": 4}            # ayar dosyası sürümü (eski ayarları bir kez günceller)
 AYAR_SURUM = 4
 # Arayüzden gelebilecek değerler (başka değer yazılmaz; discord_kanal ve ses_duzeyi ayrıca denetlenir)
@@ -96,7 +96,7 @@ def ayar_oku():
     except (OSError, ValueError):
         a = {}
     if a and a.get("surum", 1) < 2:
-        # Kullanıcı isteği (Kasım 2026): koç sadece sorunlu virajlarda konuşsun
+        # Sürüm 2: koç sadece sorunlu virajlarda konuşur
         a["uyari"] = "sorunlu"
     if a and a.get("surum", 1) < 3:
         # Eskiden mühendis anonsları "Viraj sesi" ya da "Tur sesi" açıksa okunurdu: aynı davranış korunur
@@ -108,7 +108,7 @@ def ayar_oku():
         a.update(ses_viraj="acik", ses_tur="acik", ses_muhendis="acik", sessiz="kapali")
     if a:
         a["surum"] = AYAR_SURUM
-    if a.get("hassasiyet") in ESKI_HASSASIYET:   # 14 Kasım 2026: 3 seviye (saniye) -> 5 seviye (yüzde)
+    if a.get("hassasiyet") in ESKI_HASSASIYET:   # eski 3 seviye (saniye) -> 5 seviye (yüzde)
         a["hassasiyet"] = ESKI_HASSASIYET[a["hassasiyet"]]
     a = {**VARSAYILAN, **{k: v for k, v in a.items() if k in VARSAYILAN}}
     for k in list(a):       # elle bozulmuş / eski sürümden kalan geçersiz değer: varsayılana dön
@@ -116,8 +116,8 @@ def ayar_oku():
             a[k] = VARSAYILAN[k]
     for k in ("guc_dagilimi", "vites_araba"):
         a[k] = dict(a[k]) if isinstance(a[k], dict) else {}
-    # 16 Kasım 2026: "Viraj uyarıları", "Çıkış yorumu", "Koç neye göre konuşsun" ve vites ayarı Ayarlar'dan
-    # kalktı (koçun ne kadar konuştuğunu hassasiyet, referansı hedef tur belirler).
+    # "Viraj uyarıları", "Çıkış yorumu", "Koç neye göre konuşsun" ve vites ayarı Ayarlar'da yok
+    # (koçun ne kadar konuştuğunu hassasiyet, referansı hedef tur belirler).
     a["uyari"], a["cikis_yorumu"], a["vites"] = "sorunlu", "acik", "algila"
     return a
 
@@ -332,9 +332,9 @@ def viraj_sorunu(r, manuel, fren_bipi=False, esik=SESLI_ESIK_S):
     return sorun[0] if sorun else None
 
 
-# ---------------- Önemli virajlar (14 Kasım 2026) ----------------
-# Kullanıcı: "tur sonunda öneri veriyor ama unutuluyor; o viraja yaklaşırken kısaca hatırlatsın,
-# ama her virajda değil, önemli olanlarda". Tur sonu sesi ve viraj öncesi hatırlatma AYNI sıralamayı
+# ---------------- Önemli virajlar ----------------
+# Tur sonunda verilen tavsiye unutulmasın: o viraja yaklaşırken kısaca hatırlatılır (her virajda değil,
+# sadece önemli olanlarda). Tur sonu sesi ve viraj öncesi hatırlatma AYNI sıralamayı
 # kullanır, böylece tur sonunda söylenen viraj bir sonraki turda o viraja gelirken hatırlatılır.
 GECMIS_TUR = 3        # puan için son kaç tura bakılır
 TEKRAR_CARPAN = 0.25  # aynı sorun her fazladan turda tekrar ettiyse puan bu kadar artar
@@ -640,7 +640,6 @@ class CanliKoc:
                 line_m = side_offset(self.ref, w.apex, x, z)
                 exit_diff = _interp(b["dist"], b["speed"], w.exit) - _interp(self.ref["dist"], self.ref["speed"], w.exit)
                 ky = self.fren_kayma.get(w.n, 0.0)
-                sebepler = cikis_sebepleri(me, rs, line_m, exit_diff, delta > 0, ky)
                 # Söylenen sorun hâlâ var mı? (kazançlı geçişte de kayıp ölçütleriyle bakılır)
                 tum = cikis_sebepleri(me, rs, line_m, exit_diff, True, ky)
             except Exception:

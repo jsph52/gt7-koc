@@ -490,7 +490,10 @@ def make_handler(app):
                 self.send(200, gt7_rapor.rapor_html(k.state if k else {}, gt7_koc.pist_adi(k.state.get("track"))
                                                     if k else "Pist", gt7_koc.viraj_adi), "text/html; charset=utf-8")
             elif u.path == "/api/durum":
-                since = int((q.get("son") or ["0"])[0] or 0)
+                try:
+                    since = int((q.get("son") or ["0"])[0] or 0)
+                except ValueError:
+                    since = 0
                 self.json(app.status(since))
             elif u.path == "/api/pistler":
                 found = search(app.catalog, (q.get("q") or [""])[0])[:40]
@@ -538,6 +541,8 @@ def make_handler(app):
             try:
                 body = json.loads(self.rfile.read(n) or b"{}")
             except ValueError:
+                body = {}
+            if not isinstance(body, dict):
                 body = {}
             if u.path == "/api/sec":
                 sel = app.choose(body.get("id"))
@@ -647,7 +652,9 @@ def make_handler(app):
                     app.koc.hedef_ayarla(None, {} if body.get("tt") else None)
                     self.json({"tamam": True})
                 else:
-                    ms = body.get("ms") if isinstance(body.get("ms"), int) else gt7_hedef.sure_oku(body.get("sure"))
+                    ms = body.get("ms")
+                    if not (isinstance(ms, int) and not isinstance(ms, bool) and ms > 0):
+                        ms = gt7_hedef.sure_oku(body.get("sure"))
                     tt = None
                     if body.get("etiket") in gt7_tt.HEDEF_ADLARI:
                         e = gt7_tt.bul(app.catalog, body.get("etkinlik")) if body.get("etkinlik") is not None else None

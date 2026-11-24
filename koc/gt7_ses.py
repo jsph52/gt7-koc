@@ -4,8 +4,8 @@ Ses tarayıcıda değil burada üretilir, böylece Chrome, Edge, Firefox ya da t
 fark etmez, herkes aynı sesi duyar.
 Kaynak: edge-tts paketi (açık kaynak, ücretsiz; Microsoft'un Edge'deki "sesli oku"
 servisini kullanır, internet ister, anahtar gerekmez). İnternet yoksa ya da servis
-cevap vermezse None döner; arayüz o cümleyi okumaz (tarayıcının eski sesi
-16 Kasım 2026'da tamamen kaldırıldı: eski ve yeni ses aynı anda konuşuyordu).
+cevap vermezse None döner; arayüz o cümleyi okumaz (tarayıcının kendi sesine
+geçilmez: iki farklı ses karışık duyulmasın).
 """
 import asyncio
 import os
@@ -22,8 +22,7 @@ ZAMAN_ASIMI = 6.0        # sn: bir deneme bundan uzun sürerse bırakılır
 DENEME = 2               # her cümle için deneme sayısı (internetteki kısa takılmalar için)
 ART_ARDA = 3             # bu kadar cümle üst üste alınamazsa servis gitmiş sayılır...
 BEKLEME = 20.0           # ...ve bu kadar sn denenmez (o arada cümleler okunmaz)
-# Not (9 Kasım 2026): eskiden TEK hatada 60 sn denenmiyordu; o arada bütün cümleler
-# tarayıcının eski sesiyle okunuyor, ses "yeni/eski karışık" duyuluyordu.
+# Tek bir hatada servisi bırakmamak için: kısa internet takılmaları cümleleri susturmasın.
 EN_UZUN = 400            # karakter
 ONBELLEK = 300           # cümle
 

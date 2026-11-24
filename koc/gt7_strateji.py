@@ -6,7 +6,7 @@ Yarışın toplam tur sayısı (telemetri 0x76) ve son turların ortalama tüket
 - pit penceresi (en erken / en geç tur) ve pitte en az kaç litre alınmalı,
 - pitsiz bitirmek için tur başına ne kadar az yakmak gerekir.
 Yakıt ayarı telemetride yok ve bir kademenin ne kadar tasarruf ettirdiği bilinmiyor. Bu yüzden koç kesin kademe
-sayısı söylemez: "söyle, ölç, düzelt" (24 Kasım 2026, kullanıcı seçti): "Yakıt ayarını bir kademe artır." ->
+sayısı söylemez: "söyle, ölç, düzelt": "Yakıt ayarını bir kademe artır." ->
 sonraki turun ölçülen tüketimiyle "Tamam, bu ayarla yakıt bitişe yetiyor." / "bir kademe daha artır" /
 (tüketim değişmediyse) pit planı; yakıt fazla gelirse "bir kademe azaltabilirsin".
 Lastik aşınması telemetride yok: strateji sadece yakıta göre. Eşikler tahmini, gerçek oyunda denenmedi.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 GT7 Türkçe Koç - Hazır oyun bilgileri (veri/ klasörü)
-Kaynak: ddm999/gt7info (MIT No Attribution), 4 Kasım 2026'da alındı.
+Kaynak: ddm999/gt7info (MIT No Attribution).
 - arabalar.json: araba kodu -> "Marka Model" (telemetri arabayı sadece numarayla gönderir)
 - pist_bilgi.json: bizim pist kimliğimiz -> resmi viraj sayısı, en uzun düzlük, yükseklik farkı,
   pit yolu kaybı (sn), yağmur olabilir mi. Eşleştirme: uzunluk (%1,5) + ad + ters yön.

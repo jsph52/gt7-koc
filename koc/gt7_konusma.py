@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 GT7 Türkçe Koç - Koçun sesli cümleleri
-Kullanıcı gerçek oyunda denedi: "koç çok konuşuyor, ne yaptığımı özetlemesi bir anlam ifade etmiyor;
-doğru ve yanlış yaptığımı söyleyip tavsiye versin, daha insancıl konuşsun, aynı şeyi tekrarlamasın."
-Bu yüzden:
+İlkeler: koç yapılanı özetlemez, ne yapılacağını söyler; insan gibi konuşur, kendini tekrarlamaz.
 - Her cümle bir TAVSİYE taşır ("frene biraz daha geç bas"), ölçüm jargonu yok ("ortada hızı taşıdın" gibi).
 - Aynı şey için birkaç farklı söyleyiş var; sırayla kullanılır (hep aynı cümle duyulmaz).
 - Kısaltma yok (TCS -> çekiş kontrolü): ses motoru kısaltmaları harf harf okuyordu.
@@ -84,7 +82,7 @@ DUZELDI = {
     "vites": "vites şimdi doğru",
 }
 OVGU = ("böyle devam et", "aynen böyle", "bunu koru")
-# İnceleme ekranı (16 Kasım 2026): sorun neden zaman kaybettirdi (tam cümle) ve hangi tekniğe girer
+# İnceleme ekranı: sorun neden zaman kaybettirdi (tam cümle) ve hangi tekniğe girer
 NEDEN = {
     "fren_erken": "Viraja gereğinden yavaş girdin; düzlüğün sonunu boşa harcadın.",
     "fren_gec": "Viraja fazla hızlı girdin; virajın içinde hız kaybettin ve çıkış gecikti.",

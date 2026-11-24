@@ -52,10 +52,10 @@ def section_time(s, a, b):
     return _interp(s["dist"], s["t"], b) - _interp(s["dist"], s["t"], a)
 
 
-# ---- Viraj bölümleri: çıkıştaki düzlük o virajın sayılır (14 Kasım 2026) ----
-# Eskiden bölüm sınırı iki virajın tam ortasıydı: Viraj 3'ten yavaş çıkınca düzlüğün ikinci
-# yarısında kaybedilen süre Viraj 4'ün hanesine yazılıyor, koç Viraj 4 için tavsiye veriyordu.
-# Şimdi sınır sonraki virajın fren noktasından biraz önce: düzlük, kendisine yavaş çıkılan virajın.
+# ---- Viraj bölümleri: çıkıştaki düzlük o virajın sayılır ----
+# Bölüm sınırı iki virajın tam ortası olsaydı, Viraj 3'ten yavaş çıkınca düzlüğün ikinci yarısında
+# kaybedilen süre Viraj 4'ün hanesine yazılırdı. Bu yüzden sınır sonraki virajın fren noktasından biraz
+# önce: düzlük, kendisine yavaş çıkılan virajın.
 DUZLUK_PAY_M = 30.0     # sonraki virajın (bu tur ve referanstaki) en erken fren noktasından bu kadar önce
 DUZLUK_MIN_M = 20.0     # orta noktayla sınır arası bundan kısaysa ayrıca "düzlük kaybı" yazılmaz
 
@@ -311,7 +311,7 @@ def fazlar(me, rs, exit_diff, g_me=None, g_rs=None, sureler=None):
          "gaz_m": gz, "cikis_fark": exit_diff,
          "kotu": (gz is not None and gz > 15) or (exit_diff is not None and exit_diff < -EXIT_MIN_KMH)},
     ]
-    # Her aşamada kaç saniye kaybedildi (14 Kasım 2026): 0,1 sn'den fazla kayıp da "kötü" sayılır
+    # Her aşamada kaç saniye kaybedildi: 0,1 sn'den fazla kayıp da "kötü" sayılır
     for f, sn in zip(out, sureler or []):
         f["kayip"] = round(sn, 3)
         f["kotu"] = f["kotu"] or sn >= FAZ_KOTU_S
@@ -523,8 +523,8 @@ def kilit_ekle(cmp_res, olaylar):
 
 def ideal_ms(pool, corners):
     """Teorik ideal tur: en iyi tur − her virajda o virajın en iyi geçişine göre kaybı.
-    (9 Kasım 2026: eskiden kayıtlı örneklerin bölüm sürelerinin toplamıydı; kaydın başı/sonu oyunun tur
-    saatinden birkaç yüz ms farklı olabildiği için ideal, hiç gelişme yokken bile en iyiden hızlı çıkabiliyordu.)"""
+    (Bölüm sürelerinin toplamı kullanılmaz: kaydın başı/sonu oyunun tur saatinden birkaç yüz ms farklı
+    olabildiği için ideal, hiç gelişme yokken bile en iyiden hızlı çıkabiliyordu.)"""
     best = min(pool, key=lambda L: L["lap_ms"])
     return int(round(best["lap_ms"] - 1000 * sum(viraj_kazanclari(pool, corners).values())))
 

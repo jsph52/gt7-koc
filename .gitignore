@@ -11,9 +11,14 @@ son_pist.txt
 build/
 dist/
 *.spec
-# Kullaniciya ozel ayarlar
+# Kullaniciya ozel ayarlar ve ogrenilen arac bilgileri
 ayarlar.json
 kalibrasyon.json
+cekis.json
+lastik.json
+# Gunluk ve pencere verisi
+koc_gunluk.txt
+pencere_verisi/
 # Discord bot anahtari (gizli)
 discord_token.txt
 # Antrenman gecmisi ve indirilen time trial raporu

@@ -15,6 +15,7 @@ import socket
 import struct
 import threading
 import time
+import traceback
 
 from gt7_paket import (decrypt_packet, parse, sure, vites_yazi, send_heartbeat,
                       RECV_PORT, IP_FILE)
@@ -273,8 +274,8 @@ def etiket_yerlestir(noktalar, cizgi, W, H, olcek=1.0):
 def bolum_yollari(pts, daireler, oranlar=None):
     """Her virajın pist bölümü (süre farkının ölçüldüğü yer, gt7_kopru.section_bounds gibi):
     önceki virajla ortası → sonraki virajla ortası; ilk bölüm başlangıçtan, son bölüm bitişe.
-    oranlar: her viraj için (başlangıç, bitiş) tur oranı ya da None (14 Kasım 2026: virajdan sonraki
-    düzlük o virajın sayılıyor, gt7_kopru.bolum_sinirlari).
+    oranlar: her viraj için (başlangıç, bitiş) tur oranı ya da None (virajdan sonraki
+    düzlük o virajın sayılır, gt7_kopru.bolum_sinirlari).
     pts: pist çizgisi (piksel), daireler: viraj noktaları. Dönüş: her viraj için [(x, y)] ya da
     sıra tutmazsa (viraj çizgiye oturmadı) None."""
     if len(pts) < 2 or not daireler:
@@ -465,7 +466,7 @@ def notify(title, lines=(), kind="bilgi", ses=None):
     "sonra" (viraj çıkışı yorumu), "tahmin" (ilk temiz turdan önce kaba viraj bilgisi, sesli okunmaz).
     ses: sesli okunacak kısa metin (yoksa okunmaz).
     Adı bilinen virajlar: ekranda "Spoon'da (V13)", seste sadece numara ("Viraj 13'te")."""
-    # Seste viraj adı yok, sadece numara (14 Kasım 2026: İngilizce adların okunuşu anlaşılmıyordu);
+    # Seste viraj adı yok, sadece numara (Türkçe ses İngilizce adları anlaşılır okuyamıyor);
     # kısaltmalar açılır (TCS -> çekiş kontrolü). Ekranda adlar durur.
     ses = acik_yaz(ses) if ses else ses
     if ADLAR:
@@ -685,7 +686,7 @@ def tt_hedefi(tr):
 
 def hedef_bul(tr, car):
     """Hedef süre: (ms, kaynak). Önce Time Trial hedefi (pist için, kaynak "tt"), sonra bu arabaya kendi
-    koyduğun hedef ("kendi"), yoksa rekor turu kaydedildiyse onun süresi ("rekor"; 14 Kasım 2026).
+    koyduğun hedef ("kendi"), yoksa rekor turu kaydedildiyse onun süresi ("rekor").
     Hiçbiri yoksa (None, None)."""
     ht = (tr or {}).get("hedef_tur") or {}
     if ht.get("tip") == "rekor":                   # seçilen hedef tur: rekor turu (hem hedef hem referans)
@@ -813,7 +814,8 @@ def lap_end(lap, lap_ms, car, state, opts=None):
                 for i in r["issues"]:
                     i["ekran"] = rekor_dili(i["ekran"])
             out.append(f"Koç rekor turuna göre konuşuyor (rekor {sure(rek['lap_ms'])}, "
-                       f"bu tur {(lap_ms - rek['lap_ms']) / 1000:+.3f} sn). Ayarlar › Koç'tan değiştirilebilir.")
+                       f"bu tur {(lap_ms - rek['lap_ms']) / 1000:+.3f} sn). Hedef turu Time Trial hazırlık ekranından "
+                       "değiştirebilirsin.")
             if state.get("fren_kayma"):   # güvenlik payı / kendi fren gücü: erken-geç fren kaymış noktaya göre
                 fren_kaymasi_uygula(cmp_res, state["fren_kayma"])
         if teker_olay:
@@ -880,7 +882,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         cekis, yeni = cekis_ogren(lap, car)
         if yeni:
             out.append(f"Çekiş türü bulundu: {CEKIS_ADLARI[cekis]}."
-                       + (" Güç dağıtıcı takılıysa ayarını Ayarlar'a yaz, öneriler ona göre gelir."
+                       + (" Güç dağıtıcı takılıysa ayarını Araç kartındaki 'Araba ayarları'na yaz, öneriler ona göre gelir."
                           if cekis == "4x4" and dagilim is None else ""))
     except Exception as e:
         print(f"(Çekiş türü ölçülemedi: {e!r})")
@@ -1027,7 +1029,7 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     state["onemli"] = onemli_virajlar(cmp_res, puan_gecmis, manuel) if cmp_res else []
     if cmp_res and not problem:
         gecmise_ekle(puan_gecmis, cmp_res, manuel)
-    odak_no = opts.get("odak")       # odak virajı (16 Kasım 2026): sesli tavsiye sadece o viraj için
+    odak_no = opts.get("odak")       # odak virajı: sesli tavsiye sadece o viraj için
     if odak_no:
         state["onemli"] = [o for o in state["onemli"] if o["no"] == odak_no]
         if fren_ses and not re.search(rf"Viraj {odak_no}\b", fren_ses):
@@ -1581,10 +1583,32 @@ class Koc:
             print("HATA: " + self.error)
             return
         sock.settimeout(1.0)
+        ilk = True
+        hata_say = 0
+        while True:
+            try:
+                self._dinle(sock, ilk)
+            except Exception as e:
+                # Beklenmedik bir hata koçu durdurmasın: günlüğe yazılır, dinleme baştan kurulur
+                # (yarım kalan tur kaydedilmez; pist hafızası ve ayarlar korunur).
+                hata_say += 1
+                try:
+                    traceback.print_exc()      # koc_gunluk.txt
+                except Exception:
+                    pass
+                if hata_say <= 3:
+                    notify("Koçta beklenmedik bir hata oldu, koç çalışmaya devam ediyor.", [repr(e)])
+                time.sleep(1.0 if hata_say <= 3 else 5.0)
+            ilk = False
 
+    def _dinle(self, sock, ilk):
+        """PS5'ten gelen paketleri dinler ve işler. ilk: koç yeni açıldı (False: bir hatadan sonra yeniden kuruldu)."""
         target = "255.255.255.255"
-        if os.path.exists(IP_FILE):
-            target = open(IP_FILE, encoding="utf-8").read().strip() or target
+        try:
+            with open(IP_FILE, encoding="utf-8") as f:
+                target = f.read().strip() or target
+        except OSError:
+            pass
 
         last_path_check = 0
         tt_kontrol = 0
@@ -1598,12 +1622,13 @@ class Koc:
         recording = False
         last_pos = None
         last_hb = 0
-        connected = False
+        connected = not ilk and bool(self.live.get("connected"))   # hata sonrası: "bağlandı" yeniden söylenmez
         # En zengin veri biçimini ("C") dene; cevap gelmezse "A" ile dönüşümlü dene
         hb_fmt = "C"
         yakin_say = 0                   # seçilen pistin çizgisine yakın geçen saniye (pist doğrulama)
         hb_switch = time.time() + 5
-        self.pist_ozeti()
+        if ilk:
+            self.pist_ozeti()
 
         while True:
             with self.lock:
@@ -1707,7 +1732,7 @@ class Koc:
                 continue
             yonlendir_port = self.ayar.get("yonlendir_port")
             if yonlendir_port:
-                # Veri yönlendirme (16 Kasım 2026): PS5'ten gelen paket olduğu gibi bu bilgisayarda başka bir porta
+                # Veri yönlendirme: PS5'ten gelen paket olduğu gibi bu bilgisayarda başka bir porta
                 # da kopyalanır; SimHub gibi bir program o portu dinleyerek koçla aynı anda çalışabilir.
                 try:
                     sock.sendto(data, ("127.0.0.1", int(yonlendir_port)))
