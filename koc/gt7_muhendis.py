@@ -6,8 +6,7 @@ belgesinden ("Sesli uyarı ilkeleri"): kalıcılık + histerezis + bekleme süre
 - Motor: su sıcaklığı (110/106, kritik 120/116 °C), yağ sıcaklığı (130/126, kritik 140/136 °C),
   yağ basıncı (< 2,0 bar, 2000 devir üstü, 1,5 sn; 2,4'te temizlenir)
 - Lastik: herhangi biri 110 °C (104'te temizlenir); ön/arka ya da sol/sağ farkı 15 °C (10'da temizlenir)
-  Lastiklerin ısındığı / soğuduğu (ıslak pist) söylenmez: lastik türü ve ideal sıcaklık telemetride yok,
-  sıcaklıktan güvenilir çıkarım yapılamıyor (24 Kasım 2026, gerçek oyunda hiç doğru çalışmadı).
+  Lastiklerin ısındığı ya da soğuduğu söylenmez: telemetride lastik türü ve ideal sıcaklık yok.
 - Yarış: liderliğe geçince / ilk üçe girince (3 sn sabit kalınca), yarının yarısı, son tur. Diğer sıra
   değişimleri sürerken söylenmez; tur sonu sesinde sıra değiştiyse söylenir (`sira_degisimi`).
 Zamanlar paket saatiyle ölçülür (duraklatma süre saymaz). Pistte değilken ya da duraklatılmışken susar.

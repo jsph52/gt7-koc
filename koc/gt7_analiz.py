@@ -8,8 +8,6 @@ Fikirler gt7-datalogger belgelerinden, kod bu proje için yazıldı:
 - tekrarlayan teker olayı: aynı virajda son 3 turun 3'ünde
 - tempo düşüşü: son 3 temiz turun ortalaması seansın en iyisinden 0,8 sn yavaş
 - fren alışkanlığı: bir virajda son 2 turdur en iyi geçişten 10 m+ aynı yönde sapma
-- ıslak pist tahmini (9 Kasım 2026): virajların neredeyse hepsinde kayıp + tur belirgin yavaş + lastikler
-  önceki turlardan soğuk (telemetride hava bilgisi yok; eşikler tahmini, gerçek oyunda denenmedi)
 """
 import math
 
