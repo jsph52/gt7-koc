@@ -41,7 +41,7 @@ TAU_KISA, TAU_UZUN = 20.0, 180.0
 DURMA_KMH, DURMA_S = 30, 10.0  # bu kadar süre bu hızın altında kalınca (pit, durma) ortalamalar sıfırlanır
 TASMA_SUSMA_S = 60.0           # teker çime/kuma taşınca bu kadar saniye ıslak kararı verilmez (ortalamalar baştan)
 GEVSEK = frozenset("DGSs")     # toprak, çim, kum, kar (C biçimi teker zemini)
-ISLAK_CUMLE = "Lastikler soğuyor, pist ıslanıyor olabilir. Fren noktalarını erkene al."
+ISLAK_CUMLE = "Lastikler soğuyor, pist ıslanıyor olabilir. Fren noktalarını biraz erkene çek."
 DENGE = (15, 10)
 YAG_BASINC = (2.0, 2.4, 2000)   # (tetik bar, temizlenme bar, en az devir)
 

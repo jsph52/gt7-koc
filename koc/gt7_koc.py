@@ -450,6 +450,15 @@ def viraj_adi(no):
     return adlandir(f"Viraj {no}", ADLAR, ekran=True)
 
 
+def bitis_cumlesi(sira, arac):
+    """Yarış bitince söylenir: "Yarışı 3. sırada tamamladın." (sıra bilinmiyorsa "Yarış bitti.")."""
+    if arac and arac >= 2 and sira and 1 <= sira <= arac:
+        if sira == 1:
+            return "Yarışı birinci bitirdin, tebrikler!"
+        return f"Yarışı {sira}. sırada tamamladın."
+    return "Yarış bitti."
+
+
 def notify(title, lines=(), kind="bilgi", ses=None):
     """Koçun bir mesajını konsola yazar ve arayüze iletir.
     kind: "bilgi", "uyari", "tur" (tur sonu), "anlik" (virajdan önce uyarı), "muhendis" (telsiz anonsu),
@@ -909,10 +918,19 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         state["yakit_tur_basi"] = lap["fuel"][-1] / yakit_tur if yakit_tur else None
         kalan = opts.get("kalan_tur")
         if yakit_tur is not None and kalan:
-            # Yarışta: pit / yakıt stratejisi (kaç pit, hangi tur, kaç litre)
-            sp = gt7_strateji.plan(lap["fuel"][-1], opts.get("kapasite"), lap["fuel"][-1] / yakit_tur
-                                   if yakit_tur > 0 else None, kalan, opts.get("tur_no") or 0)
+            # Yarışta: pit / yakıt stratejisi (kaç pit, hangi tur, kaç litre). Tüketim bu yarışın tam turlarından;
+            # yakıt haritası değişince (son tur belirgin fazla yaktıysa) plan hemen ona göre.
+            yy = state.get("yaris_yakit")
+            if not yy or yy["araba"] != car or (opts.get("tur_no") or 0) <= 2:
+                yy = state["yaris_yakit"] = {"araba": car, "turlar": []}
+            harcanan = lap["fuel"][0] - lap["fuel"][-1]
+            if not yy["turlar"] or harcanan >= 0.5 * max(yy["turlar"]):   # pitten çıkış gibi yarım turlar sayılmaz
+                yy["turlar"].append(harcanan)
+            tur_basi, artti = gt7_strateji.tuketim(yy["turlar"])
+            sp = gt7_strateji.plan(lap["fuel"][-1], opts.get("kapasite"), tur_basi, kalan, opts.get("tur_no") or 0)
             if sp:
+                sp["artti"] = artti
+                gt7_strateji.guclu_ek(sp, yy["turlar"])
                 state["strateji"] = sp
                 out.append(gt7_strateji.satir(sp, pit_sn))
                 strateji_ses = gt7_strateji.sesli(sp, state.setdefault("strateji_durum", {}), pit_sn)
@@ -1093,6 +1111,10 @@ def lap_end(lap, lap_ms, car, state, opts=None):
     state["harita"]["adlar"] = state.get("adlar", {})
     state["map_ver"] = state.get("map_ver", 0) + 1
     gt7_rapor.kaydet(state, pist_adi(tr), viraj_adi)
+    if opts.get("bitis"):
+        # Son tur: tavsiye, strateji ve hedef cümleleri yerine sadece bitiş + tur süresi
+        title = opts["bitis"] + " " + title
+        ses = f"{opts['bitis']} Son tur {sure(lap_ms)}."
     notify(title, out, kind="tur", ses=ses)
     print(f"  (Sesli özet: {ses})")
     return cmp_res
@@ -1129,6 +1151,7 @@ class Koc:
         self.olcer = CanliOlcer()       # lastik, G, devir ışığı, motor... (arayüz)
         self.muhendis = Muhendis()      # motor / lastik / sıra / son tur telsiz anonsları
         self.muhendis_dedi = False      # "Yarış mühendisi devrede." bir kez söylenir
+        self.yaris_bitti = None         # yarış bittiyse toplam tur sayısı: koç yeni yarışa kadar susar
         self.ayar = ayar_oku()
         self.vites_oylari = []          # son turların manuel/otomatik tahmini
         self.car = None
@@ -1737,6 +1760,15 @@ class Koc:
                 cur_lap_no = lap_no
             dt = clock.step(pid)
             clock_t += dt
+            # Yarış bitti mi: tur sayacı toplam turu geçti (bitiş çizgisi). Yeni yarışa / yeniden başlamaya kadar
+            # koç susar (canlı koç, fren uyarısı, mühendis); tur sayacı 1..toplam arasına dönünce yeniden konuşur.
+            if self.yaris_bitti and (d["toplam_tur"] != self.yaris_bitti or 1 <= lap_no <= d["toplam_tur"]):
+                self.yaris_bitti = None
+            bitis = None
+            if lap_no != cur_lap_no and lap_change_ok(lap_no, cur_lap_no, kayit_acik, paused) \
+                    and d["toplam_tur"] > 0 and lap_no > d["toplam_tur"] >= cur_lap_no >= 1 and not self.yaris_bitti:
+                self.yaris_bitti = d["toplam_tur"]
+                bitis = bitis_cumlesi(pkt.race_position, pkt.total_positions)
             if lap_no != cur_lap_no and lap_change_ok(lap_no, cur_lap_no, kayit_acik, paused):
                 if recording and lap_no == cur_lap_no + 1 and rekor_modu:
                     try:
@@ -1761,12 +1793,15 @@ class Koc:
                                                 "rekor_tur": self.rekor_ref(), "odak": self.odak,
                                                 "yaris_sessiz": d["toplam_tur"] > 0
                                                 and self.ayar.get("yaris_tavsiye") != "acik",
-                                                "tt": self.tt_hedef(state, d["araba"]),
+                                                "tt": self.tt_hedef(state, d["araba"]), "bitis": bitis,
                                                 "sira": (pkt.race_position, pkt.total_positions)
                                                 if d["toplam_tur"] > 0 and pkt.total_positions >= 2 else None})
                         self.hazirla_gerek = True
+                        bitis = None        # tur sonu mesajı bitişi söyledi
                     except Exception as e:  # analiz hatası koçu durdurmasın
                         notify("Tur analizinde hata oldu, kayıt devam ediyor.", [repr(e)], kind="uyari")
+                if bitis:
+                    notify(bitis, kind="tur", ses=bitis)
                 # yeni tur başlıyor
                 self.canli.reset()
                 onceki = onceki_son(lap) if recording and lap_no == cur_lap_no + 1 else None
@@ -1832,7 +1867,7 @@ class Koc:
                 except Exception as e:
                     notify("Canlı koç hazırlanamadı.", [repr(e)], kind="uyari")
             fark = None
-            if recording and on_track and not paused and lap["t"]:
+            if recording and on_track and not paused and lap["t"] and not self.yaris_bitti:
                 uyari, fark, _ = self.canli.adim(lap["x"][-1], lap["z"][-1], lap["dist"][-1], lap["t"][-1],
                                                  d["hiz"], d["fren"], d["gaz"],
                                                  lap["loose"][-1] if lap.get("loose") else None)
@@ -1846,7 +1881,8 @@ class Koc:
                     notify(cikis, kind="sonra", ses=cikis)
             # Yarış mühendisi: motor, lastik, sıra, son tur (kısa telsiz anonsları)
             try:
-                for metin, kritik in self.muhendis.guncelle(clock_t, pkt, on_track, paused):
+                for metin, kritik in self.muhendis.guncelle(clock_t, pkt, on_track and not self.yaris_bitti,
+                                                            paused):
                     notify(metin, kind="uyari" if kritik else "muhendis")
                 if self.muhendis.islak_olay:
                     self.muhendis.islak_olay = False
@@ -1868,7 +1904,7 @@ class Koc:
                     if self.fren:
                         self.fren.delay = k.result
                     self.kalib = None
-            elif self.fren and on_track and not paused:
+            elif self.fren and on_track and not paused and not self.yaris_bitti:
                 x, _, z = d["konum"]
                 self.fren.update(x, z, d["hiz"], d["fren"])
 
