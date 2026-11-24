@@ -2867,7 +2867,7 @@ function basitGuncelle(c){
   if (L && L.every(v => v > 0)){
     const sicak = L.map((v, i) => v > 100 ? LASTIK_ADI[i] : null).filter(Boolean), ort = L.reduce((a, b) => a + b, 0) / 4;
     yaz("bLastikDurum", sicak.length ? (sicak.length > 2 ? "Lastikler çok sıcak." : sicak.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(", ") + " çok sıcak.")
-      : ort < 60 ? "Lastikler soğuk." : ort < 70 ? "Lastikler ısınıyor." : "Lastikler ideal aralıkta.");
+      : "Ortalama " + Math.round(ort) + " °C.");   // soğuk / ısınıyor denmez: bazı arabalarda lastikler hiç ısınmaz
   } else yaz("bLastikDurum", "—");
   yaz("bYakit", metin("mYakit")); yaz("bYakitTur", metin("mYakitTur")); $("bYakitTur").className = $("mYakitTur").className;
   // Sürüş

@@ -46,8 +46,8 @@ import gt7_hedef
 import gt7_karsilastir
 import gt7_rapor
 from gt7_viraj_adlari import adlandir, eslestir
-from gt7_tur_kurallari import (ISINMA_C, LapClock, cizgide_basladi, drop_partial, isinma_turu,
-                               lap_change_ok, lastik_ort, note_packet, off_track_count,
+from gt7_tur_kurallari import (LapClock, cizgide_basladi, drop_partial,
+                               lap_change_ok, note_packet, off_track_count,
                                onceki_son, pit_turu,
                                race_start, records, span_limit, tam_tur, tasmalar,
                                time_problem)
@@ -750,8 +750,6 @@ def lap_end(lap, lap_ms, car, state, opts=None):
         problem = "yarışın ilk turu (ızgaradan kalkış, çizgiden değil)"
     if not problem:
         problem = pit_turu(lap)
-    if not problem and isinma_turu(lap):
-        problem = "ısınma turu (lastikler soğuktu)"
     limit = span_limit(spans)
     if not problem and limit and lap["dist"][-1] < limit:
         problem = "tur eksik kaydedildi (son turlardan belirgin kısa)"
@@ -1108,7 +1106,6 @@ class Koc:
         self.sel = sel
         self.catalog = catalog if catalog is not None else load_catalog()
         self.pending = None             # arayüzden gelen (ya da otomatik bulunan) yeni pist
-        self.isinma = False             # bu tur soğuk lastiklerle başladı (viraj tavsiyesi yok)
         try:                            # pist seçilmediyse ya da yanlışsa konumdan bulur
             self.tanima = PistTanima(self.catalog)
         except Exception:
@@ -1821,12 +1818,6 @@ class Koc:
                 vs = vites_sayisi(pkt)
                 if vs:
                     lap["vites_sayisi"] = vs
-                if len(lap["t"]) == 1:      # turun ilk paketi: lastikler soğuksa ısınma turu
-                    ort = lastik_ort(lap["tt_f"][-1], lap["tt_r"][-1])
-                    self.isinma = ort is not None and ort < ISINMA_C
-                    if self.isinma and on_track:
-                        notify("Isınma turu. Lastikleri ısıt, bu turu saymayacağım.", kind="muhendis")
-                        self.muhendis.son_soylenen["lastik_soguk"] = clock_t   # aynı uyarı iki kez okunmasın
 
             # Henüz temiz tur yoksa: pist çizgisinden kaba viraj bilgisi (ekranda, sesli değil)
             lw = state.get("lib_warner")
@@ -1848,8 +1839,6 @@ class Koc:
                 islak = state.get("islak")   # ıslak pist şüphesi: kuru tura göre uyarılar susar
                 if d["toplam_tur"] > 0 and self.ayar.get("yaris_tavsiye") != "acik":
                     uyari = self.canli.cikis = None   # yarışta viraj tavsiyesi yok (ayar yaris_tavsiye)
-                if self.isinma:
-                    uyari = self.canli.cikis = None   # ısınma turunda viraj tavsiyesi yok
                 if uyari and not islak:
                     notify(uyari, kind="anlik", ses=uyari)
                 cikis, self.canli.cikis = self.canli.cikis, None
