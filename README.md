@@ -24,7 +24,7 @@ kurulum gerektirmez.
 ## Hızlı başlangıç
 
 1. **İndir:** [GT7-Koc.exe](https://github.com/jsph52/gt7-koc/releases/download/son-surum/GT7-Koc.exe)
-   dosyasını bir klasöre koy ve çalıştır.
+   dosyasını indir ve çalıştır. Kurulum gerekmez; kayıtların **Belgeler › GT7 Koc** klasöründe tutulur.
 2. **Bağlan:** PS5 ile bilgisayar aynı ev ağında olsun ve GT7 açık olsun. Koç PS5'i kendisi bulur.
 3. **Sür:** Piste çık. Pist, araba ve antrenman otomatik algılanır.
 
